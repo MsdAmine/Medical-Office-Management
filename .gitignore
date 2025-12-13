@@ -52,3 +52,7 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+/.vs/MedicalOfficeManagement/CopilotIndices/17.14.1518.61961
+/.vs/MedicalOfficeManagement/DesignTimeBuild
+/.vs/MedicalOfficeManagement/FileContentIndex
+/.vs/ProjectEvaluation
