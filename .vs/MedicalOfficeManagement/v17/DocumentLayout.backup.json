@@ -3,28 +3,20 @@
   "WorkspaceRootPath": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|c:\\users\\mouss\\source\\repos\\medicalofficemanagement\\migrations\\20251213170449_finaluserlinkscomplete.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|solutionrelative:migrations\\20251213170449_finaluserlinkscomplete.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|c:\\users\\mouss\\source\\repos\\medicalofficemanagement\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|c:\\users\\mouss\\source\\repos\\medicalofficemanagement\\migrations\\20251213163408_addidentitytables.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|solutionrelative:migrations\\20251213163408_addidentitytables.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|c:\\users\\mouss\\source\\repos\\medicalofficemanagement\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|c:\\users\\mouss\\source\\repos\\medicalofficemanagement\\models\\applicationuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|solutionrelative:models\\applicationuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|c:\\users\\mouss\\source\\repos\\medicalofficemanagement\\models\\auditlog.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|solutionrelative:models\\auditlog.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|c:\\users\\mouss\\source\\repos\\medicalofficemanagement\\models\\medecin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|solutionrelative:models\\medecin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|c:\\users\\mouss\\source\\repos\\medicalofficemanagement\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|c:\\users\\mouss\\source\\repos\\medicalofficemanagement\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     }
   ],
   "DocumentGroupContainers": [
@@ -34,63 +26,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 5,
           "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "20251213170449_FinalUserLinksComplete.cs",
-              "DocumentMoniker": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Migrations\\20251213170449_FinalUserLinksComplete.cs",
-              "RelativeDocumentMoniker": "Migrations\\20251213170449_FinalUserLinksComplete.cs",
-              "ToolTip": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Migrations\\20251213170449_FinalUserLinksComplete.cs*",
-              "RelativeToolTip": "Migrations\\20251213170449_FinalUserLinksComplete.cs*",
-              "ViewState": "AgIAAEIAAAAAAAAAAAAAAEgAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-13T17:06:31.839Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "20251213163408_AddIdentityTables.cs",
-              "DocumentMoniker": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Migrations\\20251213163408_AddIdentityTables.cs",
-              "RelativeDocumentMoniker": "Migrations\\20251213163408_AddIdentityTables.cs",
-              "ToolTip": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Migrations\\20251213163408_AddIdentityTables.cs",
-              "RelativeToolTip": "Migrations\\20251213163408_AddIdentityTables.cs",
-              "ViewState": "AgIAAGMBAAAAAAAAAAAgwHYBAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-13T16:41:23.61Z",
-              "EditorCaption": ""
-            },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{0ad07096-bba9-4900-a651-0598d26f6d24}"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\appsettings.json",
-              "RelativeDocumentMoniker": "appsettings.json",
-              "ToolTip": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\appsettings.json",
-              "RelativeToolTip": "appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-12-13T16:35:35.57Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "ApplicationUser.cs",
-              "DocumentMoniker": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Models\\ApplicationUser.cs",
-              "RelativeDocumentMoniker": "Models\\ApplicationUser.cs",
-              "ToolTip": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Models\\ApplicationUser.cs",
-              "RelativeToolTip": "Models\\ApplicationUser.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAFAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-13T16:28:29.987Z",
-              "EditorCaption": ""
             },
             {
               "$type": "Bookmark",
@@ -110,7 +50,44 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAABMAAAAAAAAAAAAQwAgAAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-13T16:33:26.063Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "AuditLog.cs",
+              "DocumentMoniker": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Models\\AuditLog.cs",
+              "RelativeDocumentMoniker": "Models\\AuditLog.cs",
+              "ToolTip": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Models\\AuditLog.cs",
+              "RelativeToolTip": "Models\\AuditLog.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB4AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-13T17:09:50.098Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\appsettings.json",
+              "RelativeDocumentMoniker": "appsettings.json",
+              "ToolTip": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\appsettings.json",
+              "RelativeToolTip": "appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-12-13T16:35:35.57Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
               "Title": "Medecin.cs",
               "DocumentMoniker": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Models\\Medecin.cs",
               "RelativeDocumentMoniker": "Models\\Medecin.cs",
@@ -118,21 +95,7 @@
               "RelativeToolTip": "Models\\Medecin.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAsAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-13T16:51:12.842Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Program.cs",
-              "RelativeDocumentMoniker": "Program.cs",
-              "ToolTip": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Program.cs",
-              "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACMAAAAkAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-13T16:33:26.063Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-13T16:51:12.842Z"
             }
           ]
         }

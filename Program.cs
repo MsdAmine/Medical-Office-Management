@@ -13,7 +13,10 @@ namespace MedicalOfficeManagement
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
-            builder.Services.AddDbContext<MedicalOfficeContext>(options=> options.UseSqlServer(builder.Configuration.GetConnectionString("gestionCabinetContextConnection")));
+            // AJOUT: Nécessaire pour l'interface utilisateur Razor Pages d'Identity
+            builder.Services.AddRazorPages();
+
+            builder.Services.AddDbContext<MedicalOfficeContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("gestionCabinetContextConnection")));
 
             builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<MedicalOfficeContext>();
 
@@ -40,6 +43,9 @@ namespace MedicalOfficeManagement
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
+
+            // AJOUT: Mappage de l'endpoint pour les pages Razor d'Identity
+            app.MapRazorPages();
 
             app.Run();
         }
