@@ -1,5 +1,6 @@
 using MedicalOfficeManagement.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace MedicalOfficeManagement
 {
@@ -13,6 +14,8 @@ namespace MedicalOfficeManagement
             builder.Services.AddControllersWithViews();
 
             builder.Services.AddDbContext<MedicalOfficeContext>(options=> options.UseSqlServer(builder.Configuration.GetConnectionString("gestionCabinetContextConnection")));
+
+            builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<MedicalOfficeContext>();
 
 
             var app = builder.Build();
@@ -29,6 +32,8 @@ namespace MedicalOfficeManagement
             app.UseStaticFiles();
 
             app.UseRouting();
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 
