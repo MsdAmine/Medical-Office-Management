@@ -1,83 +1,99 @@
 using MedicalOfficeManagement.Models;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Identity.UI;
 
-namespace MedicalOfficeManagement
+var builder = WebApplication.CreateBuilder(args);
+
+// Configuration de la connexion à la base de données
+var connectionString = builder.Configuration.GetConnectionString("gestionCabinetContextConnection")
+    ?? throw new InvalidOperationException("Connection string 'gestionCabinetContextConnection' not found.");
+
+builder.Services.AddDbContext<MedicalOfficeContext>(options =>
+    options.UseSqlServer(connectionString));
+
+// Configuration Identity par défaut
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
-    public class Program
+    // Options de connexion
+    options.SignIn.RequireConfirmedAccount = true;
+
+    // Options de mot de passe (Relaxation des règles)
+    options.Password.RequireDigit = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequiredLength = 4;
+})
+.AddRoles<IdentityRole>()
+.AddEntityFrameworkStores<MedicalOfficeContext>()
+.AddDefaultTokenProviders()
+.AddDefaultUI();
+
+//  FILTRE D'AUTORISATION GLOBAL (COMMENTÉ POUR TESTER) 
+builder.Services.AddControllersWithViews(options =>
+{
+    // Le bloc suivant est temporairement commenté pour éviter la boucle de redirection
+    // var policy = new AuthorizationPolicyBuilder() 
+    //     .RequireAuthenticatedUser() 
+    //     .Build(); 
+    // options.Filters.Add(new AuthorizeFilter(policy)); 
+});
+// ----------------------------------------------------------------------------------
+
+builder.Services.AddRazorPages();
+
+
+var app = builder.Build();
+
+// Configuration du pipeline HTTP
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+else
+{
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseRouting();
+
+// Le middleware d'authentification DOIT précéder UseAuthorization
+app.UseAuthentication();
+app.UseAuthorization();
+
+// Mappage de l'endpoint pour les pages Razor d'Identity
+app.MapRazorPages();
+
+// Définition de la route par défaut.
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+
+// --- Initialiseur de Base de Données (Seeding) ---
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
     {
-        public static async Task Main(string[] args)
-        {
-            var builder = WebApplication.CreateBuilder(args);
-
-            // Add services to the container.
-            builder.Services.AddControllersWithViews();
-
-            // AJOUT: Nécessaire pour l'interface utilisateur Razor Pages d'Identity
-            builder.Services.AddRazorPages();
-
-            builder.Services.AddDbContext<MedicalOfficeContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("gestionCabinetContextConnection")));
-
-            builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
-            {
-                // Options de connexion
-                options.SignIn.RequireConfirmedAccount = true;
-
-                // Options de mot de passe (Relaxation des règles que nous avions ajoutées)
-                options.Password.RequireDigit = false;
-                options.Password.RequireLowercase = false;
-                options.Password.RequireUppercase = false;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequiredLength = 4;
-            })
-            .AddEntityFrameworkStores<MedicalOfficeContext>()
-            .AddDefaultTokenProviders();
-
-
-            var app = builder.Build();
-
-            // Configure the HTTP request pipeline.
-            if (!app.Environment.IsDevelopment())
-            {
-                app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
-
-            app.UseHttpsRedirection();
-            app.UseStaticFiles();
-
-            app.UseRouting();
-
-            app.UseAuthentication();
-
-            app.UseAuthorization();
-
-            app.MapGet("/Identity/Account/Register", context => Task.FromCanceled(context.RequestAborted));
-
-            app.MapControllerRoute(
-                name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
-
-            // AJOUT: Mappage de l'endpoint pour les pages Razor d'Identity
-            app.MapRazorPages();
-
-            using (var scope = app.Services.CreateScope())
-            {
-                var services = scope.ServiceProvider;
-                try
-                {
-                    // Appelle la méthode d'initialisation pour créer les rôles et l'Admin
-                    await DbInitializer.SeedRolesAndAdminUser(services);
-                }
-                catch (Exception ex)
-                {
-                    var logger = services.GetRequiredService<ILogger<Program>>();
-                    logger.LogError(ex, "An error occurred while seeding the database.");
-                }
-            }
-
-            app.Run();
-        }
+        await DbInitializer.SeedRolesAndAdminUser(services);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while seeding the database.");
     }
 }
+// -------------------------------------------------
+
+app.Run();

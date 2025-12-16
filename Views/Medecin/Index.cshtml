@@ -1,0 +1,58 @@
+﻿@model IEnumerable<MedicalOfficeManagement.Models.Medecin>
+
+@{
+    ViewData["Title"] = "Liste des Médecins";
+}
+
+<h1>Liste des Médecins</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Créer un Nouveau Médecin</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @* Affichage du Nom de la propriété (Nom) *@
+                @Html.DisplayNameFor(model => model.Nom)
+            </th>
+            <th>
+                @* Affichage du Nom de la propriété (Prénom) *@
+                @Html.DisplayNameFor(model => model.Prenom)
+            </th>
+            <th>
+                @* Affichage du Nom de la propriété (Spécialité) *@
+                @Html.DisplayNameFor(model => model.Specialite)
+            </th>
+            <th>
+                @* Affiche l'ID de l'utilisateur Identity lié (pour vérification) *@
+                @Html.DisplayNameFor(model => model.ApplicationUserId)
+            </th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Nom)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Prenom)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Specialite)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ApplicationUserId)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Modifier</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Détails</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Supprimer</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

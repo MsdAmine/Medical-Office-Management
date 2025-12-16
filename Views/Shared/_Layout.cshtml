@@ -20,11 +20,20 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Accueil</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Confidentialité</a>
                         </li>
+
+                        @* 🛑 AJOUT : Liens Conditionnels pour l'Admin 🛑 *@
+                        @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Medecin" asp-action="Index">Gérer Médecins</a>
+                            </li>
+                        }
+                        @* 🛑 FIN AJOUT 🛑 *@
                     </ul>
                     <partial name="_LoginPartial" />
                 </div>

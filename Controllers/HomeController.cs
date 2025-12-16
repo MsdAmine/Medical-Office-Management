@@ -1,9 +1,11 @@
 using System.Diagnostics;
 using MedicalOfficeManagement.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization; // <-- AJOUT DE L'ESPACE DE NOMS
 
 namespace MedicalOfficeManagement.Controllers
 {
+    [AllowAnonymous] // <--- MODIFICATION CLÉ : Exempte le contrôleur de l'autorisation globale
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;

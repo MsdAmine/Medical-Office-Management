@@ -1,65 +1,66 @@
 ﻿using MedicalOfficeManagement.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks; // Ajout nécessaire pour Task
+using Microsoft.Extensions.DependencyInjection; // Assurez-vous d'avoir ce using
+using System.Threading.Tasks;
 
 public static class DbInitializer
 {
     public static async Task SeedRolesAndAdminUser(IServiceProvider serviceProvider)
     {
-        // 1. Initialisation des services
         var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-        // 2. Définition des Rôles
+        // 1. Définition et Création des Rôles
         string[] roleNames = { "Admin", "Medecin", "Personnel" };
-
         foreach (var roleName in roleNames)
         {
-            var roleExist = await roleManager.RoleExistsAsync(roleName);
-            if (!roleExist)
+            if (!await roleManager.RoleExistsAsync(roleName))
             {
-                // Crée les rôles s'ils n'existent pas
                 await roleManager.CreateAsync(new IdentityRole(roleName));
             }
         }
 
-        // 3. Création du compte Administrateur initial (Méthode FORCÉE)
+        // 2. Création ou Vérification du compte Administrateur
         string adminEmail = "admin@email.com";
         string adminPassword = "TestPassword1!";
         string adminRole = "Admin";
 
         var adminUser = await userManager.FindByEmailAsync(adminEmail);
 
-        if (adminUser != null)
+        // Si l'utilisateur n'existe PAS, nous le créons.
+        if (adminUser == null)
         {
-            // Si l'utilisateur existe déjà (potentiellement cassé ou verrouillé),
-            // nous le supprimons pour le recréer proprement. C'est le plus sûr pour le seeding de test.
-            await userManager.DeleteAsync(adminUser);
-        }
+            adminUser = new ApplicationUser
+            {
+                UserName = adminEmail,
+                Email = adminEmail,
+                EmailConfirmed = true
+            };
 
-        // --- Création de l'utilisateur ---
-        adminUser = new ApplicationUser
-        {
-            UserName = adminEmail,
-            Email = adminEmail,
-            EmailConfirmed = true // Confirmé pour ignorer l'envoi d'e-mail
-        };
+            IdentityResult result = await userManager.CreateAsync(adminUser, adminPassword);
 
-        // Crée l'utilisateur avec le mot de passe
-        IdentityResult result = await userManager.CreateAsync(adminUser, adminPassword);
-
-        if (result.Succeeded)
-        {
-            // Attribue le rôle "Admin" à l'utilisateur
-            await userManager.AddToRoleAsync(adminUser, adminRole);
+            if (result.Succeeded)
+            {
+                // Attribue le rôle "Admin" à l'utilisateur
+                await userManager.AddToRoleAsync(adminUser, adminRole);
+            }
+            else
+            {
+                // Si la création échoue, nous affichons les erreurs pour le débogage (dans la console ou logs)
+                // Ex: dotnet run affichera ceci si vous utilisez ILogger.
+                foreach (var error in result.Errors)
+                {
+                    System.Console.WriteLine($"Erreur de création d'Admin : {error.Description}");
+                }
+            }
         }
         else
         {
-            // Si la création échoue (par exemple, problème de mot de passe trop faible
-            // malgré les règles par défaut), nous logons les erreurs.
-            // Si vous n'avez pas de ILogger configuré ici, vous pouvez utiliser Debug.WriteLine.
-            // L'erreur sera de toute façon capturée par le bloc try/catch dans Program.cs.
+            // S'il existe, s'assurer qu'il a le rôle Admin au cas où ce serait un ancien utilisateur sans rôle
+            if (!await userManager.IsInRoleAsync(adminUser, adminRole))
+            {
+                await userManager.AddToRoleAsync(adminUser, adminRole);
+            }
         }
     }
 }
