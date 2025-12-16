@@ -1,26 +1,45 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace MedicalOfficeManagement.Models;
-
-public partial class Medecin
+namespace MedicalOfficeManagement.Models
 {
-    public int Id { get; set; }
+    public class Medecin
+    {
+        public int Id { get; set; }
 
-    // MODIFICATION : Rendus nullables (ajout du '?') pour passer la validation du modèle
-    public string? ApplicationUserId { get; set; }
+        // Correction pour le Nom complet
+        [Required(ErrorMessage = "Le nom et prénom est obligatoire.")]
+        [StringLength(100)]
+        [Display(Name = "Nom et Prénom")]
+        public string NomPrenom { get; set; } = null!; // <--- Correction de Nullité
 
-    public string Nom { get; set; } = null!;
-    public string Prenom { get; set; } = null!;
-    public string Specialite { get; set; } = null!;
+        // Champ spécialité
+        [Required(ErrorMessage = "La spécialité est obligatoire.")]
+        [Display(Name = "Spécialité")]
+        public string Specialite { get; set; } = null!; // <--- Correction de Nullité
 
-    // Propriétés de navigation des relations
-    public virtual ICollection<Consultation> Consultations { get; set; } = new List<Consultation>();
-    public virtual ICollection<Planning> Plannings { get; set; } = new List<Planning>();
-    public virtual ICollection<RendezVou> RendezVous { get; set; } = new List<RendezVou>();
+        // NOUVEAU : Adresse du cabinet
+        [Required(ErrorMessage = "L'adresse est obligatoire.")]
+        [StringLength(200)]
+        [Display(Name = "Adresse du cabinet")]
+        public string Adresse { get; set; } = null!; // <--- Correction de Nullité
 
-    // MODIFICATION : Rendue nullable (ajout du '?')
-    [ForeignKey("ApplicationUserId")]
-    public virtual ApplicationUser? ApplicationUser { get; set; }
+        // NOUVEAU : Téléphone
+        [Required(ErrorMessage = "Le numéro de téléphone est obligatoire.")]
+        [Phone]
+        [Display(Name = "Téléphone")]
+        public string Telephone { get; set; } = null!; // <--- Correction de Nullité
+
+        // Email
+        [Required(ErrorMessage = "L'email est obligatoire.")]
+        [EmailAddress]
+        [Display(Name = "Email")]
+        public string Email { get; set; } = null!; // <--- Correction de Nullité
+
+        // Clé étrangère vers Identity (pour l'Admin créateur)
+        public string ApplicationUserId { get; set; } = null!; // <--- Correction de Nullité
+
+        // Propriété de navigation (nécessite le using Identity dans le DbContext)
+        public ApplicationUser ApplicationUser { get; set; } = null!;
+    }
 }
