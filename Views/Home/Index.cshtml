@@ -1,10 +1,21 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@* --- BLOCK RAZOR INITIAL --- *@
+@{
+    ViewData["Title"] = "Accueil du Cabinet Médical";
+    ViewData["HideFooter"] = true; // Pour masquer le pied de page
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+@* --- BLOCK HTML --- *@
+<div class="text-center home-container">
+    <i class="fas fa-notes-medical fa-6x icon-medical"></i>
 
-    <hr />
+    <h1 class="display-4">
+        Bienvenue au Cabinet Médical
+    </h1>
+    <p class="lead">
+        Votre solution complète pour la gestion administrative des dossiers, des rendez-vous et du personnel.
+    </p>
+
+    <a href="/Identity/Account/Login" class="btn btn-login">
+        Accéder à votre Espace
+    </a>
 </div>

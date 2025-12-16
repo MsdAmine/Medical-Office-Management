@@ -1,22 +1,106 @@
-html {
-  font-size: 14px;
+/* --- Styles Thématiques pour MedicalOfficeManagement (Index.cshtml) --- */
+
+/* 1. Couleurs et Variables de Thème Médical (Palette plus douce) */
+:root {
+    --medical-blue: #0077b6; /* Bleu plus profond, plus sérieux */
+    --accent-green: #48b045; /* Vert pour les actions (bouton) */
+    --text-dark: #333333;
+    --background-light: #ffffff;
+    --shadow-color: rgba(0, 0, 0, 0.15);
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+/* 2. Styles de la Section d'Accueil */
+.home-container {
+    padding: 100px 30px;
+    background-color: var(--background-light);
+    border-radius: 15px;
+    box-shadow: 0 10px 25px var(--shadow-color);
+    margin-top: 50px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    /* 3. Styles des Titres et Textes */
+    .home-container h1 {
+        color: var(--medical-blue);
+        font-weight: 800;
+        margin-bottom: 25px;
+        font-size: 2.5rem;
+    }
+
+    .home-container .lead {
+        color: var(--text-dark);
+        font-size: 1.2rem;
+        margin-bottom: 45px;
+    }
+
+/* 4. Styles des Boutons */
+.btn-login {
+    background-color: var(--accent-green);
+    border-color: var(--accent-green);
+    color: white;
+    padding: 15px 40px;
+    font-size: 1.2rem;
+    border-radius: 50px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
 }
 
-html {
-  position: relative;
-  min-height: 100%;
+    .btn-login:hover {
+        background-color: #388e3c;
+        border-color: #388e3c;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+/* 5. Style de l'Icône */
+.icon-medical {
+    color: var(--medical-blue);
+    margin-bottom: 30px;
+    animation: pulse 1.5s infinite;
 }
 
-body {
-  margin-bottom: 60px;
+/* Définition de l'animation avec tous les préfixes */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@-webkit-keyframes pulse {
+    0% {
+        -webkit-transform: scale(1);
+    }
+
+    50% {
+        -webkit-transform: scale(1.05);
+    }
+
+    100% {
+        -webkit-transform: scale(1);
+    }
+}
+
+@-moz-keyframes pulse {
+    0% {
+        -moz-transform: scale(1);
+    }
+
+    50% {
+        -moz-transform: scale(1.05);
+    }
+
+    100% {
+        -moz-transform: scale(1);
+    }
 }

@@ -3,20 +3,20 @@
   "WorkspaceRootPath": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|c:\\users\\mouss\\source\\repos\\medicalofficemanagement\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|c:\\users\\mouss\\source\\repos\\medicalofficemanagement\\wwwroot\\css\\site.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|solutionrelative:wwwroot\\css\\site.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|c:\\users\\mouss\\source\\repos\\medicalofficemanagement\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|solutionrelative:controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|c:\\users\\mouss\\source\\repos\\medicalofficemanagement\\views\\medecin\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|solutionrelative:views\\medecin\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|c:\\users\\mouss\\source\\repos\\medicalofficemanagement\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|solutionrelative:views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|c:\\users\\mouss\\source\\repos\\medicalofficemanagement\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|solutionrelative:views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|c:\\users\\mouss\\source\\repos\\medicalofficemanagement\\views\\shared\\_loginpartial.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|solutionrelative:views\\shared\\_loginpartial.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     }
   ],
   "DocumentGroupContainers": [
@@ -26,7 +26,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 7,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Bookmark",
@@ -46,54 +46,54 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "HomeController.cs",
-              "DocumentMoniker": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Controllers\\HomeController.cs",
-              "RelativeDocumentMoniker": "Controllers\\HomeController.cs",
-              "ToolTip": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Controllers\\HomeController.cs",
-              "RelativeToolTip": "Controllers\\HomeController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAAAmAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-16T20:56:40.772Z",
+              "DocumentIndex": 0,
+              "Title": "site.css",
+              "DocumentMoniker": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\wwwroot\\css\\site.css",
+              "RelativeDocumentMoniker": "wwwroot\\css\\site.css",
+              "ToolTip": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\wwwroot\\css\\site.css",
+              "RelativeToolTip": "wwwroot\\css\\site.css",
+              "ViewState": "AgIAADcAAAAAAAAAAAAcwF0AAAAXAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
+              "WhenOpened": "2025-12-16T21:32:47.919Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 1,
               "Title": "Index.cshtml",
-              "DocumentMoniker": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Views\\Medecin\\Index.cshtml",
-              "RelativeDocumentMoniker": "Views\\Medecin\\Index.cshtml",
-              "ToolTip": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Views\\Medecin\\Index.cshtml",
-              "RelativeToolTip": "Views\\Medecin\\Index.cshtml",
-              "ViewState": "AgIAACEAAAAAAAAAAADwvzkAAAAIAAAAAAAAAA==",
+              "DocumentMoniker": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Views\\Home\\Index.cshtml",
+              "RelativeDocumentMoniker": "Views\\Home\\Index.cshtml",
+              "ToolTip": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Views\\Home\\Index.cshtml",
+              "RelativeToolTip": "Views\\Home\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAGAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-12-16T20:50:09.773Z",
+              "WhenOpened": "2025-12-16T21:24:30.57Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
+              "Title": "_LoginPartial.cshtml",
+              "DocumentMoniker": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Views\\Shared\\_LoginPartial.cshtml",
+              "RelativeDocumentMoniker": "Views\\Shared\\_LoginPartial.cshtml",
+              "ToolTip": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Views\\Shared\\_LoginPartial.cshtml",
+              "RelativeToolTip": "Views\\Shared\\_LoginPartial.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-12-16T21:21:21.214Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
               "Title": "_Layout.cshtml",
               "DocumentMoniker": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Views\\Shared\\_Layout.cshtml",
               "RelativeDocumentMoniker": "Views\\Shared\\_Layout.cshtml",
               "ToolTip": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Views\\Shared\\_Layout.cshtml",
               "RelativeToolTip": "Views\\Shared\\_Layout.cshtml",
-              "ViewState": "AgIAAB4AAAAAAAAAAAAAADoAAAAHAAAAAAAAAA==",
+              "ViewState": "AgIAABUAAAAAAAAAAAAAAB0AAAAYAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2025-12-16T20:49:38.031Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Program.cs",
-              "RelativeDocumentMoniker": "Program.cs",
-              "ToolTip": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Program.cs",
-              "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAAEUAAAAAAAAAAAAAABcAAAAyAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-16T20:48:34.098Z",
               "EditorCaption": ""
             }
           ]
