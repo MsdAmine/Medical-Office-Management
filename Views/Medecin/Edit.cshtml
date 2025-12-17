@@ -1,16 +1,21 @@
 ﻿@model MedicalOfficeManagement.Models.Medecin
 
 @{
-    ViewData["Title"] = "Ajouter un Médecin";
+    ViewData["Title"] = "Modifier le Médecin";
 }
 
-<h2>@ViewData["Title"]</h2>
+<h1>Modifier</h1>
 
+<h4>Médecin</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
+        <form asp-action="Edit">
             <div asp-validation-summary="All" class="text-danger"></div>
+
+            @* Champs Cachés Cruciaux *@
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="ApplicationUserId" /> @* Clé étrangère Identity à conserver *@
 
             <div class="form-group">
                 <label asp-for="NomPrenom" class="control-label"></label>
@@ -20,9 +25,7 @@
 
             <div class="form-group">
                 <label asp-for="Specialite" class="control-label"></label>
-                <select asp-for="Specialite" class="form-control" asp-items="@(ViewBag.Specialites)">
-                    <option value="">-- Sélectionner une spécialité --</option>
-                </select>
+                <select asp-for="Specialite" class="form-control" asp-items="@(ViewBag.Specialites)"></select>
                 <span asp-validation-for="Specialite" class="text-danger"></span>
             </div>
 
@@ -45,14 +48,15 @@
             </div>
 
             <div class="form-group mt-3">
-                <input type="submit" value="Créer" class="btn btn-primary" />
+                <input type="submit" value="Enregistrer" class="btn btn-primary" />
             </div>
         </form>
     </div>
 </div>
 
 <div>
-    <a asp-action="Index">Retour à la Liste</a>
+    <a asp-action="Index">Retour à la Liste</a> |
+    <a asp-action="Details" asp-route-id="@Model.Id">Détails</a>
 </div>
 
 @section Scripts {

@@ -3,28 +3,36 @@
   "WorkspaceRootPath": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|c:\\users\\mouss\\source\\repos\\medicalofficemanagement\\migrations\\20251216221546_addadresseandtelephonetomedecin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|solutionrelative:migrations\\20251216221546_addadresseandtelephonetomedecin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|c:\\users\\mouss\\source\\repos\\medicalofficemanagement\\views\\medecin\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|solutionrelative:views\\medecin\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|c:\\users\\mouss\\source\\repos\\medicalofficemanagement\\controllers\\medecincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|solutionrelative:controllers\\medecincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|c:\\users\\mouss\\source\\repos\\medicalofficemanagement\\views\\medecin\\delete.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|solutionrelative:views\\medecin\\delete.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|c:\\users\\mouss\\source\\repos\\medicalofficemanagement\\data\\dbinitializer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|solutionrelative:data\\dbinitializer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|c:\\users\\mouss\\source\\repos\\medicalofficemanagement\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|c:\\users\\mouss\\source\\repos\\medicalofficemanagement\\models\\medecin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|solutionrelative:models\\medecin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|c:\\users\\mouss\\source\\repos\\medicalofficemanagement\\views\\medecin\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|solutionrelative:views\\medecin\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|c:\\users\\mouss\\source\\repos\\medicalofficemanagement\\views\\medecin\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|solutionrelative:views\\medecin\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|c:\\users\\mouss\\source\\repos\\medicalofficemanagement\\data\\dbinitializer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|solutionrelative:data\\dbinitializer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|c:\\users\\mouss\\source\\repos\\medicalofficemanagement\\views\\medecin\\edit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|solutionrelative:views\\medecin\\edit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|c:\\users\\mouss\\source\\repos\\medicalofficemanagement\\views\\medecin\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{396F450B-A33D-4761-AC67-03D4106FD1F2}|MedicalOfficeManagement.csproj|solutionrelative:views\\medecin\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     }
   ],
   "DocumentGroupContainers": [
@@ -34,64 +42,8 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 5,
           "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "20251216221546_AddAdresseAndTelephoneToMedecin.cs",
-              "DocumentMoniker": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Migrations\\20251216221546_AddAdresseAndTelephoneToMedecin.cs",
-              "RelativeDocumentMoniker": "Migrations\\20251216221546_AddAdresseAndTelephoneToMedecin.cs",
-              "ToolTip": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Migrations\\20251216221546_AddAdresseAndTelephoneToMedecin.cs",
-              "RelativeToolTip": "Migrations\\20251216221546_AddAdresseAndTelephoneToMedecin.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-16T22:15:47.264Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "Create.cshtml",
-              "DocumentMoniker": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Views\\Medecin\\Create.cshtml",
-              "RelativeDocumentMoniker": "Views\\Medecin\\Create.cshtml",
-              "ToolTip": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Views\\Medecin\\Create.cshtml",
-              "RelativeToolTip": "Views\\Medecin\\Create.cshtml",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB4AAABAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-12-16T22:15:03.061Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "MedecinController.cs",
-              "DocumentMoniker": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Controllers\\MedecinController.cs",
-              "RelativeDocumentMoniker": "Controllers\\MedecinController.cs",
-              "ToolTip": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Controllers\\MedecinController.cs",
-              "RelativeToolTip": "Controllers\\MedecinController.cs",
-              "ViewState": "AgIAAC8AAAAAAAAAAAAgwBUAAAAnAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-16T21:49:21.997Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{0ad07096-bba9-4900-a651-0598d26f6d24}"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "Index.cshtml",
-              "DocumentMoniker": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Views\\Medecin\\Index.cshtml",
-              "RelativeDocumentMoniker": "Views\\Medecin\\Index.cshtml",
-              "ToolTip": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Views\\Medecin\\Index.cshtml",
-              "RelativeToolTip": "Views\\Medecin\\Index.cshtml",
-              "ViewState": "AgIAAAYAAAAAAAAAAAAAADYAAAAvAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-12-16T22:04:16.241Z",
-              "EditorCaption": ""
-            },
             {
               "$type": "Bookmark",
               "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
@@ -110,28 +62,106 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "Medecin.cs",
-              "DocumentMoniker": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Models\\Medecin.cs",
-              "RelativeDocumentMoniker": "Models\\Medecin.cs",
-              "ToolTip": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Models\\Medecin.cs",
-              "RelativeToolTip": "Models\\Medecin.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAjAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-16T21:47:05.07Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 2,
               "Title": "DbInitializer.cs",
               "DocumentMoniker": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Data\\DbInitializer.cs",
               "RelativeDocumentMoniker": "Data\\DbInitializer.cs",
               "ToolTip": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Data\\DbInitializer.cs",
               "RelativeToolTip": "Data\\DbInitializer.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAAtAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-16T21:37:07.439Z",
+              "WhenOpened": "2025-12-17T00:15:21.779Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "MedecinController.cs",
+              "DocumentMoniker": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Controllers\\MedecinController.cs",
+              "RelativeDocumentMoniker": "Controllers\\MedecinController.cs",
+              "ToolTip": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Controllers\\MedecinController.cs",
+              "RelativeToolTip": "Controllers\\MedecinController.cs",
+              "ViewState": "AgIAALcAAAAAAAAAAAAAAOgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-16T23:29:58.836Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Delete.cshtml",
+              "DocumentMoniker": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Views\\Medecin\\Delete.cshtml",
+              "RelativeDocumentMoniker": "Views\\Medecin\\Delete.cshtml",
+              "ToolTip": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Views\\Medecin\\Delete.cshtml",
+              "RelativeToolTip": "Views\\Medecin\\Delete.cshtml",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAAADoAAAAGAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-12-16T23:24:04.865Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Edit.cshtml",
+              "DocumentMoniker": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Views\\Medecin\\Edit.cshtml",
+              "RelativeDocumentMoniker": "Views\\Medecin\\Edit.cshtml",
+              "ToolTip": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Views\\Medecin\\Edit.cshtml",
+              "RelativeToolTip": "Views\\Medecin\\Edit.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACcAAABCAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-12-16T23:05:26.926Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Create.cshtml",
+              "DocumentMoniker": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Views\\Medecin\\Create.cshtml",
+              "RelativeDocumentMoniker": "Views\\Medecin\\Create.cshtml",
+              "ToolTip": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Views\\Medecin\\Create.cshtml",
+              "RelativeToolTip": "Views\\Medecin\\Create.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAABIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-12-16T22:15:03.061Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFIAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-16T23:48:45.708Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Medecin.cs",
+              "DocumentMoniker": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Models\\Medecin.cs",
+              "RelativeDocumentMoniker": "Models\\Medecin.cs",
+              "ToolTip": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Models\\Medecin.cs",
+              "RelativeToolTip": "Models\\Medecin.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAAyAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-16T23:27:19.13Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Views\\Medecin\\Index.cshtml",
+              "RelativeDocumentMoniker": "Views\\Medecin\\Index.cshtml",
+              "ToolTip": "C:\\Users\\mouss\\source\\repos\\MedicalOfficeManagement\\Views\\Medecin\\Index.cshtml",
+              "RelativeToolTip": "Views\\Medecin\\Index.cshtml",
+              "ViewState": "AgIAACsAAAAAAAAAAADwvzcAAABBAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-12-16T23:50:25.088Z",
               "EditorCaption": ""
             }
           ]
