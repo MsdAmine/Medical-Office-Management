@@ -1,6 +1,7 @@
 using MedicalOfficeManagement.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using MedicalOfficeManagement.Data;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
@@ -10,20 +11,20 @@ using Microsoft.AspNetCore.Identity.UI;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configuration de la connexion à la base de données
+// Configuration de la connexion ï¿½ la base de donnï¿½es
 var connectionString = builder.Configuration.GetConnectionString("gestionCabinetContextConnection")
     ?? throw new InvalidOperationException("Connection string 'gestionCabinetContextConnection' not found.");
 
 builder.Services.AddDbContext<MedicalOfficeContext>(options =>
     options.UseSqlServer(connectionString));
 
-// Configuration Identity par défaut
+// Configuration Identity par dï¿½faut
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     // Options de connexion
     options.SignIn.RequireConfirmedAccount = true;
 
-    // Options de mot de passe (Relaxation des règles)
+    // Options de mot de passe (Relaxation des rï¿½gles)
     options.Password.RequireDigit = false;
     options.Password.RequireLowercase = false;
     options.Password.RequireUppercase = false;
@@ -35,10 +36,10 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddDefaultTokenProviders()
 .AddDefaultUI();
 
-//  FILTRE D'AUTORISATION GLOBAL (COMMENTÉ POUR TESTER) 
+//  FILTRE D'AUTORISATION GLOBAL (COMMENTï¿½ POUR TESTER) 
 builder.Services.AddControllersWithViews(options =>
 {
-    // Le bloc suivant est temporairement commenté pour éviter la boucle de redirection
+    // Le bloc suivant est temporairement commentï¿½ pour ï¿½viter la boucle de redirection
     // var policy = new AuthorizationPolicyBuilder() 
     //     .RequireAuthenticatedUser() 
     //     .Build(); 
@@ -67,31 +68,30 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// Le middleware d'authentification DOIT précéder UseAuthorization
+// Le middleware d'authentification DOIT prï¿½cï¿½der UseAuthorization
 app.UseAuthentication();
 app.UseAuthorization();
 
 // Mappage de l'endpoint pour les pages Razor d'Identity
 app.MapRazorPages();
 
-// Définition de la route par défaut.
+// Dï¿½finition de la route par dï¿½faut.
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 
-// --- Initialiseur de Base de Données (Seeding) ---
+// --- Initialiseur de Base de Donnï¿½es (Seeding) ---
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    try
+    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+
+    var admin = await userManager.FindByEmailAsync("admin@email.com");
+    if (admin != null)
     {
-        await DbInitializer.SeedRolesAndAdminUser(services);
-    }
-    catch (Exception ex)
-    {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while seeding the database.");
+        var token = await userManager.GeneratePasswordResetTokenAsync(admin);
+        await userManager.ResetPasswordAsync(admin, token, "Admin@123");
     }
 }
 // -------------------------------------------------
