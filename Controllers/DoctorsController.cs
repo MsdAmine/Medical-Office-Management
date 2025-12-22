@@ -1,89 +1,60 @@
 // File: Controllers/DoctorsController.cs
+using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
+using System.Linq;
+using System.Threading.Tasks;
+using MedicalOfficeManagement.Models;
 using MedicalOfficeManagement.ViewModels.Doctors;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace MedicalOfficeManagement.Controllers
 {
     public class DoctorsController : Controller
     {
-        public ActionResult Index()
+        private readonly MedicalOfficeContext _context;
+
+        public DoctorsController(MedicalOfficeContext context)
         {
+            _context = context;
+        }
+
+        public async Task<ActionResult> Index()
+        {
+            var today = DateTime.Today;
+            var doctors = await _context.Medecins.ToListAsync();
+
+            var todayAppointments = await _context.RendezVous
+                .Where(r => r.DateDebut.Date == today)
+                .GroupBy(r => r.MedecinId)
+                .ToDictionaryAsync(g => g.Key, g => g.ToList());
+
+            var doctorViewModels = doctors.Select(d =>
+            {
+                todayAppointments.TryGetValue(d.Id, out var doctorAppointments);
+                var appointmentList = doctorAppointments ?? new List<RendezVou>();
+                var isAvailable = !appointmentList.Any(r => r.DateDebut <= DateTime.Now && r.DateFin >= DateTime.Now);
+
+                return new DoctorViewModel
+                {
+                    Id = d.Id,
+                    FullName = d.NomPrenom,
+                    Specialty = d.Specialite,
+                    Phone = d.Telephone,
+                    Email = d.Email,
+                    IsAvailable = isAvailable,
+                    PatientsToday = appointmentList.Count,
+                    ColorClass = isAvailable ? "bg-green-50 border-green-200" : "bg-gray-50 border-gray-200"
+                };
+            }).ToList();
+
             var model = new DoctorsIndexViewModel
             {
-                Doctors = new List<DoctorViewModel>
-                {
-                    new DoctorViewModel
-                    {
-                        Id = 1,
-                        FullName = "Dr. Sarah Martinez",
-                        Specialty = "Cardiology",
-                        Phone = "(555) 100-2001",
-                        Email = "s.martinez@clinic.com",
-                        IsAvailable = true,
-                        PatientsToday = 8,
-                        ColorClass = "bg-blue-50 border-blue-200"
-                    },
-                    new DoctorViewModel
-                    {
-                        Id = 2,
-                        FullName = "Dr. Michael Williams",
-                        Specialty = "General Practice",
-                        Phone = "(555) 100-2002",
-                        Email = "m.williams@clinic.com",
-                        IsAvailable = true,
-                        PatientsToday = 12,
-                        ColorClass = "bg-green-50 border-green-200"
-                    },
-                    new DoctorViewModel
-                    {
-                        Id = 3,
-                        FullName = "Dr. Emily Chen",
-                        Specialty = "Pediatrics",
-                        Phone = "(555) 100-2003",
-                        Email = "e.chen@clinic.com",
-                        IsAvailable = false,
-                        PatientsToday = 0,
-                        ColorClass = "bg-purple-50 border-purple-200"
-                    },
-                    new DoctorViewModel
-                    {
-                        Id = 4,
-                        FullName = "Dr. James Thompson",
-                        Specialty = "Orthopedics",
-                        Phone = "(555) 100-2004",
-                        Email = "j.thompson@clinic.com",
-                        IsAvailable = true,
-                        PatientsToday = 6,
-                        ColorClass = "bg-amber-50 border-amber-200"
-                    },
-                    new DoctorViewModel
-                    {
-                        Id = 5,
-                        FullName = "Dr. Lisa Anderson",
-                        Specialty = "Dermatology",
-                        Phone = "(555) 100-2005",
-                        Email = "l.anderson@clinic.com",
-                        IsAvailable = true,
-                        PatientsToday = 9,
-                        ColorClass = "bg-teal-50 border-teal-200"
-                    },
-                    new DoctorViewModel
-                    {
-                        Id = 6,
-                        FullName = "Dr. Robert Garcia",
-                        Specialty = "Neurology",
-                        Phone = "(555) 100-2006",
-                        Email = "r.garcia@clinic.com",
-                        IsAvailable = false,
-                        PatientsToday = 0,
-                        ColorClass = "bg-purple-50 border-purple-200"
-                    }
-                },
-                TotalDoctors = 8,
-                OnDutyToday = 6
+                Doctors = doctorViewModels,
+                TotalDoctors = doctorViewModels.Count,
+                OnDutyToday = doctorViewModels.Count(d => d.PatientsToday > 0 || d.IsAvailable)
             };
-            
+
             return View(model);
         }
 

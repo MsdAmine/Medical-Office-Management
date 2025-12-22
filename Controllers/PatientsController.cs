@@ -1,85 +1,61 @@
 // File: Controllers/PatientsController.cs
 using System;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
+using System.Linq;
+using System.Threading.Tasks;
+using MedicalOfficeManagement.Models;
 using MedicalOfficeManagement.ViewModels.Patients;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace MedicalOfficeManagement.Controllers
 {
     public class PatientsController : Controller
     {
-        public ActionResult Index()
+        private readonly MedicalOfficeContext _context;
+
+        public PatientsController(MedicalOfficeContext context)
         {
+            _context = context;
+        }
+
+        public async Task<ActionResult> Index()
+        {
+            var patients = await _context.Patients
+                .Include(p => p.RendezVous)
+                .ToListAsync();
+
+            var patientViewModels = patients
+                .Select(p =>
+                {
+                    var lastVisit = p.RendezVous
+                        .OrderByDescending(r => r.DateFin != default ? r.DateFin : r.DateDebut)
+                        .Select(r => r.DateFin != default ? r.DateFin : r.DateDebut)
+                        .FirstOrDefault();
+
+                    var status = CalculatePatientStatus(lastVisit, p.RendezVous.Any());
+
+                    return new PatientViewModel
+                    {
+                        Id = p.Id,
+                        FullName = $"{p.Prenom} {p.Nom}",
+                        Phone = p.Telephone ?? "N/A",
+                        Email = p.Email ?? "N/A",
+                        LastVisit = lastVisit == default ? DateTime.Now : lastVisit,
+                        Status = status,
+                        StatusColor = MapStatusColor(status)
+                    };
+                })
+                .OrderBy(p => p.FullName)
+                .ToList();
+
             var model = new PatientsIndexViewModel
             {
-                Patients = new List<PatientViewModel>
-                {
-                    new PatientViewModel
-                    {
-                        Id = 1001,
-                        FullName = "Sarah Johnson",
-                        Phone = "(555) 123-4567",
-                        Email = "sarah.j@email.com",
-                        LastVisit = DateTime.Now.AddDays(-5),
-                        Status = "Active",
-                        StatusColor = "bg-green-100 text-green-700 border-green-200"
-                    },
-                    new PatientViewModel
-                    {
-                        Id = 1002,
-                        FullName = "Michael Chen",
-                        Phone = "(555) 234-5678",
-                        Email = "m.chen@email.com",
-                        LastVisit = DateTime.Now.AddDays(-12),
-                        Status = "Active",
-                        StatusColor = "bg-green-100 text-green-700 border-green-200"
-                    },
-                    new PatientViewModel
-                    {
-                        Id = 1003,
-                        FullName = "Emma Williams",
-                        Phone = "(555) 345-6789",
-                        Email = "emma.w@email.com",
-                        LastVisit = DateTime.Now.AddDays(-45),
-                        Status = "Inactive",
-                        StatusColor = "bg-gray-100 text-gray-700 border-gray-200"
-                    },
-                    new PatientViewModel
-                    {
-                        Id = 1004,
-                        FullName = "James Martinez",
-                        Phone = "(555) 456-7890",
-                        Email = "j.martinez@email.com",
-                        LastVisit = DateTime.Now.AddDays(-2),
-                        Status = "Active",
-                        StatusColor = "bg-green-100 text-green-700 border-green-200"
-                    },
-                    new PatientViewModel
-                    {
-                        Id = 1005,
-                        FullName = "Olivia Brown",
-                        Phone = "(555) 567-8901",
-                        Email = "olivia.b@email.com",
-                        LastVisit = DateTime.Now.AddDays(-8),
-                        Status = "Active",
-                        StatusColor = "bg-green-100 text-green-700 border-green-200"
-                    },
-                    new PatientViewModel
-                    {
-                        Id = 1006,
-                        FullName = "David Lee",
-                        Phone = "(555) 678-9012",
-                        Email = "d.lee@email.com",
-                        LastVisit = DateTime.Now.AddMonths(-3),
-                        Status = "Pending",
-                        StatusColor = "bg-amber-100 text-amber-700 border-amber-200"
-                    }
-                },
-                TotalPatients = 1247,
-                ActivePatients = 1189,
-                NewThisMonth = 23
+                Patients = patientViewModels,
+                TotalPatients = patientViewModels.Count,
+                ActivePatients = patientViewModels.Count(p => p.Status == "Active"),
+                NewThisMonth = patientViewModels.Count(p => p.LastVisit.Month == DateTime.Now.Month && p.LastVisit.Year == DateTime.Now.Year)
             };
-            
+
             return View(model);
         }
 
@@ -91,6 +67,32 @@ namespace MedicalOfficeManagement.Controllers
         public ActionResult Create()
         {
             return View();
+        }
+
+        private static string CalculatePatientStatus(DateTime lastVisit, bool hasVisits)
+        {
+            if (!hasVisits)
+            {
+                return "Pending";
+            }
+
+            var daysSinceLast = (DateTime.Now - (lastVisit == default ? DateTime.Now : lastVisit)).TotalDays;
+            if (daysSinceLast <= 60)
+            {
+                return "Active";
+            }
+
+            return "Inactive";
+        }
+
+        private static string MapStatusColor(string status)
+        {
+            return status switch
+            {
+                "Active" => "bg-green-100 text-green-700 border-green-200",
+                "Pending" => "bg-amber-100 text-amber-700 border-amber-200",
+                _ => "bg-gray-100 text-gray-700 border-gray-200"
+            };
         }
     }
 }
