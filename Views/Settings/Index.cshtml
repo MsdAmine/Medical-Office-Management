@@ -1,0 +1,153 @@
+@* File: Views/Settings/Index.cshtml *@
+@model MedicalOfficeManagement.ViewModels.Settings.SettingsViewModel
+
+@{
+    ViewBag.Title = "Settings";
+}
+
+<div class="space-y-6">
+    @* Page Header *@
+    <div>
+        <h1 class="text-2xl font-semibold text-gray-900">Settings</h1>
+        <p class="text-sm text-gray-500 mt-1">Manage system configuration and preferences</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        @* Settings Navigation *@
+        <div class="lg:col-span-1">
+            <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-1">
+                <a href="#profile" class="block px-4 py-2 rounded-lg bg-blue-50 text-blue-700 font-medium">
+                    Profile Settings
+                </a>
+                <a href="#clinic" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-50">
+                    Clinic Information
+                </a>
+                <a href="#notifications" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-50">
+                    Notifications
+                </a>
+                <a href="#security" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-50">
+                    Security
+                </a>
+                <a href="#system" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-50">
+                    System Preferences
+                </a>
+            </div>
+        </div>
+
+        @* Settings Content *@
+        <div class="lg:col-span-3 space-y-6">
+            @* Profile Settings *@
+            <div id="profile" class="bg-white border border-gray-200 rounded-lg p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Profile Settings</h2>
+                <form method="post" action="@Url.Action("UpdateProfile", "Settings")">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                            <input type="text" 
+                                   value="@Model.UserName" 
+                                   name="UserName"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                            <input type="email" 
+                                   value="@Model.UserEmail" 
+                                   name="UserEmail"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                            <input type="text" 
+                                   value="@Model.UserRole" 
+                                   disabled
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500">
+                            <p class="text-xs text-gray-500 mt-1">Contact an administrator to change your role</p>
+                        </div>
+                        <div>
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                                Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            @* Clinic Information *@
+            <div id="clinic" class="bg-white border border-gray-200 rounded-lg p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Clinic Information</h2>
+                <form>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Clinic Name</label>
+                            <input type="text" 
+                                   value="@Model.ClinicName" 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                            <textarea rows="3" 
+                                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">@Model.ClinicAddress</textarea>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                                <input type="tel" 
+                                       value="@Model.ClinicPhone" 
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                                <input type="email" 
+                                       value="@Model.ClinicEmail" 
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                        </div>
+                        <div>
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                                Update Information
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            @* Notification Preferences *@
+            <div id="notifications" class="bg-white border border-gray-200 rounded-lg p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Notification Preferences</h2>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div>
+                            <div class="text-sm font-medium text-gray-900">Email Notifications</div>
+                            <div class="text-xs text-gray-500 mt-1">Receive notifications via email</div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" checked class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                    </div>
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div>
+                            <div class="text-sm font-medium text-gray-900">Appointment Reminders</div>
+                            <div class="text-xs text-gray-500 mt-1">Get reminded about upcoming appointments</div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" checked class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                    </div>
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div>
+                            <div class="text-sm font-medium text-gray-900">Task Notifications</div>
+                            <div class="text-xs text-gray-500 mt-1">Receive alerts for pending tasks</div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            @* Security Settings *@
+            <div id="security" class="bg-white border border-gray-200 rounded-lg p-6">
+                <h2 class="text-lg

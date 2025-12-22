@@ -1,0 +1,116 @@
+@* File: Views/Appointments/Index.cshtml *@
+@model MedicalOfficeManagement.ViewModels.Appointments.AppointmentsIndexViewModel
+
+@{
+    ViewBag.Title = "Appointments";
+}
+
+<div class="space-y-6">
+    @* Page Header *@
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-semibold text-gray-900">Appointments</h1>
+            <p class="text-sm text-gray-500 mt-1">Schedule and manage patient appointments</p>
+        </div>
+        <a href="@Url.Action("Create", "Appointments")" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Schedule Appointment
+        </a>
+    </div>
+
+    @* Summary Stats *@
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <div class="text-sm text-gray-500 mb-1">Today's Appointments</div>
+            <div class="text-2xl font-bold text-gray-900">@Model.TodayCount</div>
+        </div>
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <div class="text-sm text-gray-500 mb-1">Confirmed</div>
+            <div class="text-2xl font-bold text-green-600">@Model.ConfirmedCount</div>
+        </div>
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <div class="text-sm text-gray-500 mb-1">Waiting</div>
+            <div class="text-2xl font-bold text-blue-600">@Model.WaitingCount</div>
+        </div>
+    </div>
+
+    @* View Toggle and Filters *@
+    <div class="bg-white border border-gray-200 rounded-lg p-4">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+            <div class="flex space-x-2">
+                <button class="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg font-medium border border-blue-200 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                    </svg>
+                    List View
+                </button>
+                <button class="px-4 py-2 text-gray-700 rounded-lg font-medium border border-gray-300 hover:bg-gray-50 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    Calendar View
+                </button>
+            </div>
+            
+            <div class="flex space-x-3">
+                <select class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option>All Doctors</option>
+                    <option>Dr. Martinez</option>
+                    <option>Dr. Williams</option>
+                    <option>Dr. Chen</option>
+                </select>
+                <select class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option>All Status</option>
+                    <option>Confirmed</option>
+                    <option>Waiting</option>
+                    <option>Completed</option>
+                    <option>Cancelled</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    @* Appointments Table *@
+    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Time</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Patient</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Doctor</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    @foreach (var appointment in Model.Appointments)
+                    {
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">@appointment.Time.ToString("h:mm tt")</div>
+                                <div class="text-xs text-gray-500">@appointment.Time.ToString("MMM dd, yyyy")</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-blue-600 hover:text-blue-700">
+                                    @appointment.PatientName
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">@appointment.DoctorName</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="@appointment.StatusColor border px-2 py-1 rounded text-xs font-medium">@appointment.Status</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                                <a href="@Url.Action("Details", "Appointments", new { id = appointment.Id })" class="text-blue-600 hover:text-blue-700 font-medium mr-3">View</a>
+                                <a href="@Url.Action("Edit", "Appointments", new { id = appointment.Id })" class="text-gray-600 hover:text-gray-700 font-medium mr-3">Edit</a>
+                                <a href="@Url.Action("Cancel", "Appointments", new { id = appointment.Id })" class="text-red-600 hover:text-red-700 font-medium">Cancel</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

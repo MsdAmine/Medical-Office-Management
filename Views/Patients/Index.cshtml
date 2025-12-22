@@ -1,0 +1,129 @@
+@* File: Views/Patients/Index.cshtml *@
+@model MedicalOfficeManagement.ViewModels.Patients.PatientsIndexViewModel
+
+@{
+    ViewBag.Title = "Patients";
+}
+
+<div class="space-y-6">
+    @* Page Header *@
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-semibold text-gray-900">Patients</h1>
+            <p class="text-sm text-gray-500 mt-1">Manage patient records and information</p>
+        </div>
+        <a href="@Url.Action("Create", "Patients")" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Add Patient
+        </a>
+    </div>
+
+    @* Summary Stats *@
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <div class="text-sm text-gray-500 mb-1">Total Patients</div>
+            <div class="text-2xl font-bold text-gray-900">@Model.TotalPatients.ToString("N0")</div>
+        </div>
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <div class="text-sm text-gray-500 mb-1">Active Patients</div>
+            <div class="text-2xl font-bold text-green-600">@Model.ActivePatients.ToString("N0")</div>
+        </div>
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <div class="text-sm text-gray-500 mb-1">New This Month</div>
+            <div class="text-2xl font-bold text-blue-600">@Model.NewThisMonth</div>
+        </div>
+    </div>
+
+    @* Search and Filters *@
+    <div class="bg-white border border-gray-200 rounded-lg p-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                <div class="relative">
+                    <input type="text" 
+                           placeholder="Search by name, phone, or email..." 
+                           class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option>All Statuses</option>
+                    <option>Active</option>
+                    <option>Inactive</option>
+                    <option>Pending</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+                <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option>Last Visit</option>
+                    <option>Name (A-Z)</option>
+                    <option>Name (Z-A)</option>
+                    <option>Patient ID</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    @* Patients Table *@
+    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Patient ID</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Full Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Phone</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Email</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Last Visit</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    @foreach (var patient in Model.Patients)
+                    {
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#@patient.Id</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <a href="@Url.Action("Details", "Patients", new { id = patient.Id })" class="text-sm font-medium text-blue-600 hover:text-blue-700">
+                                    @patient.FullName
+                                </a>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">@patient.Phone</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">@patient.Email</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">@patient.LastVisit.ToString("MMM dd, yyyy")</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="@patient.StatusColor border px-2 py-1 rounded text-xs font-medium">@patient.Status</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                                <a href="@Url.Action("Details", "Patients", new { id = patient.Id })" class="text-blue-600 hover:text-blue-700 font-medium mr-3">View</a>
+                                <a href="@Url.Action("Edit", "Patients", new { id = patient.Id })" class="text-gray-600 hover:text-gray-700 font-medium">Edit</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        
+        @* Pagination *@
+        <div class="bg-gray-50 px-6 py-3 border-t border-gray-200 flex items-center justify-between">
+            <div class="text-sm text-gray-600">
+                Showing 1 to @Model.Patients.Count of @Model.TotalPatients patients
+            </div>
+            <div class="flex space-x-2">
+                <button class="px-3 py-1 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-50" disabled>Previous</button>
+                <button class="px-3 py-1 bg-blue-600 text-white rounded text-sm font-medium">1</button>
+                <button class="px-3 py-1 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-100">2</button>
+                <button class="px-3 py-1 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-100">3</button>
+                <button class="px-3 py-1 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-100">Next</button>
+            </div>
+        </div>
+    </div>
+</div>
