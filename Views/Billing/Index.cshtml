@@ -12,12 +12,12 @@
             <h1 class="text-2xl font-semibold text-gray-900">Billing</h1>
             <p class="text-sm text-gray-500 mt-1">Track invoices and payment status</p>
         </div>
-        <a href="@Url.Action("Create", "Billing")" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center">
+        <button type="button" id="open-invoice" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
             </svg>
             Create Invoice
-        </a>
+        </button>
     </div>
 
     @* Summary Stats *@
@@ -42,8 +42,8 @@
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
                 <div class="relative">
-                    <input type="text" 
-                           placeholder="Search by patient name or invoice ID..." 
+                    <input type="text"
+                           placeholder="Search by patient name or invoice ID..."
                            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     <svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -113,3 +113,85 @@
         </div>
     </div>
 </div>
+
+<div id="invoice-modal" class="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-40 hidden">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6 space-y-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-xl font-semibold text-gray-900">Create Invoice</h2>
+                <p class="text-sm text-gray-500">Capture invoice details directly from the billing dashboard.</p>
+            </div>
+            <button type="button" class="text-gray-500 hover:text-gray-700" data-close-modal>
+                <span class="sr-only">Close</span>
+                &times;
+            </button>
+        </div>
+        <form action="@Url.Action("Create", "Billing")" method="post" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Patient Name</label>
+                    <input type="text" name="PatientName" class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Patient full name" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Invoice Date</label>
+                    <input type="date" name="InvoiceDate" class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="sm:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700">Services</label>
+                    <input type="text" name="Services" class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Consultation, Labs">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Amount</label>
+                    <input type="number" name="Amount" step="0.01" class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="125.00" required>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Status</label>
+                    <select name="Status" class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="Pending">Pending</option>
+                        <option value="Unpaid">Unpaid</option>
+                        <option value="Paid">Paid</option>
+                        <option value="Overdue">Overdue</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Due Date</label>
+                    <input type="date" name="DueDate" class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Notes</label>
+                <textarea name="Notes" rows="3" class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Additional billing notes"></textarea>
+            </div>
+            <div class="flex items-center justify-end space-x-3 pt-2">
+                <button type="button" class="px-4 py-2 text-gray-700 hover:text-gray-900" data-close-modal>Cancel</button>
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium">Save Invoice</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const modal = document.getElementById('invoice-modal');
+        const trigger = document.getElementById('open-invoice');
+
+        const toggleModal = (isOpen) => {
+            modal?.classList.toggle('hidden', !isOpen);
+        };
+
+        trigger?.addEventListener('click', () => toggleModal(true));
+        modal?.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                toggleModal(false);
+            }
+        });
+
+        document.querySelectorAll('[data-close-modal]').forEach(button => {
+            button.addEventListener('click', () => toggleModal(false));
+        });
+    });
+</script>
