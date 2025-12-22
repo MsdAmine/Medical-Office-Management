@@ -170,8 +170,7 @@ namespace MedicalOfficeManagement.Migrations
 
                     b.Property<string>("Adresse")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ApplicationUserId")
                         .IsRequired()
@@ -183,8 +182,7 @@ namespace MedicalOfficeManagement.Migrations
 
                     b.Property<string>("NomPrenom")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Specialite")
                         .IsRequired()

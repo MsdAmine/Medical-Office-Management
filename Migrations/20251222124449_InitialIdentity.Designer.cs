@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MedicalOfficeManagement.Migrations
 {
     [DbContext(typeof(MedicalOfficeContext))]
-    [Migration("20251216202555_MakeApplicationUserIdOptional")]
-    partial class MakeApplicationUserIdOptional
+    [Migration("20251222124449_InitialIdentity")]
+    partial class InitialIdentity
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -171,18 +171,27 @@ namespace MedicalOfficeManagement.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ApplicationUserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Nom")
+                    b.Property<string>("Adresse")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Prenom")
+                    b.Property<string>("ApplicationUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NomPrenom")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Specialite")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Telephone")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -498,7 +507,7 @@ namespace MedicalOfficeManagement.Migrations
             modelBuilder.Entity("MedicalOfficeManagement.Models.Consultation", b =>
                 {
                     b.HasOne("MedicalOfficeManagement.Models.Medecin", "Medecin")
-                        .WithMany("Consultations")
+                        .WithMany()
                         .HasForeignKey("MedecinId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -524,7 +533,9 @@ namespace MedicalOfficeManagement.Migrations
                 {
                     b.HasOne("MedicalOfficeManagement.Models.ApplicationUser", "ApplicationUser")
                         .WithMany()
-                        .HasForeignKey("ApplicationUserId");
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("ApplicationUser");
                 });
@@ -543,7 +554,7 @@ namespace MedicalOfficeManagement.Migrations
             modelBuilder.Entity("MedicalOfficeManagement.Models.Planning", b =>
                 {
                     b.HasOne("MedicalOfficeManagement.Models.Medecin", "Medecin")
-                        .WithMany("Plannings")
+                        .WithMany()
                         .HasForeignKey("MedecinId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -554,7 +565,7 @@ namespace MedicalOfficeManagement.Migrations
             modelBuilder.Entity("MedicalOfficeManagement.Models.RendezVou", b =>
                 {
                     b.HasOne("MedicalOfficeManagement.Models.Medecin", "Medecin")
-                        .WithMany("RendezVous")
+                        .WithMany()
                         .HasForeignKey("MedecinId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -630,15 +641,6 @@ namespace MedicalOfficeManagement.Migrations
             modelBuilder.Entity("MedicalOfficeManagement.Models.Consultation", b =>
                 {
                     b.Navigation("Ordonnance");
-                });
-
-            modelBuilder.Entity("MedicalOfficeManagement.Models.Medecin", b =>
-                {
-                    b.Navigation("Consultations");
-
-                    b.Navigation("Plannings");
-
-                    b.Navigation("RendezVous");
                 });
 
             modelBuilder.Entity("MedicalOfficeManagement.Models.Patient", b =>

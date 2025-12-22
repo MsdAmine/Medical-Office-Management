@@ -6,13 +6,11 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace MedicalOfficeManagement.Migrations
 {
     /// <inheritdoc />
-    public partial class AddIdentityTables : Migration
+    public partial class InitialIdentity : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // --- DÉBUT : TABLES D'IDENTITÉ (À CONSERVER) ---
-
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
@@ -52,8 +50,6 @@ namespace MedicalOfficeManagement.Migrations
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
                 });
 
-            // **[SUPPRIMER CE BLOC - TABLE EXISTANTE]**
-            /*
             migrationBuilder.CreateTable(
                 name: "Patients",
                 columns: table => new
@@ -73,10 +69,7 @@ namespace MedicalOfficeManagement.Migrations
                 {
                     table.PrimaryKey("PK_Patients", x => x.Id);
                 });
-            */
 
-            // **[SUPPRIMER CE BLOC - TABLE EXISTANTE]**
-            /*
             migrationBuilder.CreateTable(
                 name: "Salles",
                 columns: table => new
@@ -92,29 +85,6 @@ namespace MedicalOfficeManagement.Migrations
                 {
                     table.PrimaryKey("PK_Salles", x => x.Id);
                 });
-            */
-
-            // **[SUPPRIMER CE BLOC - TABLE EXISTANTE]**
-            /*
-            migrationBuilder.CreateTable(
-                name: "Utilisateur",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Username = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    MotDePasse = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    DateCreation = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Utilisateur", x => x.Id);
-                });
-            */
-
-            // --- CONSERVER CE BLOC : TABLES D'IDENTITÉ DÉPENDANTES ---
 
             migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
@@ -162,8 +132,8 @@ namespace MedicalOfficeManagement.Migrations
                 name: "AspNetUserLogins",
                 columns: table => new
                 {
-                    LoginProvider = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
-                    ProviderKey = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ProviderKey = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ProviderDisplayName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
@@ -207,8 +177,8 @@ namespace MedicalOfficeManagement.Migrations
                 columns: table => new
                 {
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    LoginProvider = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Value = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
@@ -222,50 +192,166 @@ namespace MedicalOfficeManagement.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            // --- FIN : TABLES D'IDENTITÉ DÉPENDANTES ---
-
-            // **[SUPPRIMER TOUS LES BLOCS RESTANTS JUSQU'AUX INDEX]**
-            /*
             migrationBuilder.CreateTable(
                 name: "audit_log",
-                // ... (contenu du bloc)
-            );
-            */
-            /*
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ApplicationUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    Action = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TableCible = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    EnregistrementId = table.Column<int>(type: "int", nullable: true),
+                    Horodatage = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Details = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK__audit_lo__3213E83F5863DEA8", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_audit_log_AspNetUsers_ApplicationUserId",
+                        column: x => x.ApplicationUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                });
+
             migrationBuilder.CreateTable(
                 name: "Medecins",
-                // ... (contenu du bloc)
-            );
-            */
-            /*
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    NomPrenom = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Specialite = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Adresse = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Telephone = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ApplicationUserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Medecins", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Medecins_AspNetUsers_ApplicationUserId",
+                        column: x => x.ApplicationUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Plannings",
-                // ... (contenu du bloc)
-            );
-            */
-            /*
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    MedecinId = table.Column<int>(type: "int", nullable: false),
+                    DateDebut = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DateFin = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    StatutDisponibilite = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Plannings", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Plannings_Medecins_MedecinId",
+                        column: x => x.MedecinId,
+                        principalTable: "Medecins",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateTable(
                 name: "RendezVous",
-                // ... (contenu du bloc)
-            );
-            */
-            /*
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PatientId = table.Column<int>(type: "int", nullable: false),
+                    MedecinId = table.Column<int>(type: "int", nullable: false),
+                    SalleId = table.Column<int>(type: "int", nullable: true),
+                    DateDebut = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DateFin = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Statut = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Motif = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RendezVous", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RendezVous_Medecins_MedecinId",
+                        column: x => x.MedecinId,
+                        principalTable: "Medecins",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_RendezVous_Patients_PatientId",
+                        column: x => x.PatientId,
+                        principalTable: "Patients",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_RendezVous_Salles_SalleId",
+                        column: x => x.SalleId,
+                        principalTable: "Salles",
+                        principalColumn: "Id");
+                });
+
             migrationBuilder.CreateTable(
                 name: "Consultations",
-                // ... (contenu du bloc)
-            );
-            */
-            /*
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PatientId = table.Column<int>(type: "int", nullable: false),
+                    MedecinId = table.Column<int>(type: "int", nullable: false),
+                    RendezVousId = table.Column<int>(type: "int", nullable: true),
+                    DateConsult = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Observations = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Diagnostics = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Consultations", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Consultations_Medecins_MedecinId",
+                        column: x => x.MedecinId,
+                        principalTable: "Medecins",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Consultations_Patients_PatientId",
+                        column: x => x.PatientId,
+                        principalTable: "Patients",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Consultations_RendezVous_RendezVousId",
+                        column: x => x.RendezVousId,
+                        principalTable: "RendezVous",
+                        principalColumn: "Id");
+                });
+
             migrationBuilder.CreateTable(
                 name: "Ordonnances",
-                // ... (contenu du bloc)
-            );
-            */
-
-            // ATTENTION : Tous les index créés pour les tables supprimées doivent être retirés.
-            // Cependant, les index d'identité (AspNet*) doivent être conservés.
-
-            // --- DÉBUT : INDEX (À CONSERVER SEULEMENT CEUX LIÉS À L'IDENTITÉ) ---
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ConsultationId = table.Column<int>(type: "int", nullable: false),
+                    Contenu = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DateCreation = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Ordonnances", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Ordonnances_Consultations_ConsultationId",
+                        column: x => x.ConsultationId,
+                        principalTable: "Consultations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -306,35 +392,61 @@ namespace MedicalOfficeManagement.Migrations
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
 
-            // **[SUPPRIMER TOUS LES INDEX RESTANTS LIÉS AUX TABLES MÉTIER]**
-
-            /*
             migrationBuilder.CreateIndex(
-                name: "IX_audit_log_UtilisateurId",
+                name: "IX_audit_log_ApplicationUserId",
                 table: "audit_log",
-                column: "UtilisateurId");
-            */
-            /*
+                column: "ApplicationUserId");
+
             migrationBuilder.CreateIndex(
                 name: "IX_Consultations_MedecinId",
                 table: "Consultations",
                 column: "MedecinId");
-            */
-            // ... (et tous les autres index pour Consultations, RendezVous, Medecins, Ordonnances, etc.)
 
-            // --- FIN : INDEX ---
+            migrationBuilder.CreateIndex(
+                name: "IX_Consultations_PatientId",
+                table: "Consultations",
+                column: "PatientId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Consultations_RendezVousId",
+                table: "Consultations",
+                column: "RendezVousId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Medecins_ApplicationUserId",
+                table: "Medecins",
+                column: "ApplicationUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Ordonnances_ConsultationId",
+                table: "Ordonnances",
+                column: "ConsultationId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Plannings_MedecinId",
+                table: "Plannings",
+                column: "MedecinId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RendezVous_MedecinId",
+                table: "RendezVous",
+                column: "MedecinId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RendezVous_PatientId",
+                table: "RendezVous",
+                column: "PatientId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RendezVous_SalleId",
+                table: "RendezVous",
+                column: "SalleId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            // Par souci de simplicité, vous pouvez laisser la méthode Down telle quelle, 
-            // car elle ne sera jamais exécutée dans ce scénario de base de données existante.
-            // Si vous deviez annuler la migration, vous ne voudriez supprimer que les tables AspNet*.
-            // Pour être précis, vous devriez retirer les DropTable des tables métier comme dans Up().
-
-            // **[MODIFICATION DE DOWN() : NE GARDER QUE LES DROP DES TABLES ASPNET*]**
-
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 
@@ -350,26 +462,18 @@ namespace MedicalOfficeManagement.Migrations
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
 
-            // **[SUPPRIMER CE BLOC - TABLES MÉTIER]**
-            /*
             migrationBuilder.DropTable(
                 name: "audit_log");
-            
+
             migrationBuilder.DropTable(
                 name: "Ordonnances");
 
             migrationBuilder.DropTable(
                 name: "Plannings");
-            */
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
-            migrationBuilder.DropTable(
-                name: "AspNetUsers");
-
-            // **[SUPPRIMER CE BLOC - TABLES MÉTIER]**
-            /*
             migrationBuilder.DropTable(
                 name: "Consultations");
 
@@ -386,8 +490,7 @@ namespace MedicalOfficeManagement.Migrations
                 name: "Salles");
 
             migrationBuilder.DropTable(
-                name: "Utilisateur");
-            */
+                name: "AspNetUsers");
         }
     }
 }
