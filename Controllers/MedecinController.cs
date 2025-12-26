@@ -35,25 +35,27 @@ namespace MedicalOfficeManagement.Controllers
             ViewBag.Specialites = new SelectList(specialites);
         }
 
+        // GET: Medecin
         public async Task<IActionResult> Index()
         {
             var medecins = await _context.Medecins.Include(m => m.ApplicationUser).ToListAsync();
             return View(medecins);
         }
 
+        // GET: Medecin/Create
         public IActionResult Create()
         {
             PopulateSpecialitesViewBag();
             return View();
         }
 
+        // POST: Medecin/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Medecin medecin)
         {
             if (ModelState.IsValid)
             {
-                // Création du compte utilisateur pour la connexion
                 var user = new ApplicationUser 
                 { 
                     UserName = medecin.Email, 
@@ -61,25 +63,21 @@ namespace MedicalOfficeManagement.Controllers
                     PhoneNumber = medecin.Telephone 
                 };
                 
-                // Mot de passe par défaut
                 var result = await _userManager.CreateAsync(user, "Doctor@123");
 
                 if (result.Succeeded)
                 {
-                    // Vérification et création du rôle Medecin si nécessaire
                     if (!await _roleManager.RoleExistsAsync("Medecin"))
                         await _roleManager.CreateAsync(new IdentityRole("Medecin"));
 
                     await _userManager.AddToRoleAsync(user, "Medecin");
                     
-                    // Liaison entre le profil Medecin et l'utilisateur Identity
                     medecin.ApplicationUserId = user.Id;
                     _context.Medecins.Add(medecin);
                     await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));
                 }
                 
-                // Si la création de l'utilisateur échoue (ex: email déjà pris)
                 foreach (var error in result.Errors) 
                     ModelState.AddModelError("", error.Description);
             }
@@ -87,6 +85,7 @@ namespace MedicalOfficeManagement.Controllers
             return View(medecin);
         }
 
+        // GET: Medecin/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -96,6 +95,7 @@ namespace MedicalOfficeManagement.Controllers
             return View(medecin);
         }
 
+        // POST: Medecin/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Medecin model)
@@ -129,6 +129,26 @@ namespace MedicalOfficeManagement.Controllers
             return View(model);
         }
 
+        // ==========================================================
+        // AJOUT : MÉTHODE GET POUR LA SUPPRESSION (Correction Erreur 405)
+        // ==========================================================
+        
+        // GET: Medecin/Delete/5
+        [HttpGet]
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var medecin = await _context.Medecins
+                .Include(m => m.ApplicationUser)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (medecin == null) return NotFound();
+
+            return View(medecin);
+        }
+
+        // POST: Medecin/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)

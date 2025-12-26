@@ -1,29 +1,54 @@
 ﻿@model MedicalOfficeManagement.Models.Medecin
 
 @{
-    ViewData["Title"] = "Supprimer le Médecin";
+    ViewData["Title"] = "Remove Doctor";
 }
 
-<h1>Supprimer</h1>
-<h3>Êtes-vous sûr de vouloir supprimer ce médecin ?</h3>
-<div>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.NomPrenom)</dt>
-        <dd class="col-sm-9">@Html.DisplayFor(model => model.NomPrenom)</dd>
+<div class="min-h-[80vh] flex items-center justify-center px-4">
+    <div class="max-w-md w-full bg-white rounded-[2rem] shadow-2xl border border-red-50 overflow-hidden relative">
+        @* Décoration d'arrière-plan *@
+        <div class="absolute top-0 right-0 p-6 opacity-5">
+            <svg class="w-32 h-32 text-red-600" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+        </div>
         
-        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Specialite)</dt>
-        <dd class="col-sm-9">@Html.DisplayFor(model => model.Specialite)</dd>
-        
-        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Email)</dt>
-        <dd class="col-sm-9">@Html.DisplayFor(model => model.Email)</dd>
-    </dl>
+        <div class="p-10 relative z-10 text-center">
+            @* Icône d'alerte *@
+            <div class="w-20 h-20 bg-red-50 text-red-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+            </div>
+            
+            <h2 class="text-2xl font-black text-gray-900 mb-2">Confirm Deletion</h2>
+            <p class="text-gray-500 mb-8 leading-relaxed">
+                Are you sure you want to permanently remove <span class="font-bold text-gray-800">Dr. @Model.NomPrenom</span>? 
+                This will also disable their system access.
+            </p>
 
-    <form asp-action="Delete">
-        @* 🛑 CHAMP CACHÉ OBLIGATOIRE *@
-        <input type="hidden" asp-for="Id" />
-        
-        <input type="submit" value="Confirmer la suppression" class="btn btn-danger" />
-        <a asp-action="Index" class="btn btn-secondary">Annuler</a>
-    </form>
+            @* Détails du médecin *@
+            <div class="bg-gray-50 rounded-2xl p-4 mb-10 border border-gray-100 text-left space-y-2">
+                <div class="flex items-center text-sm">
+                    <span class="text-gray-400 font-bold text-[10px] uppercase w-20">Specialty</span>
+                    <span class="text-gray-700 font-semibold">@Model.Specialite</span>
+                </div>
+                <div class="flex items-center text-sm">
+                    <span class="text-gray-400 font-bold text-[10px] uppercase w-20">Email</span>
+                    <span class="text-gray-700 font-semibold truncate">@Model.Email</span>
+                </div>
+            </div>
+
+            @* Formulaire de suppression *@
+            <form asp-action="Delete" method="post" class="space-y-3">
+                <input type="hidden" asp-for="Id" />
+                <button type="submit" class="w-full bg-red-600 text-white py-4 rounded-2xl font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-100 active:scale-95">
+                    Delete Doctor
+                </button>
+                <a asp-action="Index" class="block w-full py-4 text-gray-400 font-bold hover:text-gray-600 transition">
+                    Cancel and Go Back
+                </a>
+            </form>
+        </div>
+    </div>
 </div>
