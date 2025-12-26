@@ -8,7 +8,7 @@ using MedicalOfficeManagement.Data;
 
 namespace MedicalOfficeManagement.Controllers
 {
-    [Authorize(Roles = "Admin")] // Seuls les Admins accèdent à cette gestion
+    [Authorize(Roles = "Admin")]
     public class MedecinController : Controller
     {
         private readonly MedicalOfficeContext _context;
@@ -38,6 +38,7 @@ namespace MedicalOfficeManagement.Controllers
         // GET: Medecin
         public async Task<IActionResult> Index()
         {
+            // Affiche les médecins stockés dans la table métier
             var medecins = await _context.Medecins.Include(m => m.ApplicationUser).ToListAsync();
             return View(medecins);
         }
@@ -52,15 +53,22 @@ namespace MedicalOfficeManagement.Controllers
         // POST: Medecin/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Medecin medecin)
+        public async Task<IActionResult> Create(Medecin medecin, string SelectedRole)
         {
-            // Retirer les propriétés de navigation pour éviter les erreurs de validation
+            // 1. Nettoyage systématique des propriétés de navigation
             ModelState.Remove("ApplicationUser");
             ModelState.Remove("ApplicationUserId");
 
+            // 2. Si c'est du Personnel (Secrétaire), on ignore les champs obligatoires du Médecin
+            if (SelectedRole == "Personnel")
+            {
+                ModelState.Remove("Specialite");
+                ModelState.Remove("Adresse");
+            }
+
             if (ModelState.IsValid)
             {
-                // 1. Découpage du NomPrenom pour Identity
+                // Découpage du NomPrenom pour Identity
                 string firstName = "";
                 string lastName = "";
 
@@ -71,7 +79,7 @@ namespace MedicalOfficeManagement.Controllers
                     lastName = parts.Length > 1 ? string.Join(" ", parts.Skip(1)) : "";
                 }
 
-                // 2. Création du compte utilisateur (Identity)
+                // Création du compte utilisateur Identity
                 var user = new ApplicationUser
                 {
                     UserName = medecin.Email,
@@ -82,28 +90,35 @@ namespace MedicalOfficeManagement.Controllers
                     EmailConfirmed = true
                 };
 
-                // CRÉATION AVEC LE MOT DE PASSE PAR DÉFAUT : Welcome@2025!
+                // Création avec mot de passe par défaut
                 var result = await _userManager.CreateAsync(user, "Welcome@2025!"); 
 
                 if (result.Succeeded)
                 {
-                    // 3. Attribution du rôle EXACT présent en base
-                    // Note: Changé "Doctor" par "Medecin" pour éviter l'erreur
-                    await _userManager.AddToRoleAsync(user, "Medecin");
+                    // Attribution du rôle dynamique (Medecin ou Personnel)
+                    await _userManager.AddToRoleAsync(user, SelectedRole);
 
-                    // 4. Liaison du médecin à l'utilisateur créé
-                    medecin.ApplicationUserId = user.Id;
-                    _context.Add(medecin);
-                    await _context.SaveChangesAsync();
+                    // 3. Sauvegarde dans la table Medecins UNIQUEMENT si le rôle est Medecin
+                    if (SelectedRole == "Medecin")
+                    {
+                        medecin.ApplicationUserId = user.Id;
+                        _context.Add(medecin);
+                        await _context.SaveChangesAsync();
+                    }
 
+                    // Redirection vers l'index (Note: Les secrétaires ne s'afficheront pas 
+                    // si votre Index ne lit que la table Medecins)
                     return RedirectToAction(nameof(Index));
                 }
 
+                // Ajout des erreurs Identity si la création échoue
                 foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError("", error.Description);
                 }
             }
+
+            // Si on arrive ici, il y a une erreur
             PopulateSpecialitesViewBag();
             return View(medecin);
         }
@@ -125,7 +140,6 @@ namespace MedicalOfficeManagement.Controllers
         {
             if (id != model.Id) return NotFound();
 
-            // Retirer les propriétés liées à Identity de la validation du modèle Medecin
             ModelState.Remove("ApplicationUser");
             ModelState.Remove("ApplicationUserId");
 
@@ -134,14 +148,12 @@ namespace MedicalOfficeManagement.Controllers
                 var medecinToUpdate = await _context.Medecins.Include(m => m.ApplicationUser).FirstOrDefaultAsync(m => m.Id == id);
                 if (medecinToUpdate == null) return NotFound();
 
-                // Mise à jour des infos de la table Medecin
                 medecinToUpdate.NomPrenom = model.NomPrenom;
                 medecinToUpdate.Specialite = model.Specialite;
                 medecinToUpdate.Adresse = model.Adresse;
                 medecinToUpdate.Telephone = model.Telephone;
                 medecinToUpdate.Email = model.Email;
 
-                // Mise à jour synchronisée des infos Identity
                 if (medecinToUpdate.ApplicationUser != null)
                 {
                     var user = medecinToUpdate.ApplicationUser;
@@ -167,7 +179,6 @@ namespace MedicalOfficeManagement.Controllers
         }
 
         // GET: Medecin/Delete/5
-        [HttpGet]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -193,7 +204,6 @@ namespace MedicalOfficeManagement.Controllers
                 _context.Medecins.Remove(medecin);
                 await _context.SaveChangesAsync();
 
-                // On supprime aussi le compte utilisateur associé
                 if (user != null)
                 {
                     await _userManager.DeleteAsync(user);
