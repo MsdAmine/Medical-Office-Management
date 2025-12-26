@@ -1,39 +1,53 @@
 @model MedicalOfficeManagement.Models.Medecin
 
-<div class="max-w-2xl mx-auto p-10 mt-10 bg-white rounded-3xl shadow-sm border">
-    <h2 class="text-2xl font-bold text-gray-800 mb-6">Edit Administrative Staff</h2>
-    
-    <div asp-validation-summary="ModelOnly" class="text-red-600 mb-4 text-sm font-medium"></div>
-
-    @* On précise asp-route-id pour correspondre à la signature de l'action *@
-    <form asp-action="EditStaff" asp-route-id="@Model.ApplicationUserId" method="post" class="space-y-6">
+<div class="min-h-screen flex items-center justify-center p-6 bg-gray-50/50">
+    <div class="max-w-2xl w-full bg-white rounded-[2.5rem] shadow-2xl border border-gray-100 p-12">
         
-        @* On utilise SEULEMENT le GUID ici *@
-        <input type="hidden" asp-for="ApplicationUserId" />
-
-        <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
-            <input asp-for="NomPrenom" class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" required />
-            <span asp-validation-for="NomPrenom" class="text-red-500 text-xs"></span>
+        <div class="mb-10">
+            <h2 class="text-3xl font-black text-gray-900 mb-2">Edit Administrative Staff</h2>
+            <p class="text-gray-500 font-medium">Update profile details for <span class="text-blue-600">@Model.NomPrenom</span></p>
         </div>
 
-        <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
-            <input asp-for="Email" type="email" class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" required />
-            <span asp-validation-for="Email" class="text-red-500 text-xs"></span>
-        </div>
+        <form asp-action="EditStaff" method="post" class="space-y-8">
+            @* On cache l'ID technique Identity *@
+            <input type="hidden" asp-for="ApplicationUserId" />
+            <div asp-validation-summary="ModelOnly" class="text-red-500 text-sm font-bold"></div>
 
-        <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
-            <input asp-for="Telephone" class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" />
-            <span asp-validation-for="Telephone" class="text-red-500 text-xs"></span>
-        </div>
+            <div>
+                <label class="block text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-3 ml-1">Full Name</label>
+                <input asp-for="NomPrenom" class="w-full p-5 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700" placeholder="e.g. Amine Moussaid" />
+                <span asp-validation-for="NomPrenom" class="text-red-400 text-xs mt-1 ml-1"></span>
+            </div>
 
-        <div class="flex items-center justify-end space-x-4 pt-6">
-            <a asp-action="Index" class="text-gray-500 font-semibold hover:underline">Cancel</a>
-            <button type="submit" class="px-8 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg transition-all">
-                Update Profile
-            </button>
-        </div>
-    </form>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <label class="block text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-3 ml-1">Email Address</label>
+                    <input asp-for="Email" class="w-full p-5 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-blue-500 outline-none transition-all font-bold text-gray-700" />
+                </div>
+
+                <div>
+                    <label class="block text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-3 ml-1">Direct Phone Line</label>
+                    <input asp-for="Telephone" class="w-full p-5 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-blue-500 outline-none transition-all font-bold text-gray-700" />
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-3 ml-1">Office Location</label>
+                <input asp-for="Adresse" class="w-full p-5 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-blue-500 outline-none transition-all font-bold text-gray-700" placeholder="e.g. Floor 1, Reception Desk" />
+            </div>
+
+            <div class="flex items-center justify-end space-x-6 pt-10 border-t border-gray-100">
+                <a asp-action="Index" class="text-sm font-black text-gray-400 hover:text-gray-600 uppercase tracking-widest transition-colors">
+                    Cancel
+                </a>
+                <button type="submit" class="bg-blue-600 text-white px-10 py-5 rounded-2xl font-black shadow-2xl shadow-blue-200 hover:bg-blue-700 hover:-translate-y-1 transition-all active:scale-95">
+                    Update Profile
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

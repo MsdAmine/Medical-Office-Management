@@ -75,36 +75,32 @@ namespace MedicalOfficeManagement.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Medecin medecin, string SelectedRole)
+        public async Task<IActionResult> Create(Medecin medecin, string SelectedRole, string TelephonePersonnel, string AdressePersonnel)
         {
-            ModelState.Remove("ApplicationUser");
-            ModelState.Remove("ApplicationUserId");
-
+            // On ignore la validation du modèle Medecin si c'est du personnel
             if (SelectedRole == "Personnel")
             {
-                ModelState.Remove("Specialite");
-                ModelState.Remove("Adresse");
+                ModelState.Clear(); // On vide les erreurs car on ne va pas sauvegarder un "Medecin"
+            }
+            else
+            {
+                ModelState.Remove("ApplicationUser");
+                ModelState.Remove("ApplicationUserId");
             }
 
-            if (ModelState.IsValid)
+            if (SelectedRole == "Personnel" || ModelState.IsValid)
             {
-                string firstName = "";
-                string lastName = "";
-
-                if (!string.IsNullOrWhiteSpace(medecin.NomPrenom))
-                {
-                    var parts = medecin.NomPrenom.Trim().Split(' ');
-                    firstName = parts[0];
-                    lastName = parts.Length > 1 ? string.Join(" ", parts.Skip(1)) : "";
-                }
+                // Extraction du nom/prénom
+                var parts = medecin.NomPrenom?.Trim().Split(' ') ?? new string[] { "Staff", "Member" };
 
                 var user = new ApplicationUser
                 {
                     UserName = medecin.Email,
                     Email = medecin.Email,
-                    FirstName = firstName,
-                    LastName = lastName,
-                    PhoneNumber = medecin.Telephone,
+                    FirstName = parts[0],
+                    LastName = parts.Length > 1 ? string.Join(" ", parts.Skip(1)) : "",
+                    // On utilise les nouveaux champs passés en paramètres pour le personnel
+                    PhoneNumber = SelectedRole == "Personnel" ? TelephonePersonnel : medecin.Telephone,
                     EmailConfirmed = true
                 };
 
@@ -120,11 +116,13 @@ namespace MedicalOfficeManagement.Controllers
                         _context.Add(medecin);
                         await _context.SaveChangesAsync();
                     }
+                    // Pour le personnel, on ne fait rien en base SQL : tout est dans Identity
+
                     return RedirectToAction(nameof(Index));
                 }
-
                 foreach (var error in result.Errors) ModelState.AddModelError("", error.Description);
             }
+
             PopulateSpecialitesViewBag();
             return View(medecin);
         }
@@ -177,32 +175,39 @@ namespace MedicalOfficeManagement.Controllers
         }
 
         // --- EDIT STAFF (Personnel uniquement) ---
+        // --- EDIT STAFF (Personnel uniquement) ---
         public async Task<IActionResult> EditStaff(string id)
         {
             if (string.IsNullOrEmpty(id)) return NotFound();
+
             var user = await _userManager.FindByIdAsync(id);
             if (user == null) return NotFound();
 
+            // On crée un modèle temporaire pour la vue
             var model = new Medecin
             {
+                ApplicationUserId = user.Id,
                 Email = user.Email,
                 Telephone = user.PhoneNumber,
                 NomPrenom = $"{user.FirstName} {user.LastName}",
-                ApplicationUserId = user.Id
+                // On peut utiliser Adresse pour stocker une info supplémentaire dans Identity si besoin, 
+                // ou simplement l'afficher comme "Administrative"
+                Adresse = "Administrative Office"
             };
+
             return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditStaff(string id, Medecin model)
+        public async Task<IActionResult> EditStaff(string id, Medecin model, string ServicePersonnel)
         {
             var user = await _userManager.FindByIdAsync(model.ApplicationUserId);
             if (user == null) return NotFound();
 
+            // CRUCIAL : On ignore les validations du modèle Medecin (SQL)
             ModelState.Remove("Id");
             ModelState.Remove("Specialite");
-            ModelState.Remove("Adresse");
             ModelState.Remove("ApplicationUser");
 
             if (ModelState.IsValid)
@@ -215,10 +220,17 @@ namespace MedicalOfficeManagement.Controllers
                 user.PhoneNumber = model.Telephone;
 
                 var result = await _userManager.UpdateAsync(user);
-                if (result.Succeeded) return RedirectToAction(nameof(Index));
+                if (result.Succeeded)
+                {
+                    return RedirectToAction(nameof(Index));
+                }
 
-                foreach (var error in result.Errors) ModelState.AddModelError("", error.Description);
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
             }
+
             return View(model);
         }
 
@@ -235,7 +247,8 @@ namespace MedicalOfficeManagement.Controllers
             {
                 var user = await _userManager.FindByIdAsync(userId);
                 if (user == null) return NotFound();
-                model = new Medecin {
+                model = new Medecin
+                {
                     ApplicationUserId = user.Id,
                     NomPrenom = $"{user.FirstName} {user.LastName}",
                     Email = user.Email,
