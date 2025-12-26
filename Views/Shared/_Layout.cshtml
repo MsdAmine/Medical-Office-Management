@@ -1,41 +1,33 @@
-﻿@* File: Views/Shared/_Layout.cshtml *@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewBag.Title - Medical Office Management</title>
+    <title>@ViewData["Title"] - Medical Office</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        }
-        .sidebar-transition {
-            transition: transform 0.3s ease-in-out;
-        }
+        body { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
     </style>
 </head>
 <body class="bg-gray-50">
     <div class="min-h-screen flex flex-col">
-        @Html.Partial("_Header")
-        
-        <div class="flex flex-1">
-            @Html.Partial("_Sidebar")
-            
-            <main class="flex-1 lg:ml-64 mt-16 p-6 lg:p-8">
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            @Html.Partial("_Header")
+            <div class="flex flex-1">
+                @Html.Partial("_Sidebar")
+                <main class="flex-1 lg:ml-64 mt-16 p-6 lg:p-8">
+                    @RenderBody()
+                </main>
+            </div>
+        }
+        else
+        {
+            <main class="flex-1 flex items-center justify-center">
                 @RenderBody()
             </main>
-        </div>
-    </div>
-
-    <script>
-        // Simple mobile menu toggle
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('-translate-x-full');
         }
-    </script>
-    
+    </div>
     @RenderSection("scripts", required: false)
 </body>
 </html>

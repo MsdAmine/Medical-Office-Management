@@ -1,40 +1,47 @@
 ﻿@model IEnumerable<MedicalOfficeManagement.Models.Medecin>
 
 @{
-    ViewData["Title"] = "Liste des Médecins";
+    ViewData["Title"] = "Doctors List";
 }
 
-<h1>Liste des Médecins</h1>
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">Doctors Management</h1>
+    <a asp-action="Create" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-medium">
+        + Add New Doctor
+    </a>
+</div>
 
-<p>
-    <a asp-action="Create" class="btn btn-primary">Créer un Nouveau Médecin</a>
-</p>
-<table class="table table-striped table-hover">
-    <thead>
-        <tr>
-            <th>@Html.DisplayNameFor(model => model.NomPrenom)</th>
-            <th>@Html.DisplayNameFor(model => model.Specialite)</th>
-            <th>@Html.DisplayNameFor(model => model.Telephone)</th>
-            <th>@Html.DisplayNameFor(model => model.Email)</th>
-            <th>@Html.DisplayNameFor(model => model.Adresse)</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <table class="w-full text-left">
+        <thead class="bg-gray-50 border-b border-gray-200">
             <tr>
-                <td>@Html.DisplayFor(modelItem => item.NomPrenom)</td>
-                <td>@Html.DisplayFor(modelItem => item.Specialite)</td>
-                <td>@Html.DisplayFor(modelItem => item.Telephone)</td>
-                <td>@Html.DisplayFor(modelItem => item.Email)</td>
-                <td>@Html.DisplayFor(modelItem => item.Adresse)</td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Modifier</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Détails</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Supprimer</a>
-                </td>
+                <th class="px-6 py-4 text-sm font-semibold text-gray-600">Doctor</th>
+                <th class="px-6 py-4 text-sm font-semibold text-gray-600">Specialty</th>
+                <th class="px-6 py-4 text-sm font-semibold text-gray-600">Contact</th>
+                <th class="px-6 py-4 text-sm font-semibold text-gray-600 text-right">Actions</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+            @foreach (var item in Model) {
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="px-6 py-4">
+                        <div class="font-medium text-gray-900">@item.NomPrenom</div>
+                        <div class="text-xs text-gray-500">@item.Email</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                            @item.Specialite
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-600">
+                        @item.Telephone
+                    </td>
+                    <td class="px-6 py-4 text-right space-x-2">
+                        <a asp-action="Edit" asp-route-id="@item.Id" class="text-yellow-600 hover:text-yellow-700 font-medium text-sm">Edit</a>
+                        <a asp-action="Delete" asp-route-id="@item.Id" class="text-red-600 hover:text-red-700 font-medium text-sm">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

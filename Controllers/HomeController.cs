@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MedicalOfficeManagement.Controllers
 {
-    [Authorize] // Exige la connexion pour accéder au dashboard
+    [Authorize] // Force la redirection vers le Login si l'utilisateur n'est pas connecté
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -16,23 +16,25 @@ namespace MedicalOfficeManagement.Controllers
         public HomeController(ILogger<HomeController> logger, MedicalOfficeContext context)
         {
             _logger = logger;
-            _context = context; // Injection du contexte de base de données
+            _context = context; // Injection de la base de données
         }
 
         public async Task<IActionResult> Index()
         {
-            // 1. Compter les médecins réels
-            ViewBag.NbDoctors = await _context.Medecins.CountAsync();
+            // 1. Récupération du nombre réel de médecins en base de données
+            // Note: Assurez-vous que votre DbSet s'appelle bien "Medecins" dans MedicalOfficeContext
+            ViewBag.NbMedecins = await _context.Medecins.CountAsync();
 
-            // 2. Simuler des données pour les tables non encore créées (Patients/RDV)
-            // Remplacez par _context.Patients.CountAsync() quand vos tables seront prêtes.
+            // 2. Données de test (À remplacer par des requêtes réelles une fois vos tables prêtes)
+            // Exemple : ViewBag.NbPatients = await _context.Patients.CountAsync();
             ViewBag.NbPatients = 25; 
-            ViewBag.NbAppointments = 12;
+            ViewBag.NbRendezVous = 12;
 
+            // 3. On retourne la vue Dashboard
             return View();
         }
 
-        [AllowAnonymous] // La page Privacy reste accessible à tous
+        [AllowAnonymous] // Permet d'afficher la page même si on n'est pas loggé (ex: erreur 404)
         public IActionResult Privacy()
         {
             return View();
