@@ -2,15 +2,25 @@
     <nav class="p-4 flex flex-col h-full space-y-1">
         @{
             var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+            
+            // Logique de redirection dynamique pour le Dashboard
+            string dashboardAction = "Index";
+            if (User.IsInRole("Medecin"))
+            {
+                dashboardAction = "DoctorDashboard"; // Redirige mohamed vers sa vue spécifique
+            }
+
             var menuItems = new List<(string Controller, string Action, string Label, string Icon)>
             {
-                ("Home", "Index", "Dashboard", "home"),
+                // Utilisation de la variable dashboardAction ici
+                ("Home", dashboardAction, "Dashboard", "home"),
                 ("Patients", "Index", "Patients", "users"),
                 ("Appointments", "Index", "Appointments", "calendar")
             };
 
             if (User.IsInRole("Admin"))
             {
+                // Ces items ne sont ajoutés que si l'utilisateur est Admin
                 menuItems.Add(("Medecin", "Index", "Doctors", "user-md"));
                 menuItems.Add(("Settings", "Index", "Settings", "cog"));
             }

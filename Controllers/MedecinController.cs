@@ -27,7 +27,6 @@ namespace MedicalOfficeManagement.Controllers
 
         private void PopulateSpecialitesViewBag()
         {
-            // Liste mise à jour pour correspondre à votre design
             var specialites = new List<string>
             {
                 "Generalist", "Cardiologist", "Dermatologist", 
@@ -55,6 +54,10 @@ namespace MedicalOfficeManagement.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Medecin medecin)
         {
+            // Retirer les propriétés de navigation pour éviter les erreurs de validation
+            ModelState.Remove("ApplicationUser");
+            ModelState.Remove("ApplicationUserId");
+
             if (ModelState.IsValid)
             {
                 // 1. Découpage du NomPrenom pour Identity
@@ -65,7 +68,6 @@ namespace MedicalOfficeManagement.Controllers
                 {
                     var parts = medecin.NomPrenom.Trim().Split(' ');
                     firstName = parts[0];
-                    // On regroupe le reste des mots dans le nom de famille
                     lastName = parts.Length > 1 ? string.Join(" ", parts.Skip(1)) : "";
                 }
 
@@ -74,19 +76,19 @@ namespace MedicalOfficeManagement.Controllers
                 {
                     UserName = medecin.Email,
                     Email = medecin.Email,
-                    FirstName = firstName, // Enregistré séparément
-                    LastName = lastName,   // Enregistré séparément
+                    FirstName = firstName,
+                    LastName = lastName,
                     PhoneNumber = medecin.Telephone,
                     EmailConfirmed = true
                 };
 
-                // Création avec mot de passe par défaut
-                var result = await _userManager.CreateAsync(user, "Medecin123!"); 
+                // CRÉATION AVEC LE MOT DE PASSE PAR DÉFAUT : Welcome@2025!
+                var result = await _userManager.CreateAsync(user, "Welcome@2025!"); 
 
                 if (result.Succeeded)
                 {
                     // 3. Attribution du rôle EXACT présent en base
-                    // Note: Changé "Doctor" par "Medecin" pour éviter l'erreur de rôle inexistant
+                    // Note: Changé "Doctor" par "Medecin" pour éviter l'erreur
                     await _userManager.AddToRoleAsync(user, "Medecin");
 
                     // 4. Liaison du médecin à l'utilisateur créé
@@ -123,6 +125,10 @@ namespace MedicalOfficeManagement.Controllers
         {
             if (id != model.Id) return NotFound();
 
+            // Retirer les propriétés liées à Identity de la validation du modèle Medecin
+            ModelState.Remove("ApplicationUser");
+            ModelState.Remove("ApplicationUserId");
+
             if (ModelState.IsValid)
             {
                 var medecinToUpdate = await _context.Medecins.Include(m => m.ApplicationUser).FirstOrDefaultAsync(m => m.Id == id);
@@ -140,7 +146,6 @@ namespace MedicalOfficeManagement.Controllers
                 {
                     var user = medecinToUpdate.ApplicationUser;
                     
-                    // Recalcul du nom/prénom en cas de changement
                     if (!string.IsNullOrWhiteSpace(model.NomPrenom))
                     {
                         var parts = model.NomPrenom.Trim().Split(' ');
