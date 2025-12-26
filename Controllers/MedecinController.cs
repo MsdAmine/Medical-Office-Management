@@ -27,10 +27,11 @@ namespace MedicalOfficeManagement.Controllers
 
         private void PopulateSpecialitesViewBag()
         {
+            // Liste mise à jour pour correspondre à votre design
             var specialites = new List<string>
             {
-                "Cardiologie", "Dermatologie", "Généraliste",
-                "Ophtalmologie", "Pédiatrie", "Radiologie", "Urologie"
+                "Generalist", "Cardiologist", "Dermatologist", 
+                "Pediatrician", "Neurologist", "Radiologist"
             };
             ViewBag.Specialites = new SelectList(specialites);
         }
@@ -56,30 +57,50 @@ namespace MedicalOfficeManagement.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser 
-                { 
-                    UserName = medecin.Email, 
-                    Email = medecin.Email, 
-                    PhoneNumber = medecin.Telephone 
+                // 1. Découpage du NomPrenom pour Identity
+                string firstName = "";
+                string lastName = "";
+
+                if (!string.IsNullOrWhiteSpace(medecin.NomPrenom))
+                {
+                    var parts = medecin.NomPrenom.Trim().Split(' ');
+                    firstName = parts[0];
+                    // On regroupe le reste des mots dans le nom de famille
+                    lastName = parts.Length > 1 ? string.Join(" ", parts.Skip(1)) : "";
+                }
+
+                // 2. Création du compte utilisateur (Identity)
+                var user = new ApplicationUser
+                {
+                    UserName = medecin.Email,
+                    Email = medecin.Email,
+                    FirstName = firstName, // Enregistré séparément
+                    LastName = lastName,   // Enregistré séparément
+                    PhoneNumber = medecin.Telephone,
+                    EmailConfirmed = true
                 };
-                
-                var result = await _userManager.CreateAsync(user, "Doctor@123");
+
+                // Création avec mot de passe par défaut
+                var result = await _userManager.CreateAsync(user, "Medecin123!"); 
 
                 if (result.Succeeded)
                 {
-                    if (!await _roleManager.RoleExistsAsync("Medecin"))
-                        await _roleManager.CreateAsync(new IdentityRole("Medecin"));
-
+                    // 3. Attribution du rôle EXACT présent en base
+                    // Note: Changé "Doctor" par "Medecin" pour éviter l'erreur de rôle inexistant
                     await _userManager.AddToRoleAsync(user, "Medecin");
-                    
+
+                    // 4. Liaison du médecin à l'utilisateur créé
                     medecin.ApplicationUserId = user.Id;
-                    _context.Medecins.Add(medecin);
+                    _context.Add(medecin);
                     await _context.SaveChangesAsync();
+
                     return RedirectToAction(nameof(Index));
                 }
-                
-                foreach (var error in result.Errors) 
+
+                foreach (var error in result.Errors)
+                {
                     ModelState.AddModelError("", error.Description);
+                }
             }
             PopulateSpecialitesViewBag();
             return View(medecin);
@@ -107,15 +128,26 @@ namespace MedicalOfficeManagement.Controllers
                 var medecinToUpdate = await _context.Medecins.Include(m => m.ApplicationUser).FirstOrDefaultAsync(m => m.Id == id);
                 if (medecinToUpdate == null) return NotFound();
 
+                // Mise à jour des infos de la table Medecin
                 medecinToUpdate.NomPrenom = model.NomPrenom;
                 medecinToUpdate.Specialite = model.Specialite;
                 medecinToUpdate.Adresse = model.Adresse;
                 medecinToUpdate.Telephone = model.Telephone;
                 medecinToUpdate.Email = model.Email;
 
+                // Mise à jour synchronisée des infos Identity
                 if (medecinToUpdate.ApplicationUser != null)
                 {
                     var user = medecinToUpdate.ApplicationUser;
+                    
+                    // Recalcul du nom/prénom en cas de changement
+                    if (!string.IsNullOrWhiteSpace(model.NomPrenom))
+                    {
+                        var parts = model.NomPrenom.Trim().Split(' ');
+                        user.FirstName = parts[0];
+                        user.LastName = parts.Length > 1 ? string.Join(" ", parts.Skip(1)) : "";
+                    }
+
                     user.Email = model.Email;
                     user.UserName = model.Email;
                     user.PhoneNumber = model.Telephone;
@@ -129,10 +161,6 @@ namespace MedicalOfficeManagement.Controllers
             return View(model);
         }
 
-        // ==========================================================
-        // AJOUT : MÉTHODE GET POUR LA SUPPRESSION (Correction Erreur 405)
-        // ==========================================================
-        
         // GET: Medecin/Delete/5
         [HttpGet]
         public async Task<IActionResult> Delete(int? id)
@@ -160,6 +188,7 @@ namespace MedicalOfficeManagement.Controllers
                 _context.Medecins.Remove(medecin);
                 await _context.SaveChangesAsync();
 
+                // On supprime aussi le compte utilisateur associé
                 if (user != null)
                 {
                     await _userManager.DeleteAsync(user);

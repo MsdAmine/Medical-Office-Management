@@ -8,7 +8,7 @@ namespace MedicalOfficeManagement.Models
         public int Id { get; set; }
 
         [Required]
-        public string NomPrenom { get; set; } = null!;
+        public string NomPrenom { get; set; } = null!; // Utilisé pour le "Full Name" du formulaire
 
         [Required]
         public string Specialite { get; set; } = null!;
@@ -24,11 +24,9 @@ namespace MedicalOfficeManagement.Models
         [EmailAddress]
         public string Email { get; set; } = null!;
 
-        // FK
         [ValidateNever]
         public string ApplicationUserId { get; set; } = null!;
 
-        // 🔑 VERY IMPORTANT
         [ValidateNever]
         public ApplicationUser? ApplicationUser { get; set; }
     }

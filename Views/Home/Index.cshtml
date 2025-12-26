@@ -1,46 +1,53 @@
-﻿@{
+﻿@using Microsoft.AspNetCore.Identity
+@using MedicalOfficeManagement.Models
+@inject UserManager<ApplicationUser> UserManager
+
+@{
     ViewData["Title"] = "Dashboard";
+    var user = await UserManager.GetUserAsync(User);
+    var displayName = (user != null && !string.IsNullOrEmpty(user.FirstName)) 
+        ? $"{user.FirstName} {user.LastName}" 
+        : User.Identity?.Name;
 }
 
-<div class="mb-8">
-    <h1 class="text-2xl font-bold text-gray-800">Welcome back, @User.Identity?.Name</h1>
-    <p class="text-gray-500">@DateTime.Now.ToString("dddd, dd MMMM yyyy")</p>
-</div>
+<div class="space-y-6">
+    <div class="flex flex-col">
+        <h1 class="text-2xl font-bold text-gray-900">Welcome back, @displayName</h1>
+        <p class="text-sm text-gray-500">@DateTime.Now.ToString("dddd, dd MMMM yyyy")</p>
+    </div>
 
-<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-    <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
-        <p class="text-sm text-gray-500 font-medium">Appointments Today</p>
-        <p class="text-2xl font-bold text-blue-600">@ViewBag.NbRendezVous</p>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white p-6 rounded-2xl border-l-4 border-blue-500 shadow-sm">
+            <p class="text-xs font-bold text-gray-400 uppercase">Appointments Today</p>
+            <p class="text-2xl font-black text-blue-600">12</p>
+        </div>
+        <div class="bg-white p-6 rounded-2xl border-l-4 border-green-500 shadow-sm">
+            <p class="text-xs font-bold text-gray-400 uppercase">Total Patients</p>
+            <p class="text-2xl font-black text-green-600">25</p>
+        </div>
+        <div class="bg-white p-6 rounded-2xl border-l-4 border-purple-500 shadow-sm">
+            <p class="text-xs font-bold text-gray-400 uppercase">Active Doctors</p>
+            <p class="text-2xl font-black text-purple-600">0</p>
+        </div>
+        <div class="bg-white p-6 rounded-2xl border-l-4 border-yellow-500 shadow-sm">
+            <p class="text-xs font-bold text-gray-400 uppercase">Messages</p>
+            <p class="text-2xl font-black text-yellow-600">7</p>
+        </div>
     </div>
-    <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
-        <p class="text-sm text-gray-500 font-medium">Total Patients</p>
-        <p class="text-2xl font-bold text-green-600">@ViewBag.NbPatients</p>
-    </div>
-    <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500">
-        <p class="text-sm text-gray-500 font-medium">Active Doctors</p>
-        <p class="text-2xl font-bold text-purple-600">@ViewBag.NbMedecins</p>
-    </div>
-    <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-yellow-500">
-        <p class="text-sm text-gray-500 font-medium">Messages</p>
-        <p class="text-2xl font-bold text-yellow-600">7</p>
-    </div>
-</div>
 
-<h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    <a href="@Url.Action("Create", "Medecin")"
-        class="flex flex-col items-center justify-center bg-blue-600 text-white p-8 rounded-2xl hover:bg-blue-700 transition shadow-lg">
-        <svg class="w-10 h-10 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-        </svg>
-        <span class="font-bold">Add Doctor</span>
-    </a>
-    <a href="/Appointments/Create"
-        class="bg-green-600 text-white p-8 rounded-2xl text-center hover:bg-green-700 transition">
-        <span class="block font-bold">Schedule Appointment</span>
-    </a>
-    <a href="/MedicalRecords"
-        class="bg-purple-600 text-white p-8 rounded-2xl text-center hover:bg-purple-700 transition">
-        <span class="block font-bold">Medical Records</span>
-    </a>
+    <h2 class="text-lg font-bold text-gray-800 mt-8">Quick Actions</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <a href="@Url.Action("Create", "Medecin")" class="bg-blue-600 hover:bg-blue-700 text-white p-8 rounded-2xl flex flex-col items-center justify-center transition-all shadow-lg shadow-blue-100 group">
+            <div class="w-12 h-12 border-2 border-white/30 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            </div>
+            <span class="font-bold">Add Doctor</span>
+        </a>
+        <div class="bg-green-600 hover:bg-green-700 text-white p-8 rounded-2xl flex items-center justify-center cursor-pointer transition-all shadow-lg shadow-green-100">
+            <span class="font-bold">Schedule Appointment</span>
+        </div>
+        <div class="bg-purple-600 hover:bg-purple-700 text-white p-8 rounded-2xl flex items-center justify-center cursor-pointer transition-all shadow-lg shadow-purple-100">
+            <span class="font-bold">Medical Records</span>
+        </div>
+    </div>
 </div>
