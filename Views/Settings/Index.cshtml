@@ -1,248 +1,77 @@
-@* File: Views/Settings/Index.cshtml *@
-@model MedicalOfficeManagement.ViewModels.Settings.SettingsViewModel
+@model MedicalOfficeManagement.Models.ApplicationUser
 
 @{
-    ViewBag.Title = "Settings";
+    ViewData["Title"] = "Settings";
 }
 
-<div class="space-y-6">
-    @* Page Header *@
-    <div>
-        <h1 class="text-2xl font-semibold text-gray-900">Settings</h1>
-        <p class="text-sm text-gray-500 mt-1">Manage system configuration and preferences</p>
+<div class="max-w-5xl mx-auto">
+    <div class="mb-10">
+        <h1 class="text-4xl font-black text-gray-900 tracking-tight">Settings</h1>
+        <p class="text-gray-500 mt-2 text-lg">Manage your personal information and office preferences.</p>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        @* Settings Navigation *@
-        <div class="lg:col-span-1">
-            <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-1">
-                <a href="#profile" class="block px-4 py-2 rounded-lg bg-blue-50 text-blue-700 font-medium">
-                    Profile Settings
-                </a>
-                <a href="#clinic" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-50">
-                    Clinic Information
-                </a>
-                <a href="#notifications" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-50">
-                    Notifications
-                </a>
-                <a href="#security" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-50">
-                    Security
-                </a>
-                <a href="#system" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-50">
-                    System Preferences
-                </a>
+    @if (TempData["StatusMessage"] != null)
+    {
+        <div class="mb-8 p-4 bg-blue-50 border border-blue-100 text-blue-700 rounded-2xl flex items-center animate-fade-in">
+            <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg>
+            <span class="font-bold">Success:</span> @TempData["StatusMessage"]
+        </div>
+    }
+
+    <form asp-action="UpdateProfile" method="post">
+        <div class="space-y-8">
+            <div class="bg-white rounded-[2.5rem] shadow-xl shadow-gray-200/50 border border-gray-100 p-8 md:p-12">
+                <div class="flex items-center mb-10">
+                    <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mr-5">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                    </div>
+                    <h2 class="text-2xl font-extrabold text-gray-800">Administrator Profile</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">First Name</label>
+                        <input type="text" name="firstName" value="@Model.FirstName" placeholder="Enter first name" 
+                               class="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-gray-700 font-medium" />
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Last Name</label>
+                        <input type="text" name="lastName" value="@Model.LastName" placeholder="Enter last name" 
+                               class="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-gray-700 font-medium" />
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Email address</label>
+                        <input type="email" name="email" value="@Model.Email" 
+                               class="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-gray-700 font-medium" />
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Phone Number</label>
+                        <input type="text" name="phoneNumber" value="@Model.PhoneNumber" placeholder="+1 (555) 000-0000" 
+                               class="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-gray-700 font-medium" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-[2.5rem] shadow-xl shadow-gray-200/50 border border-gray-100 p-8 md:p-12">
+                <div class="flex items-center mb-10">
+                    <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mr-5">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                    </div>
+                    <h2 class="text-2xl font-extrabold text-gray-800">Office Preferences</h2>
+                </div>
+
+                <div class="max-w-lg">
+                    <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Medical Office Name</label>
+                    <input type="text" name="officeName" value="@Model.OfficeName" placeholder="e.g. HealthCare Center" 
+                           class="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-gray-700 font-medium" />
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-4">
+                <button type="submit" class="bg-blue-600 text-white px-12 py-5 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-blue-700 hover:shadow-2xl hover:shadow-blue-200 transition-all active:scale-95">
+                    Update Profile
+                </button>
             </div>
         </div>
-
-        @* Settings Content *@
-        <div class="lg:col-span-3 space-y-6">
-            @* Profile Settings *@
-            <div id="profile" class="bg-white border border-gray-200 rounded-lg p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Profile Settings</h2>
-                <form method="post" action="@Url.Action("UpdateProfile", "Settings")">
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-                            <input type="text" value="@Model.UserName" name="UserName"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-                            <input type="email" value="@Model.UserEmail" name="UserEmail"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
-                            <input type="text" value="@Model.UserRole" disabled
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500">
-                            <p class="text-xs text-gray-500 mt-1">Contact an administrator to change your role</p>
-                        </div>
-                        <div>
-                            <button type="submit"
-                                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
-                                Save Changes
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-
-            @* Clinic Information *@
-            <div id="clinic" class="bg-white border border-gray-200 rounded-lg p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Clinic Information</h2>
-                <form>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Clinic Name</label>
-                            <input type="text" value="@Model.ClinicName"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
-                            <textarea rows="3"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">@Model.ClinicAddress</textarea>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                                <input type="tel" value="@Model.ClinicPhone"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-                                <input type="email" value="@Model.ClinicEmail"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            </div>
-                        </div>
-                        <div>
-                            <button type="submit"
-                                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
-                                Update Information
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-
-            @* Notification Preferences *@
-            <div id="notifications" class="bg-white border border-gray-200 rounded-lg p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Notification Preferences</h2>
-                <div class="space-y-4">
-                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                        <div>
-                            <div class="text-sm font-medium text-gray-900">Email Notifications</div>
-                            <div class="text-xs text-gray-500 mt-1">Receive notifications via email</div>
-                        </div>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" checked class="sr-only peer">
-                            <div
-                                class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
-                            </div>
-                        </label>
-                    </div>
-                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                        <div>
-                            <div class="text-sm font-medium text-gray-900">Appointment Reminders</div>
-                            <div class="text-xs text-gray-500 mt-1">Get reminded about upcoming appointments</div>
-                        </div>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" checked class="sr-only peer">
-                            <div
-                                class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
-                            </div>
-                        </label>
-                    </div>
-                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                        <div>
-                            <div class="text-sm font-medium text-gray-900">Task Notifications</div>
-                            <div class="text-xs text-gray-500 mt-1">Receive alerts for pending tasks</div>
-                        </div>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" class="sr-only peer">
-                            <div
-                                class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
-                            </div>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            @* Security Settings *@
-            <div id="security" class="bg-white border border-gray-200 rounded-lg p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Security</h2>
-                <form>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
-                            <input type="password" placeholder="Enter current password"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
-                            <input type="password" placeholder="Enter new password"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <p class="text-xs text-gray-500 mt-1">Must be at least 8 characters with uppercase,
-                                lowercase, and numbers</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
-                            <input type="password" placeholder="Confirm new password"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        </div>
-                        <div>
-                            <button type="submit"
-                                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
-                                Change Password
-                            </button>
-                        </div>
-                    </div>
-                </form>
-
-                <div class="mt-6 pt-6 border-t border-gray-200">
-                    <h3 class="text-sm font-semibold text-gray-900 mb-3">Two-Factor Authentication</h3>
-                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                        <div>
-                            <div class="text-sm font-medium text-gray-900">Enable 2FA</div>
-                            <div class="text-xs text-gray-500 mt-1">Add an extra layer of security to your account</div>
-                        </div>
-                        <button
-                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors">
-                            Enable
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            @* System Preferences *@
-            <div id="system" class="bg-white border border-gray-200 rounded-lg p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">System Preferences</h2>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Language</label>
-                        <select
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option>English</option>
-                            <option>Spanish</option>
-                            <option>French</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Time Zone</label>
-                        <select
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option>Eastern Time (ET)</option>
-                            <option>Central Time (CT)</option>
-                            <option>Mountain Time (MT)</option>
-                            <option>Pacific Time (PT)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Date Format</label>
-                        <select
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option>MM/DD/YYYY</option>
-                            <option>DD/MM/YYYY</option>
-                            <option>YYYY-MM-DD</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Items Per Page</label>
-                        <select
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option>10</option>
-                            <option>25</option>
-                            <option>50</option>
-                            <option>100</option>
-                        </select>
-                    </div>
-                    <div>
-                        <button type="submit"
-                            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
-                            Save Preferences
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    </form>
 </div>
