@@ -5,55 +5,25 @@
 }
 
 <h1>Supprimer</h1>
-
 <h3>Êtes-vous sûr de vouloir supprimer ce médecin ?</h3>
 <div>
-    <h4>Médecin</h4>
     <hr />
     <dl class="row">
-        <dt class="col-sm-3">
-            @Html.DisplayNameFor(model => model.NomPrenom)
-        </dt>
-        <dd class="col-sm-9">
-            @Html.DisplayFor(model => model.NomPrenom)
-        </dd>
-        <dt class="col-sm-3">
-            @Html.DisplayNameFor(model => model.Specialite)
-        </dt>
-        <dd class="col-sm-9">
-            @Html.DisplayFor(model => model.Specialite)
-        </dd>
-        <dt class="col-sm-3">
-            @Html.DisplayNameFor(model => model.Adresse)
-        </dt>
-        <dd class="col-sm-9">
-            @Html.DisplayFor(model => model.Adresse)
-        </dd>
-        <dt class="col-sm-3">
-            @Html.DisplayNameFor(model => model.Telephone)
-        </dt>
-        <dd class="col-sm-9">
-            @Html.DisplayFor(model => model.Telephone)
-        </dd>
-        <dt class="col-sm-3">
-            @Html.DisplayNameFor(model => model.Email)
-        </dt>
-        <dd class="col-sm-9">
-            @Html.DisplayFor(model => model.Email)
-        </dd>
-        <dt class="col-sm-3">
-            Utilisateur (ID)
-        </dt>
-        <dd class="col-sm-9">
-            @Html.DisplayFor(model => model.ApplicationUserId)
-        </dd>
+        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.NomPrenom)</dt>
+        <dd class="col-sm-9">@Html.DisplayFor(model => model.NomPrenom)</dd>
+        
+        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Specialite)</dt>
+        <dd class="col-sm-9">@Html.DisplayFor(model => model.Specialite)</dd>
+        
+        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Email)</dt>
+        <dd class="col-sm-9">@Html.DisplayFor(model => model.Email)</dd>
     </dl>
 
     <form asp-action="Delete">
-        @* Champ caché pour l'ID du médecin à supprimer *@
+        @* 🛑 CHAMP CACHÉ OBLIGATOIRE *@
         <input type="hidden" asp-for="Id" />
-
+        
         <input type="submit" value="Confirmer la suppression" class="btn btn-danger" />
-        <a asp-action="Index" class="btn btn-secondary">Annuler et Retour à la Liste</a>
+        <a asp-action="Index" class="btn btn-secondary">Annuler</a>
     </form>
 </div>

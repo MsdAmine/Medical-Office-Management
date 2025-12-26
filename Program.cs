@@ -1,30 +1,22 @@
 using MedicalOfficeManagement.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using MedicalOfficeManagement.Data;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.AspNetCore.Identity.UI;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configuration de la connexion � la base de donn�es
+// 1. Configuration de la base de données
 var connectionString = builder.Configuration.GetConnectionString("gestionCabinetContextConnection")
     ?? throw new InvalidOperationException("Connection string 'gestionCabinetContextConnection' not found.");
 
 builder.Services.AddDbContext<MedicalOfficeContext>(options =>
     options.UseSqlServer(connectionString));
 
-// Configuration Identity par d�faut
+// 2. Configuration Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
-    // Options de connexion
-    options.SignIn.RequireConfirmedAccount = true;
-
-    // Options de mot de passe (Relaxation des r�gles)
+    options.SignIn.RequireConfirmedAccount = false; 
     options.Password.RequireDigit = false;
     options.Password.RequireLowercase = false;
     options.Password.RequireUppercase = false;
@@ -36,23 +28,18 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddDefaultTokenProviders()
 .AddDefaultUI();
 
-//  FILTRE D'AUTORISATION GLOBAL (COMMENT� POUR TESTER) 
-builder.Services.AddControllersWithViews(options =>
+builder.Services.ConfigureApplicationCookie(options =>
 {
-    // Le bloc suivant est temporairement comment� pour �viter la boucle de redirection
-    // var policy = new AuthorizationPolicyBuilder() 
-    //     .RequireAuthenticatedUser() 
-    //     .Build(); 
-    // options.Filters.Add(new AuthorizeFilter(policy)); 
+    options.LoginPath = "/Identity/Account/Login";
+    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
 });
-// ----------------------------------------------------------------------------------
 
+builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
-
 
 var app = builder.Build();
 
-// Configuration du pipeline HTTP
+// 3. Pipeline HTTP
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -65,37 +52,43 @@ else
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
 
-// Le middleware d'authentification DOIT pr�c�der UseAuthorization
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Mappage de l'endpoint pour les pages Razor d'Identity
 app.MapRazorPages();
-
-// D�finition de la route par d�faut.
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
+app.MapGet("/", context => {
+    if (context.User.Identity == null || !context.User.Identity.IsAuthenticated)
+    {
+        context.Response.Redirect("/Identity/Account/Login");
+    }
+    else
+    {
+        context.Response.Redirect("/Home/Index"); 
+    }
+    return Task.CompletedTask;
+});
 
-// --- Initialiseur de Base de Donn�es (Seeding) ---
+// --- APPEL AU DBINITIALIZER ---
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-
-    var admin = await userManager.FindByEmailAsync("admin@email.com");
-    if (admin != null)
+    try 
     {
-        var token = await userManager.GeneratePasswordResetTokenAsync(admin);
-        await userManager.ResetPasswordAsync(admin, token, "Admin@123");
+        // On appelle votre méthode statique
+        await DbInitializer.SeedRolesAndAdminUser(services);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Erreur lors de l'initialisation de la base de données.");
     }
 }
-// -------------------------------------------------
-
-
+// ------------------------------
 
 app.Run();

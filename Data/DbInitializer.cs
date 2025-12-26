@@ -1,6 +1,6 @@
 ﻿using MedicalOfficeManagement.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.DependencyInjection; // Assurez-vous d'avoir ce using
+using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Tasks;
 
 public static class DbInitializer
@@ -10,7 +10,7 @@ public static class DbInitializer
         var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-        // 1. Définition et Création des Rôles
+        // 1. Création des Rôles
         string[] roleNames = { "Admin", "Medecin", "Personnel" };
         foreach (var roleName in roleNames)
         {
@@ -20,43 +20,42 @@ public static class DbInitializer
             }
         }
 
-        // 2. Création ou Vérification du compte Administrateur
+        // 2. Paramètres de l'Admin
         string adminEmail = "admin@email.com";
-        string adminPassword = "TestPassword1!";
+        string adminPassword = "TestPassword1!"; 
         string adminRole = "Admin";
 
         var adminUser = await userManager.FindByEmailAsync(adminEmail);
 
-        // Si l'utilisateur n'existe PAS, nous le créons.
         if (adminUser == null)
         {
+            // CRÉATION NOUVEL UTILISATEUR
             adminUser = new ApplicationUser
             {
                 UserName = adminEmail,
                 Email = adminEmail,
-                EmailConfirmed = true
+                EmailConfirmed = true // Crucial pour éviter le rejet
             };
 
-            IdentityResult result = await userManager.CreateAsync(adminUser, adminPassword);
-
+            var result = await userManager.CreateAsync(adminUser, adminPassword);
             if (result.Succeeded)
             {
-                // Attribue le rôle "Admin" à l'utilisateur
                 await userManager.AddToRoleAsync(adminUser, adminRole);
-            }
-            else
-            {
-                // Si la création échoue, nous affichons les erreurs pour le débogage (dans la console ou logs)
-                // Ex: dotnet run affichera ceci si vous utilisez ILogger.
-                foreach (var error in result.Errors)
-                {
-                    System.Console.WriteLine($"Erreur de création d'Admin : {error.Description}");
-                }
             }
         }
         else
         {
-            // S'il existe, s'assurer qu'il a le rôle Admin au cas où ce serait un ancien utilisateur sans rôle
+            // FORCE LA MISE À JOUR (Si l'utilisateur existe déjà)
+            
+            // On s'assure que l'email est confirmé
+            adminUser.EmailConfirmed = true;
+            await userManager.UpdateAsync(adminUser);
+
+            // On réinitialise le mot de passe de force
+            var token = await userManager.GeneratePasswordResetTokenAsync(adminUser);
+            await userManager.ResetPasswordAsync(adminUser, token, adminPassword);
+
+            // On s'assure qu'il a le rôle Admin
             if (!await userManager.IsInRoleAsync(adminUser, adminRole))
             {
                 await userManager.AddToRoleAsync(adminUser, adminRole);
