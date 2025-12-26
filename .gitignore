@@ -361,3 +361,12 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+
+
+# GitHub Copilot / Visual Studio indexing
+.vs/
+*.db
+*.db-shm
+*.db-wal
+*.futdcache*
