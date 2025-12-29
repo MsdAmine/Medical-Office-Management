@@ -5,7 +5,7 @@ namespace MedicalOfficeManagement.ViewModels.MedicalRecords
 {
     public class MedicalRecordsIndexViewModel
     {
-        public List<MedicalRecordViewModel> Records { get; set; }
+        public List<MedicalRecordViewModel> Records { get; set; } = new();
         public int TotalRecords { get; set; }
     }
 }

@@ -3,9 +3,11 @@ namespace MedicalOfficeManagement.ViewModels.Dashboard
 {
     public class QuickActionViewModel
     {
-        public string Label { get; set; }
-        public string Icon { get; set; }
-        public string Url { get; set; }
-        public string ColorClass { get; set; }
+        public string Label { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public string Icon { get; set; } = string.Empty;
+        public string Url { get; set; } = string.Empty;
+        public string ColorClass { get; set; } = string.Empty;
     }
 }

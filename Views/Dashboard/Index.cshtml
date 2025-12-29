@@ -23,7 +23,7 @@
     <div class="stat-grid">
         @foreach (var stat in Model.Stats)
         {
-            @Html.Partial("_StatCard", stat)
+            <partial name="_StatCard" model="stat" />
         }
     </div>
 
@@ -37,7 +37,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             @foreach (var action in Model.QuickActions)
             {
-                @Html.Partial("_QuickActionCard", action)
+                <partial name="_QuickActionCard" model="action" />
             }
         </div>
     </div>
@@ -86,7 +86,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             @foreach (var module in Model.Modules)
             {
-                @Html.Partial("_ModuleCard", module)
+                <partial name="_ModuleCard" model="module" />
             }
         </div>
     </div>

@@ -5,7 +5,7 @@ namespace MedicalOfficeManagement.ViewModels.Doctors
 {
     public class DoctorsIndexViewModel
     {
-        public List<DoctorViewModel> Doctors { get; set; }
+        public List<DoctorViewModel> Doctors { get; set; } = new();
         public int TotalDoctors { get; set; }
         public int OnDutyToday { get; set; }
     }

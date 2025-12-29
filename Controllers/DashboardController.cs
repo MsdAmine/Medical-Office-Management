@@ -56,6 +56,8 @@ namespace MedicalOfficeManagement.Controllers
                     new QuickActionViewModel
                     {
                         Label = "Register Patient",
+                        Description = "Capture demographics and insurance details",
+                        Status = "Ready",
                         Icon = "user-plus",
                         Url = Url.Action("Create", "Patients"),
                         ColorClass = "bg-blue-600 hover:bg-blue-700"
@@ -63,6 +65,8 @@ namespace MedicalOfficeManagement.Controllers
                     new QuickActionViewModel
                     {
                         Label = "Schedule Appointment",
+                        Description = "Book time with any available provider",
+                        Status = "Next available",
                         Icon = "calendar-plus",
                         Url = Url.Action("Create", "Appointments"),
                         ColorClass = "bg-green-600 hover:bg-green-700"
@@ -70,6 +74,8 @@ namespace MedicalOfficeManagement.Controllers
                     new QuickActionViewModel
                     {
                         Label = "Check-In Patient",
+                        Description = "Mark arrivals and update waiting room",
+                        Status = "Front desk",
                         Icon = "check-circle",
                         Url = Url.Action("CheckIn", "Patients"),
                         ColorClass = "bg-purple-600 hover:bg-purple-700"
@@ -77,6 +83,8 @@ namespace MedicalOfficeManagement.Controllers
                     new QuickActionViewModel
                     {
                         Label = "Search Records",
+                        Description = "Find clinical notes and lab results",
+                        Status = "Recent",
                         Icon = "search",
                         Url = Url.Action("Search", "MedicalRecords"),
                         ColorClass = "bg-gray-600 hover:bg-gray-700"
@@ -87,6 +95,8 @@ namespace MedicalOfficeManagement.Controllers
                 {
                     new AlertViewModel
                     {
+                        Title = "3 patients overdue for follow-up",
+                        Description = "Schedule check-ins to keep care plans on track.",
                         Message = "3 patients overdue for follow-up",
                         Type = "warning",
                         Timestamp = DateTime.Now.AddHours(-2),
@@ -94,6 +104,8 @@ namespace MedicalOfficeManagement.Controllers
                     },
                     new AlertViewModel
                     {
+                        Title = "Dr. Chen's schedule updated",
+                        Description = "New availability opened later today.",
                         Message = "Dr. Chen's schedule updated",
                         Type = "info",
                         Timestamp = DateTime.Now.AddHours(-1),
@@ -101,6 +113,8 @@ namespace MedicalOfficeManagement.Controllers
                     },
                     new AlertViewModel
                     {
+                        Title = "Prescription authorization needed - ID 847",
+                        Description = "Review the pending prescription for patient approval.",
                         Message = "Prescription authorization needed - ID 847",
                         Type = "warning",
                         Timestamp = DateTime.Now.AddMinutes(-30),
@@ -108,6 +122,8 @@ namespace MedicalOfficeManagement.Controllers
                     },
                     new AlertViewModel
                     {
+                        Title = "Lab results ready for review (5)",
+                        Description = "Finalize and share results with patients.",
                         Message = "Lab results ready for review (5)",
                         Type = "info",
                         Timestamp = DateTime.Now.AddMinutes(-15),
@@ -119,6 +135,9 @@ namespace MedicalOfficeManagement.Controllers
                 {
                     new TaskViewModel
                     {
+                        Title = "Pending Approvals",
+                        Details = "7 requests need authorization",
+                        Status = "Action required",
                         Category = "Pending Approvals",
                         Count = 7,
                         Url = Url.Action("Approvals", "Tasks"),
@@ -126,6 +145,9 @@ namespace MedicalOfficeManagement.Controllers
                     },
                     new TaskViewModel
                     {
+                        Title = "Follow-Up Required",
+                        Details = "12 patients awaiting outreach",
+                        Status = "Open",
                         Category = "Follow-Up Required",
                         Count = 12,
                         Url = Url.Action("Followups", "Tasks"),
@@ -133,6 +155,9 @@ namespace MedicalOfficeManagement.Controllers
                     },
                     new TaskViewModel
                     {
+                        Title = "Billing Issues",
+                        Details = "3 claims flagged for review",
+                        Status = "In review",
                         Category = "Billing Issues",
                         Count = 3,
                         Url = Url.Action("Issues", "Billing"),
@@ -140,6 +165,9 @@ namespace MedicalOfficeManagement.Controllers
                     },
                     new TaskViewModel
                     {
+                        Title = "Insurance Pending",
+                        Details = "8 verifications in progress",
+                        Status = "Pending",
                         Category = "Insurance Pending",
                         Count = 8,
                         Url = Url.Action("Pending", "Insurance"),
@@ -151,57 +179,57 @@ namespace MedicalOfficeManagement.Controllers
                 {
                     new ModuleViewModel
                     {
-                        Name = "Patients",
+                        Title = "Patients",
+                        Description = "1,247 Active",
                         Icon = "users",
-                        Stat = "1,247 Active",
                         Url = Url.Action("Index", "Patients"),
                         ColorClass = "bg-blue-50 hover:bg-blue-100 border-blue-200",
-                        Badge = null
+                        Badge = string.Empty
                     },
                     new ModuleViewModel
                     {
-                        Name = "Appointments",
+                        Title = "Appointments",
+                        Description = "12 Today",
                         Icon = "calendar",
-                        Stat = "12 Today",
                         Url = Url.Action("Index", "Appointments"),
                         ColorClass = "bg-green-50 hover:bg-green-100 border-green-200",
-                        Badge = null
+                        Badge = string.Empty
                     },
                     new ModuleViewModel
                     {
-                        Name = "Doctors",
+                        Title = "Doctors",
+                        Description = "8 On Duty",
                         Icon = "user-md",
-                        Stat = "8 On Duty",
                         Url = Url.Action("Index", "Doctors"),
                         ColorClass = "bg-purple-50 hover:bg-purple-100 border-purple-200",
-                        Badge = null
+                        Badge = string.Empty
                     },
                     new ModuleViewModel
                     {
-                        Name = "Billing",
+                        Title = "Billing",
+                        Description = "$2,340 Due",
                         Icon = "credit-card",
-                        Stat = "$2,340 Due",
                         Url = Url.Action("Index", "Billing"),
                         ColorClass = "bg-amber-50 hover:bg-amber-100 border-amber-200",
                         Badge = "3 urgent"
                     },
                     new ModuleViewModel
                     {
-                        Name = "Reports",
+                        Title = "Reports",
+                        Description = "View Stats",
                         Icon = "chart-bar",
-                        Stat = "View Stats",
                         Url = Url.Action("Index", "Reports"),
                         ColorClass = "bg-teal-50 hover:bg-teal-100 border-teal-200",
-                        Badge = null
+                        Badge = string.Empty
                     },
                     new ModuleViewModel
                     {
-                        Name = "Settings",
+                        Title = "Settings",
+                        Description = "Configure",
                         Icon = "cog",
-                        Stat = "Configure",
                         Url = Url.Action("Index", "Settings"),
                         ColorClass = "bg-gray-50 hover:bg-gray-100 border-gray-200",
-                        Badge = null
+                        Badge = string.Empty
                     }
                 },
                 
