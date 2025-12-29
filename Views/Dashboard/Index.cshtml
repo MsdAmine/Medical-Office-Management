@@ -5,28 +5,35 @@
     ViewBag.Title = "Dashboard";
 }
 
-<div class="space-y-6">
-    @* Welcome Header *@
-    <div class="bg-white border border-gray-200 rounded-lg p-6">
-        <div class="flex items-center justify-between">
+<div class="page-shell">
+    <div class="page-header">
+        <div class="space-y-2">
+            <div class="inline-flex items-center gap-2 rounded-full bg-brand-50 text-brand-700 px-3 py-1 text-xs font-semibold uppercase tracking-wide">Dashboard</div>
             <div>
-                <h1 class="text-2xl font-semibold text-gray-900">Welcome back, @Model.UserDisplayName</h1>
-                <p class="text-sm text-gray-500 mt-1">@Model.Now.ToString("dddd, MMMM dd, yyyy") | @Model.Now.ToString("h:mm tt")</p>
+                <h1 class="page-title">Welcome back, @Model.UserDisplayName</h1>
+                <p class="page-subtitle">@Model.Now.ToString("dddd, MMMM dd, yyyy") · @Model.Now.ToString("h:mm tt")</p>
             </div>
+        </div>
+        <div class="flex flex-wrap gap-3">
+            <a href="@Url.Action("Index", "Appointments")" class="btn-secondary">View Schedule</a>
+            <a href="@Url.Action("Index", "Patients")" class="btn-primary">Add Patient</a>
         </div>
     </div>
 
-    @* Today's Overview Stats *@
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="stat-grid">
         @foreach (var stat in Model.Stats)
         {
             @Html.Partial("_StatCard", stat)
         }
     </div>
 
-    @* Quick Actions *@
-    <div>
-        <h2 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+    <div class="space-y-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="section-heading">Quick Actions</h2>
+                <p class="section-caption">High-frequency tasks surfaced for today</p>
+            </div>
+        </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             @foreach (var action in Model.QuickActions)
             {
@@ -35,147 +42,52 @@
         </div>
     </div>
 
-    @* Alerts & Tasks Two Column *@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        @* Alerts & Notifications *@
-        <div class="bg-white border border-gray-200 rounded-lg p-6">
-            <div class="flex items-center mb-4">
-                <svg class="w-5 h-5 text-amber-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-                </svg>
-                <h3 class="text-lg font-semibold text-gray-900">Alerts & Notifications</h3>
-            </div>
-            
+        <div class="surface p-6 space-y-4">
+            <h3 class="section-heading">Alerts</h3>
             <div class="space-y-3">
                 @foreach (var alert in Model.Alerts)
                 {
-                    <a href="@alert.Url" class="block p-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-100">
-                        <div class="flex items-start">
-                            <div class="mr-3 mt-0.5">
-                                @if (alert.Type == "warning")
-                                {
-                                    <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                                    </svg>
-                                }
-                                else
-                                {
-                                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                }
-                            </div>
-                            <div class="flex-1">
-                                <p class="text-sm text-gray-900">@alert.Message</p>
-                                <p class="text-xs text-gray-500 mt-1">@alert.Timestamp.ToString("h:mm tt")</p>
-                            </div>
+                    <div class="flex items-start gap-3 p-3 rounded-xl border border-slate-100 bg-slate-50/60">
+                        <div class="h-9 w-9 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center">⚠️</div>
+                        <div>
+                            <div class="font-semibold text-slate-900">@alert.Title</div>
+                            <p class="text-sm text-slate-500">@alert.Description</p>
                         </div>
-                    </a>
+                    </div>
                 }
-            </div>
-            
-            <div class="mt-4 pt-4 border-t border-gray-100">
-                <a href="@Url.Action("Notifications", "Dashboard")" class="text-sm text-blue-600 hover:text-blue-700 font-medium">
-                    View All Notifications →
-                </a>
             </div>
         </div>
 
-        @* Pending Tasks *@
-        <div class="bg-white border border-gray-200 rounded-lg p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Pending Tasks</h3>
-            
-            <div class="grid grid-cols-1 gap-3">
+        <div class="surface p-6 space-y-4">
+            <h3 class="section-heading">Tasks</h3>
+            <div class="space-y-3">
                 @foreach (var task in Model.Tasks)
                 {
-                    <a href="@task.Url" class="block">
-                        <div class="@task.ColorClass border rounded-lg p-4 transition-all hover:shadow-md">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <div class="font-medium text-sm">@task.Category</div>
-                                </div>
-                                <div class="text-2xl font-bold">@task.Count</div>
-                            </div>
+                    <div class="flex items-center justify-between p-3 rounded-xl border border-slate-100">
+                        <div>
+                            <div class="font-semibold text-slate-900">@task.Title</div>
+                            <p class="text-sm text-slate-500">@task.Details</p>
                         </div>
-                    </a>
+                        <span class="badge-soft blue">@task.Status</span>
+                    </div>
                 }
             </div>
         </div>
     </div>
 
-    @* System Modules *@
-    <div>
-        <h2 class="text-lg font-semibold text-gray-900 mb-4">System Modules</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="space-y-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="section-heading">Modules</h2>
+                <p class="section-caption">Jump to key areas of the platform</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             @foreach (var module in Model.Modules)
             {
                 @Html.Partial("_ModuleCard", module)
             }
-        </div>
-    </div>
-
-    @* Recent Activity *@
-    <div class="bg-white border border-gray-200 rounded-lg p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
-        
-        <div class="space-y-4">
-            @foreach (var activity in Model.Activity)
-            {
-                <a href="@activity.Url" class="block">
-                    <div class="flex items-start hover:bg-gray-50 -mx-2 px-2 py-2 rounded transition-colors">
-                        <div class="mr-3 mt-1">
-                            @switch (activity.Icon)
-                            {
-                                case "check":
-                                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                                        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                        </svg>
-                                    </div>
-                                    break;
-                                case "user-plus":
-                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
-                                        </svg>
-                                    </div>
-                                    break;
-                                case "flask":
-                                    <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                                        <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
-                                        </svg>
-                                    </div>
-                                    break;
-                                case "dollar":
-                                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                                        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                    </div>
-                                    break;
-                                case "edit":
-                                    <div class="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
-                                        <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                        </svg>
-                                    </div>
-                                    break;
-                            }
-                        </div>
-                        <div class="flex-1">
-                            <p class="text-sm text-gray-900">@activity.Description</p>
-                            <p class="text-xs text-gray-500 mt-1">@activity.Timestamp.ToString("h:mm tt")</p>
-                        </div>
-                    </div>
-                </a>
-            }
-        </div>
-        
-        <div class="mt-4 pt-4 border-t border-gray-100">
-            <a href="@Url.Action("ActivityLog", "Dashboard")" class="text-sm text-blue-600 hover:text-blue-700 font-medium">
-                View Full Activity Log →
-            </a>
         </div>
     </div>
 </div>

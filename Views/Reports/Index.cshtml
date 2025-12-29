@@ -5,147 +5,143 @@
     ViewBag.Title = "Reports";
 }
 
-<div class="space-y-6">
-    @* Page Header *@
-    <div class="flex items-center justify-between">
-        <div>
-            <h1 class="text-2xl font-semibold text-gray-900">Reports</h1>
-            <p class="text-sm text-gray-500 mt-1">Analytics and performance summaries</p>
+<div class="page-shell">
+    <div class="page-header">
+        <div class="space-y-2">
+            <div class="inline-flex items-center gap-2 rounded-full bg-brand-50 text-brand-700 px-3 py-1 text-xs font-semibold uppercase tracking-wide">Analytics</div>
+            <div>
+                <h1 class="page-title">Reports</h1>
+                <p class="page-subtitle">Analytics and performance summaries</p>
+            </div>
         </div>
-        <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button class="btn-primary">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
             </svg>
             Export Report
         </button>
     </div>
 
-    @* Date Range Filter *@
-    <div class="bg-white border border-gray-200 rounded-lg p-4">
+    <div class="surface p-6 space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
-                <input type="date" value="@DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd")" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <label class="form-label">Start Date</label>
+                <input type="date" value="@DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd")" class="form-input">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
-                <input type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <label class="form-label">End Date</label>
+                <input type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" class="form-input">
             </div>
             <div>
-                <button class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                    Generate Report
-                </button>
+                <button class="btn-primary w-full justify-center">Generate Report</button>
             </div>
         </div>
     </div>
 
-    @* Appointments Analytics *@
-    <div class="bg-white border border-gray-200 rounded-lg p-6">
-        <h2 class="text-lg font-semibold text-gray-900 mb-4">Appointments</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div class="text-sm text-blue-700 mb-1">Today</div>
-                <div class="text-3xl font-bold text-blue-900">@Model.AppointmentsToday</div>
-            </div>
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div class="text-sm text-blue-700 mb-1">This Week</div>
-                <div class="text-3xl font-bold text-blue-900">@Model.AppointmentsThisWeek</div>
-            </div>
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div class="text-sm text-blue-700 mb-1">This Month</div>
-                <div class="text-3xl font-bold text-blue-900">@Model.AppointmentsThisMonth</div>
-            </div>
+    <div class="surface p-6 space-y-6">
+        <div class="flex items-center justify-between">
+            <h2 class="section-heading">Appointments</h2>
+            <span class="pill">Utilization snapshot</span>
         </div>
-        
-        @* Chart Placeholder *@
-        <div class="bg-gray-50 border border-gray-200 rounded-lg p-8">
-            <div class="flex items-center justify-center h-64">
-                <div class="text-center">
-                    <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                    </svg>
-                    <p class="text-sm text-gray-600">Appointments Trend Chart</p>
-                    <p class="text-xs text-gray-500 mt-1">Visual representation of appointment data over time</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    @* Revenue Analytics *@
-    <div class="bg-white border border-gray-200 rounded-lg p-6">
-        <h2 class="text-lg font-semibold text-gray-900 mb-4">Revenue</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                <div class="text-sm text-green-700 mb-1">Today</div>
-                <div class="text-3xl font-bold text-green-900">$@Model.RevenueToday.ToString("N2")</div>
-            </div>
-            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                <div class="text-sm text-green-700 mb-1">This Week</div>
-                <div class="text-3xl font-bold text-green-900">$@Model.RevenueThisWeek.ToString("N2")</div>
-            </div>
-            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                <div class="text-sm text-green-700 mb-1">This Month</div>
-                <div class="text-3xl font-bold text-green-900">$@Model.RevenueThisMonth.ToString("N2")</div>
-            </div>
-        </div>
-        
-        @* Chart Placeholder *@
-        <div class="bg-gray-50 border border-gray-200 rounded-lg p-8">
-            <div class="flex items-center justify-center h-64">
-                <div class="text-center">
-                    <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
-                    </svg>
-                    <p class="text-sm text-gray-600">Revenue Trend Chart</p>
-                    <p class="text-xs text-gray-500 mt-1">Visual representation of revenue data over time</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    @* New Patients Analytics *@
-    <div class="bg-white border border-gray-200 rounded-lg p-6">
-        <h2 class="text-lg font-semibold text-gray-900 mb-4">New Patients</h2>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                <div class="text-sm text-purple-700 mb-1">Today</div>
-                <div class="text-3xl font-bold text-purple-900">@Model.NewPatientsToday</div>
+            <div class="stat-card">
+                <div class="stat-label">Today</div>
+                <div class="stat-value text-brand-700">@Model.AppointmentsToday</div>
             </div>
-            <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                <div class="text-sm text-purple-700 mb-1">This Week</div>
-                <div class="text-3xl font-bold text-purple-900">@Model.NewPatientsThisWeek</div>
+            <div class="stat-card">
+                <div class="stat-label">This Week</div>
+                <div class="stat-value text-brand-700">@Model.AppointmentsThisWeek</div>
             </div>
-            <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                <div class="text-sm text-purple-700 mb-1">This Month</div>
-                <div class="text-3xl font-bold text-purple-900">@Model.NewPatientsThisMonth</div>
+            <div class="stat-card">
+                <div class="stat-label">This Month</div>
+                <div class="stat-value text-brand-700">@Model.AppointmentsThisMonth</div>
+            </div>
+        </div>
+        <div class="surface-muted p-8 rounded-2xl border border-dashed border-slate-200">
+            <div class="flex items-center justify-center h-60 text-center space-y-2 flex-col">
+                <svg class="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+                <p class="text-sm text-slate-600">Appointments Trend Chart</p>
+                <p class="text-xs text-slate-500">Visual representation of appointment data over time</p>
             </div>
         </div>
     </div>
 
-    @* Additional Metrics *@
-    <div class="bg-white border border-gray-200 rounded-lg p-6">
-        <h2 class="text-lg font-semibold text-gray-900 mb-4">Performance Metrics</h2>
-        <div class="space-y-4">
-            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div>
-                    <div class="text-sm font-medium text-gray-700">Average Wait Time</div>
-                    <div class="text-xs text-gray-500 mt-1">Time between check-in and appointment</div>
-                </div>
-                <div class="text-2xl font-bold text-gray-900">@Model.AverageWaitTime</div>
+    <div class="surface p-6 space-y-6">
+        <div class="flex items-center justify-between">
+            <h2 class="section-heading">Revenue</h2>
+            <span class="pill">Financial health</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="stat-card">
+                <div class="stat-label">Today</div>
+                <div class="stat-value text-success">$@Model.RevenueToday.ToString("N2")</div>
             </div>
-            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div>
-                    <div class="text-sm font-medium text-gray-700">Appointment Completion Rate</div>
-                    <div class="text-xs text-gray-500 mt-1">Percentage of scheduled appointments completed</div>
-                </div>
-                <div class="text-2xl font-bold text-green-600">94%</div>
+            <div class="stat-card">
+                <div class="stat-label">This Week</div>
+                <div class="stat-value text-success">$@Model.RevenueThisWeek.ToString("N2")</div>
             </div>
-            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <div class="stat-card">
+                <div class="stat-label">This Month</div>
+                <div class="stat-value text-success">$@Model.RevenueThisMonth.ToString("N2")</div>
+            </div>
+        </div>
+        <div class="surface-muted p-8 rounded-2xl border border-dashed border-slate-200">
+            <div class="flex items-center justify-center h-60 text-center space-y-2 flex-col">
+                <svg class="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
+                </svg>
+                <p class="text-sm text-slate-600">Revenue Trend Chart</p>
+                <p class="text-xs text-slate-500">Visual representation of revenue data over time</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="surface p-6 space-y-6">
+        <div class="flex items-center justify-between">
+            <h2 class="section-heading">New Patients</h2>
+            <span class="pill">Growth</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="stat-card">
+                <div class="stat-label">Today</div>
+                <div class="stat-value text-indigo-700">@Model.NewPatientsToday</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">This Week</div>
+                <div class="stat-value text-indigo-700">@Model.NewPatientsThisWeek</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">This Month</div>
+                <div class="stat-value text-indigo-700">@Model.NewPatientsThisMonth</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="surface p-6 space-y-4">
+        <h2 class="section-heading">Performance Metrics</h2>
+        <div class="space-y-3">
+            <div class="flex items-center justify-between p-4 surface-muted border border-slate-100">
                 <div>
-                    <div class="text-sm font-medium text-gray-700">Patient Satisfaction</div>
-                    <div class="text-xs text-gray-500 mt-1">Based on post-visit surveys</div>
+                    <div class="text-sm font-semibold text-slate-800">Average Wait Time</div>
+                    <div class="text-xs text-slate-500 mt-1">Time between check-in and appointment</div>
                 </div>
-                <div class="text-2xl font-bold text-blue-600">4.7/5.0</div>
+                <div class="text-2xl font-semibold text-slate-900">@Model.AverageWaitTime</div>
+            </div>
+            <div class="flex items-center justify-between p-4 surface-muted border border-slate-100">
+                <div>
+                    <div class="text-sm font-semibold text-slate-800">Appointment Completion Rate</div>
+                    <div class="text-xs text-slate-500 mt-1">Percentage of scheduled appointments completed</div>
+                </div>
+                <div class="text-2xl font-semibold text-success">94%</div>
+            </div>
+            <div class="flex items-center justify-between p-4 surface-muted border border-slate-100">
+                <div>
+                    <div class="text-sm font-semibold text-slate-800">Patient Satisfaction</div>
+                    <div class="text-xs text-slate-500 mt-1">Based on post-visit surveys</div>
+                </div>
+                <div class="text-2xl font-semibold text-brand-700">4.7/5.0</div>
             </div>
         </div>
     </div>
