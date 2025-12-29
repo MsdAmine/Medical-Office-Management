@@ -1,34 +1,38 @@
 @* File: Views/Dashboard/_QuickActionCard.cshtml *@
 @model MedicalOfficeManagement.ViewModels.Dashboard.QuickActionViewModel
 
-<a href="@Model.Url" class="block">
-    <div class="@Model.ColorClass text-white rounded-lg p-5 text-center transition-all hover:shadow-lg hover:scale-105">
-        <div class="mb-3 flex justify-center">
-            @switch (Model.Icon)
-            {
-                case "user-plus":
-                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
-                    </svg>
-                    break;
-                case "calendar-plus":
-                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v6m3-3H9"></path>
-                    </svg>
-                    break;
-                case "check-circle":
-                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    break;
-                case "search":
-                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                    </svg>
-                    break;
-            }
+<a href="@Model.Url" class="block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 rounded-2xl">
+    <div class="surface p-5 h-full transition-all hover:shadow-md hover:-translate-y-0.5">
+        <div class="flex items-center justify-between mb-4">
+            <div class="h-11 w-11 rounded-xl bg-brand-50 text-brand-700 flex items-center justify-center">
+                @switch (Model.Icon)
+                {
+                    case "user-plus":
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                        </svg>
+                        break;
+                    case "calendar-plus":
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v6m3-3H9"></path>
+                        </svg>
+                        break;
+                    case "check-circle":
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        break;
+                    case "search":
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        break;
+                }
+            </div>
+            <span class="badge-soft blue">@Model.Status</span>
         </div>
-        <div class="font-semibold">@Model.Label</div>
+        <div class="font-semibold text-slate-900 mb-1">@Model.Label</div>
+        <p class="text-sm text-slate-500">@Model.Description</p>
     </div>
 </a>

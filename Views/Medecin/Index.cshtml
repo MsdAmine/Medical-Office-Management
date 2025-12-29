@@ -1,72 +1,74 @@
 ﻿@model IEnumerable<MedicalOfficeManagement.Controllers.StaffVM>
 
-<div class="mb-8 flex justify-between items-center p-6">
-    <div>
-        <h1 class="text-3xl font-bold text-gray-800">Cabinet Staff Directory</h1>
-        <p class="text-gray-500">Manage all registered doctors and administrative staff.</p>
+<div class="page-shell">
+    <div class="page-header">
+        <div class="space-y-2">
+            <div class="inline-flex items-center gap-2 rounded-full bg-brand-50 text-brand-700 px-3 py-1 text-xs font-semibold uppercase tracking-wide">Directory</div>
+            <div>
+                <h1 class="page-title">Cabinet Staff Directory</h1>
+                <p class="page-subtitle">Manage all registered doctors and administrative staff.</p>
+            </div>
+        </div>
+        <a asp-action="Create" class="btn-primary">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            Add New Staff
+        </a>
     </div>
-    <a asp-action="Create" class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition shadow-md font-bold flex items-center">
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-        Add New Staff
-    </a>
-</div>
 
-<div class="bg-white mx-6 rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-    <table class="w-full text-left border-collapse">
-        <thead>
-            <tr class="bg-gray-50 border-b border-gray-200">
-                <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase">Member Information</th>
-                <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase text-center">Role</th>
-                <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase">Specialty</th>
-                <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase text-right">Actions</th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100">
-            @foreach (var item in Model)
-            {
-                <tr class="hover:bg-blue-50/30 transition">
-                    <td class="px-6 py-4">
-                        <div class="flex items-center">
-                            <div class="h-10 w-10 rounded-full @(item.Role == "Medecin" ? "bg-blue-100 text-blue-600" : "bg-green-100 text-green-600") flex items-center justify-center font-bold mr-3">
-                                @item.NomPrenom.Substring(0, 1).ToUpper()
-                            </div>
-                            <div>
-                                <div class="text-sm font-bold text-gray-900">@(item.Role == "Medecin" ? "Dr. " : "")@item.NomPrenom</div>
-                                <div class="text-xs text-gray-500">@item.Email</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 text-center">
-                        <span class="px-3 py-1 @(item.Role == "Medecin" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700") rounded-full text-[10px] font-bold uppercase">
-                            @item.Role
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-600">@item.Specialite</td>
-                    <td class="px-6 py-4 text-right">
-                        <div class="flex justify-end items-center space-x-2">
-                            @if (item.Role == "Medecin")
-                            {
-                                <a asp-action="Edit" asp-route-id="@item.MedecinId" class="p-2 text-yellow-600 hover:bg-yellow-100 rounded-lg">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                                </a>
-                                <a asp-action="Delete" asp-route-id="@item.MedecinId" class="p-2 text-red-600 hover:bg-red-100 rounded-lg">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                </a>
-                            }
-                            else
-                            {
-                                <a asp-action="EditStaff" asp-route-id="@item.UserId" class="p-2 text-yellow-600 hover:bg-yellow-100 rounded-lg">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                                </a>
-                                @* CHANGEMENT ICI : On utilise asp-action="Delete" avec userId *@
-                                <a asp-action="Delete" asp-route-userId="@item.UserId" class="p-2 text-red-600 hover:bg-red-100 rounded-lg">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                </a>
-                            }
-                        </div>
-                    </td>
+    <div class="table-shell">
+        <table class="w-full text-left">
+            <thead class="table-head">
+                <tr>
+                    <th class="px-6 py-4">Member Information</th>
+                    <th class="px-6 py-4 text-center">Role</th>
+                    <th class="px-6 py-4">Specialty</th>
+                    <th class="px-6 py-4 text-right">Actions</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody class="table-body">
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="h-10 w-10 rounded-full @(item.Role == "Medecin" ? "bg-brand-50 text-brand-700" : "bg-green-50 text-green-700") flex items-center justify-center font-bold">
+                                    @item.NomPrenom.Substring(0, 1).ToUpper()
+                                </div>
+                                <div>
+                                    <div class="text-sm font-semibold text-slate-900">@(item.Role == "Medecin" ? "Dr. " : "")@item.NomPrenom</div>
+                                    <div class="text-xs text-slate-500">@item.Email</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <span class="badge-soft @(item.Role == "Medecin" ? "blue" : "green") uppercase">@item.Role</span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-slate-600">@item.Specialite</td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex justify-end items-center gap-2">
+                                @if (item.Role == "Medecin")
+                                {
+                                    <a asp-action="Edit" asp-route-id="@item.MedecinId" class="btn-ghost text-amber-600">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@item.MedecinId" class="btn-ghost text-red-600">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a asp-action="EditStaff" asp-route-id="@item.UserId" class="btn-ghost text-amber-600">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-userId="@item.UserId" class="btn-ghost text-red-600">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    </a>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 </div>

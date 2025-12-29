@@ -1,56 +1,63 @@
 ﻿@model MedicalOfficeManagement.Models.Medecin
 
-<div class="min-h-screen flex items-center justify-center p-6 bg-gray-50">
-    <div class="max-w-2xl w-full bg-white rounded-[2.5rem] shadow-xl p-10 border border-gray-100">
-        <h2 class="text-2xl font-black text-gray-800 mb-8">Add New Staff Member</h2>
+<div class="page-shell">
+    <div class="page-header">
+        <div>
+            <div class="inline-flex items-center gap-2 rounded-full bg-brand-50 text-brand-700 px-3 py-1 text-xs font-semibold uppercase tracking-wide">Staff</div>
+            <h1 class="page-title mt-2">Add New Staff Member</h1>
+            <p class="page-subtitle">Create an account for a doctor or administrative member.</p>
+        </div>
+        <a asp-action="Index" class="btn-secondary">Cancel</a>
+    </div>
 
-        <form asp-action="Create" method="post">
-            <div class="mb-8">
-                <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Account Type</label>
-                <select name="SelectedRole" id="roleSelector" class="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none font-bold">
+    <div class="surface p-8 md:p-10 space-y-6">
+        <form asp-action="Create" method="post" class="space-y-6">
+            <div class="form-field">
+                <label class="form-label">Account Type</label>
+                <select name="SelectedRole" id="roleSelector" class="form-input">
                     <option value="Medecin">Doctor</option>
                     <option value="Personnel">Administrative (Secretary)</option>
                 </select>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div>
-                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Full Name</label>
-                    <input asp-for="NomPrenom" class="w-full p-4 bg-gray-50 rounded-2xl border-none" required />
+            <div class="form-grid">
+                <div class="form-field">
+                    <label class="form-label">Full Name</label>
+                    <input asp-for="NomPrenom" class="form-input" required />
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Email Address</label>
-                    <input asp-for="Email" class="w-full p-4 bg-gray-50 rounded-2xl border-none" required />
-                </div>
-            </div>
-
-            <div id="doctorSection" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div>
-                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Medical Specialty</label>
-                    <select asp-for="Specialite" asp-items="ViewBag.Specialites" class="w-full p-4 bg-gray-50 rounded-2xl border-none font-bold"></select>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Office Phone</label>
-                    <input asp-for="Telephone" class="w-full p-4 bg-gray-50 rounded-2xl border-none" />
+                <div class="form-field">
+                    <label class="form-label">Email Address</label>
+                    <input asp-for="Email" class="form-input" required />
                 </div>
             </div>
 
-            <div id="secretarySection" style="display:none;" class="space-y-6 mb-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Direct Phone Line</label>
-                        <input name="TelephonePersonnel" class="w-full p-4 bg-blue-50/50 rounded-2xl border-none" placeholder="06..." />
+            <div id="doctorSection" class="form-grid">
+                <div class="form-field">
+                    <label class="form-label">Medical Specialty</label>
+                    <select asp-for="Specialite" asp-items="ViewBag.Specialites" class="form-input"></select>
+                </div>
+                <div class="form-field">
+                    <label class="form-label">Office Phone</label>
+                    <input asp-for="Telephone" class="form-input" />
+                </div>
+            </div>
+
+            <div id="secretarySection" style="display:none;" class="space-y-4">
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label class="form-label">Direct Phone Line</label>
+                        <input name="TelephonePersonnel" class="form-input" placeholder="06..." />
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Department</label>
-                        <input name="ServicePersonnel" class="w-full p-4 bg-blue-50/50 rounded-2xl border-none" placeholder="Billing, Reception..." />
+                    <div class="form-field">
+                        <label class="form-label">Department</label>
+                        <input name="ServicePersonnel" class="form-input" placeholder="Billing, Reception..." />
                     </div>
                 </div>
             </div>
 
-            <div class="flex items-center justify-between mt-10">
-                <a asp-action="Index" class="text-gray-400 font-bold uppercase text-xs">Cancel</a>
-                <button type="submit" class="bg-blue-600 text-white px-10 py-4 rounded-2xl font-bold shadow-lg">Create Account</button>
+            <div class="flex justify-end gap-3 pt-4">
+                <a asp-action="Index" class="btn-secondary">Back</a>
+                <button type="submit" class="btn-primary">Create Account</button>
             </div>
         </form>
     </div>
@@ -61,7 +68,7 @@
         document.getElementById('roleSelector').addEventListener('change', function () {
             const docSec = document.getElementById('doctorSection');
             const secSec = document.getElementById('secretarySection');
-            
+
             if (this.value === 'Personnel') {
                 docSec.style.display = 'none';
                 secSec.style.display = 'block';
