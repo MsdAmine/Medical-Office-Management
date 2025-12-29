@@ -20,21 +20,21 @@ public partial class MedicalOfficeContext : IdentityDbContext<ApplicationUser>
     {
     }
 
-    public virtual DbSet<AuditLog> AuditLogs { get; set; }
+    public virtual DbSet<AuditLog> AuditLogs { get; set; } = null!;
 
-    public virtual DbSet<Consultation> Consultations { get; set; }
+    public virtual DbSet<Consultation> Consultations { get; set; } = null!;
 
-    public virtual DbSet<Medecin> Medecins { get; set; }
+    public virtual DbSet<Medecin> Medecins { get; set; } = null!;
 
-    public virtual DbSet<Ordonnance> Ordonnances { get; set; }
+    public virtual DbSet<Ordonnance> Ordonnances { get; set; } = null!;
 
-    public virtual DbSet<Patient> Patients { get; set; }
+    public virtual DbSet<Patient> Patients { get; set; } = null!;
 
-    public virtual DbSet<Planning> Plannings { get; set; }
+    public virtual DbSet<Planning> Plannings { get; set; } = null!;
 
-    public virtual DbSet<RendezVou> RendezVous { get; set; }
+    public virtual DbSet<RendezVou> RendezVous { get; set; } = null!;
 
-    public virtual DbSet<Salle> Salles { get; set; }
+    public virtual DbSet<Salle> Salles { get; set; } = null!;
 
     // public virtual DbSet<Utilisateur> Utilisateurs { get; set; } // Ligne retirée
 
