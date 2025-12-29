@@ -7,9 +7,9 @@ namespace MedicalOfficeManagement.ViewModels.MedicalRecords
     {
         public int Id { get; set; }
         public DateTime Date { get; set; }
-        public string PatientName { get; set; }
-        public string DoctorName { get; set; }
-        public string DiagnosisSummary { get; set; }
-        public string RecordType { get; set; }
+        public string PatientName { get; set; } = string.Empty;
+        public string DoctorName { get; set; } = string.Empty;
+        public string DiagnosisSummary { get; set; } = string.Empty;
+        public string RecordType { get; set; } = string.Empty;
     }
 }

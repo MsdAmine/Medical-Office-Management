@@ -15,6 +15,6 @@ namespace MedicalOfficeManagement.ViewModels.Reports
         public int NewPatientsThisWeek { get; set; }
         public int NewPatientsThisMonth { get; set; }
         
-        public string AverageWaitTime { get; set; }
+        public string AverageWaitTime { get; set; } = string.Empty;
     }
 }

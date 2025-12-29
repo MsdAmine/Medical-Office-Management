@@ -7,9 +7,9 @@ namespace MedicalOfficeManagement.ViewModels.Appointments
     {
         public int Id { get; set; }
         public DateTime Time { get; set; }
-        public string PatientName { get; set; }
-        public string DoctorName { get; set; }
-        public string Status { get; set; }
-        public string StatusColor { get; set; }
+        public string PatientName { get; set; } = string.Empty;
+        public string DoctorName { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public string StatusColor { get; set; } = string.Empty;
     }
 }
