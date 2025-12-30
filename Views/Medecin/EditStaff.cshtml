@@ -4,18 +4,18 @@
     <div class="max-w-2xl w-full bg-white rounded-[2.5rem] shadow-2xl border border-gray-100 p-12">
         
         <div class="mb-10">
+            <div class="inline-flex items-center gap-2 rounded-full bg-amber-50 text-amber-700 px-3 py-1 text-xs font-semibold uppercase tracking-wide mb-4">Personnel Update</div>
             <h2 class="text-3xl font-black text-gray-900 mb-2">Edit Administrative Staff</h2>
             <p class="text-gray-500 font-medium">Update profile details for <span class="text-blue-600">@Model.NomPrenom</span></p>
         </div>
 
         <form asp-action="EditStaff" method="post" class="space-y-8">
-            @* On cache l'ID technique Identity *@
             <input type="hidden" asp-for="ApplicationUserId" />
             <div asp-validation-summary="ModelOnly" class="text-red-500 text-sm font-bold"></div>
 
             <div>
                 <label class="block text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-3 ml-1">Full Name</label>
-                <input asp-for="NomPrenom" class="w-full p-5 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700" placeholder="e.g. Amine Moussaid" />
+                <input asp-for="NomPrenom" class="w-full p-5 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700" placeholder="e.g. Jean Dupont" />
                 <span asp-validation-for="NomPrenom" class="text-red-400 text-xs mt-1 ml-1"></span>
             </div>
 
@@ -23,6 +23,7 @@
                 <div>
                     <label class="block text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-3 ml-1">Email Address</label>
                     <input asp-for="Email" class="w-full p-5 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-blue-500 outline-none transition-all font-bold text-gray-700" />
+                    <span asp-validation-for="Email" class="text-red-400 text-xs mt-1 ml-1"></span>
                 </div>
 
                 <div>
@@ -32,8 +33,9 @@
             </div>
 
             <div>
-                <label class="block text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-3 ml-1">Office Location</label>
+                <label class="block text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-3 ml-1">Office Location / Address</label>
                 <input asp-for="Adresse" class="w-full p-5 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-blue-500 outline-none transition-all font-bold text-gray-700" placeholder="e.g. Floor 1, Reception Desk" />
+                <span asp-validation-for="Adresse" class="text-red-400 text-xs mt-1 ml-1"></span>
             </div>
 
             <div class="flex items-center justify-end space-x-6 pt-10 border-t border-gray-100">

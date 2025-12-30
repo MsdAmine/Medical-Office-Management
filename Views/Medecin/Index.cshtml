@@ -22,6 +22,7 @@
                     <th class="px-6 py-4">Member Information</th>
                     <th class="px-6 py-4 text-center">Role</th>
                     <th class="px-6 py-4">Specialty</th>
+                    <th class="px-6 py-4">Address</th>
                     <th class="px-6 py-4 text-right">Actions</th>
                 </tr>
             </thead>
@@ -44,6 +45,12 @@
                             <span class="badge-soft @(item.Role == "Medecin" ? "blue" : "green") uppercase">@item.Role</span>
                         </td>
                         <td class="px-6 py-4 text-sm text-slate-600">@item.Specialite</td>
+                        <td class="px-6 py-4 text-sm text-slate-600">
+                            <div class="flex items-center gap-1">
+                                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                @item.Address
+                            </div>
+                        </td>
                         <td class="px-6 py-4 text-right">
                             <div class="flex justify-end items-center gap-2">
                                 @if (item.Role == "Medecin")
@@ -51,19 +58,16 @@
                                     <a asp-action="Edit" asp-route-id="@item.MedecinId" class="btn-ghost text-amber-600">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                     </a>
-                                    <a asp-action="Delete" asp-route-id="@item.MedecinId" class="btn-ghost text-red-600">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                    </a>
                                 }
                                 else
                                 {
                                     <a asp-action="EditStaff" asp-route-id="@item.UserId" class="btn-ghost text-amber-600">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                     </a>
-                                    <a asp-action="Delete" asp-route-userId="@item.UserId" class="btn-ghost text-red-600">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                    </a>
                                 }
+                                <a asp-action="Delete" asp-route-id="@(item.Role == "Medecin" ? item.MedecinId : null)" asp-route-userId="@(item.Role != "Medecin" ? item.UserId : null)" class="btn-ghost text-red-600">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </a>
                             </div>
                         </td>
                     </tr>

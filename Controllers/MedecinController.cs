@@ -8,7 +8,6 @@ using MedicalOfficeManagement.Data;
 
 namespace MedicalOfficeManagement.Controllers
 {
-    // Correction CS0246 : Définition globale pour que le type soit reconnu partout
     public class StaffVM
     {
         public string UserId { get; set; }
@@ -18,7 +17,7 @@ namespace MedicalOfficeManagement.Controllers
         public string Telephone { get; set; }
         public string Specialite { get; set; }
         public string Role { get; set; }
-        public string Adresse { get; set; }
+        public string Address { get; set; }
     }
 
     [Authorize(Roles = "Admin")]
@@ -39,7 +38,6 @@ namespace MedicalOfficeManagement.Controllers
             ViewBag.Specialites = new SelectList(specs);
         }
 
-        // --- LISTE (INDEX) ---
         public async Task<IActionResult> Index()
         {
             var allStaff = new List<StaffVM>();
@@ -61,7 +59,7 @@ namespace MedicalOfficeManagement.Controllers
                         Telephone = user.PhoneNumber,
                         Role = role,
                         Specialite = medecinData?.Specialite ?? "Administrative",
-                        Adresse = medecinData?.Adresse ?? "N/A",
+                        Address = user.Address ?? "N/A",
                         MedecinId = medecinData?.Id
                     });
                 }
@@ -69,7 +67,6 @@ namespace MedicalOfficeManagement.Controllers
             return View(allStaff);
         }
 
-        // --- CRÉATION ---
         public IActionResult Create()
         {
             PopulateSpecialitesViewBag();
@@ -80,12 +77,10 @@ namespace MedicalOfficeManagement.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Medecin medecin, string SelectedRole, string TelephonePersonnel, string ServicePersonnel)
         {
-            // Nettoyage systématique des champs internes
             ModelState.Remove("ApplicationUser");
             ModelState.Remove("ApplicationUserId");
             ModelState.Remove("Id");
 
-            // Correction des erreurs de validation (image_d0b62d.png et image_d0ba6e.png)
             if (SelectedRole == "Medecin")
             {
                 ModelState.Remove("TelephonePersonnel");
@@ -108,6 +103,7 @@ namespace MedicalOfficeManagement.Controllers
                     FirstName = medecin.NomPrenom.Split(' ')[0],
                     LastName = medecin.NomPrenom.Contains(" ") ? medecin.NomPrenom.Substring(medecin.NomPrenom.IndexOf(' ') + 1) : "Staff",
                     PhoneNumber = SelectedRole == "Personnel" ? TelephonePersonnel : medecin.Telephone,
+                    Address = medecin.Adresse,
                     EmailConfirmed = true
                 };
 
@@ -131,7 +127,6 @@ namespace MedicalOfficeManagement.Controllers
             return View(medecin);
         }
 
-        // --- ÉDITION MÉDECIN ---
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -149,15 +144,30 @@ namespace MedicalOfficeManagement.Controllers
             ModelState.Remove("ApplicationUserId");
             if (ModelState.IsValid)
             {
-                _context.Update(model);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                var medecin = await _context.Medecins.Include(m => m.ApplicationUser).FirstOrDefaultAsync(m => m.Id == id);
+                if (medecin != null)
+                {
+                    medecin.NomPrenom = model.NomPrenom;
+                    medecin.Email = model.Email;
+                    medecin.Telephone = model.Telephone;
+                    medecin.Specialite = model.Specialite;
+                    medecin.Adresse = model.Adresse;
+
+                    if (medecin.ApplicationUser != null)
+                    {
+                        medecin.ApplicationUser.Address = model.Adresse;
+                        await _userManager.UpdateAsync(medecin.ApplicationUser);
+                    }
+
+                    _context.Update(medecin);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
             }
             PopulateSpecialitesViewBag();
             return View(model);
         }
 
-        // --- ÉDITION PERSONNEL (SECRETARY) ---
         public async Task<IActionResult> EditStaff(string id)
         {
             if (string.IsNullOrEmpty(id)) return NotFound();
@@ -168,7 +178,8 @@ namespace MedicalOfficeManagement.Controllers
                 ApplicationUserId = user.Id, 
                 Email = user.Email, 
                 Telephone = user.PhoneNumber, 
-                NomPrenom = $"{user.FirstName} {user.LastName}" 
+                NomPrenom = $"{user.FirstName} {user.LastName}",
+                Adresse = user.Address
             });
         }
 
@@ -191,6 +202,7 @@ namespace MedicalOfficeManagement.Controllers
                     user.LastName = parts.Length > 1 ? string.Join(" ", parts.Skip(1)) : "";
                     user.Email = model.Email;
                     user.PhoneNumber = model.Telephone;
+                    user.Address = model.Adresse;
                     await _userManager.UpdateAsync(user);
                     return RedirectToAction(nameof(Index));
                 }
@@ -198,7 +210,6 @@ namespace MedicalOfficeManagement.Controllers
             return View(model);
         }
 
-        // --- SUPPRESSION (GET & POST) ---
         public async Task<IActionResult> Delete(int? id, string userId)
         {
             Medecin model = null;
