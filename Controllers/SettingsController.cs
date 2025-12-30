@@ -26,7 +26,7 @@ namespace MedicalOfficeManagement.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateProfile(string firstName, string lastName, string email, string phoneNumber, string officeName)
+        public async Task<IActionResult> UpdateProfile(string firstName, string lastName, string email, string phoneNumber, string address)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return NotFound();
@@ -35,7 +35,7 @@ namespace MedicalOfficeManagement.Controllers
             user.FirstName = firstName;
             user.LastName = lastName;
             user.PhoneNumber = phoneNumber;
-            user.OfficeName = officeName;
+            user.Address = address;
 
             // Si l'email change, il faut aussi mettre à jour le UserName
             if (user.Email != email)

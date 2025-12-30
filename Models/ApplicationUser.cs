@@ -7,6 +7,6 @@ namespace MedicalOfficeManagement.Models
         // Nouveaux champs pour l'administrateur
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
-        public string? OfficeName { get; set; } // Nom du cabinet médical
+        public string? Address { get; set; }
     }
 }
