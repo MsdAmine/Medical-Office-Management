@@ -8,34 +8,38 @@ using MedicalOfficeManagement.Data;
 
 namespace MedicalOfficeManagement.Controllers
 {
+    // Correction CS0246 : Définition globale pour que le type soit reconnu partout
+    public class StaffVM
+    {
+        public string UserId { get; set; }
+        public int? MedecinId { get; set; }
+        public string NomPrenom { get; set; }
+        public string Email { get; set; }
+        public string Telephone { get; set; }
+        public string Specialite { get; set; }
+        public string Role { get; set; }
+        public string Adresse { get; set; }
+    }
+
     [Authorize(Roles = "Admin")]
     public class MedecinController : Controller
     {
         private readonly MedicalOfficeContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
 
-        public MedecinController(
-            MedicalOfficeContext context,
-            UserManager<ApplicationUser> userManager,
-            RoleManager<IdentityRole> roleManager)
+        public MedecinController(MedicalOfficeContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _userManager = userManager;
-            _roleManager = roleManager;
         }
 
         private void PopulateSpecialitesViewBag()
         {
-            var specialites = new List<string>
-            {
-                "Generalist", "Cardiologist", "Dermatologist",
-                "Pediatrician", "Neurologist", "Radiologist"
-            };
-            ViewBag.Specialites = new SelectList(specialites);
+            var specs = new List<string> { "Generalist", "Cardiologist", "Dermatologist", "Pediatrician", "Neurologist" };
+            ViewBag.Specialites = new SelectList(specs);
         }
 
-        // --- INDEX : Affiche tout le staff (Médecins et Secrétaires) ---
+        // --- LISTE (INDEX) ---
         public async Task<IActionResult> Index()
         {
             var allStaff = new List<StaffVM>();
@@ -49,7 +53,6 @@ namespace MedicalOfficeManagement.Controllers
                 if (role == "Medecin" || role == "Personnel")
                 {
                     var medecinData = await _context.Medecins.FirstOrDefaultAsync(m => m.ApplicationUserId == user.Id);
-
                     allStaff.Add(new StaffVM
                     {
                         UserId = user.Id,
@@ -57,8 +60,8 @@ namespace MedicalOfficeManagement.Controllers
                         Email = user.Email,
                         Telephone = user.PhoneNumber,
                         Role = role,
-                        Specialite = medecinData?.Specialite ?? "N/A",
-                        Adresse = medecinData?.Adresse ?? "Administrative Office",
+                        Specialite = medecinData?.Specialite ?? "Administrative",
+                        Adresse = medecinData?.Adresse ?? "N/A",
                         MedecinId = medecinData?.Id
                     });
                 }
@@ -66,7 +69,7 @@ namespace MedicalOfficeManagement.Controllers
             return View(allStaff);
         }
 
-        // --- CREATE : Création unifiée ---
+        // --- CRÉATION ---
         public IActionResult Create()
         {
             PopulateSpecialitesViewBag();
@@ -75,31 +78,35 @@ namespace MedicalOfficeManagement.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Medecin medecin, string SelectedRole, string TelephonePersonnel, string AdressePersonnel)
+        public async Task<IActionResult> Create(Medecin medecin, string SelectedRole, string TelephonePersonnel, string ServicePersonnel)
         {
-            // On ignore la validation du modèle Medecin si c'est du personnel
-            if (SelectedRole == "Personnel")
+            // Nettoyage systématique des champs internes
+            ModelState.Remove("ApplicationUser");
+            ModelState.Remove("ApplicationUserId");
+            ModelState.Remove("Id");
+
+            // Correction des erreurs de validation (image_d0b62d.png et image_d0ba6e.png)
+            if (SelectedRole == "Medecin")
             {
-                ModelState.Clear(); // On vide les erreurs car on ne va pas sauvegarder un "Medecin"
+                ModelState.Remove("TelephonePersonnel");
+                ModelState.Remove("ServicePersonnel");
+                if (string.IsNullOrWhiteSpace(medecin.Adresse)) medecin.Adresse = "Cabinet Medical"; 
             }
             else
             {
-                ModelState.Remove("ApplicationUser");
-                ModelState.Remove("ApplicationUserId");
+                ModelState.Remove("Specialite");
+                ModelState.Remove("Telephone");
+                ModelState.Remove("Adresse");
             }
 
-            if (SelectedRole == "Personnel" || ModelState.IsValid)
+            if (ModelState.IsValid)
             {
-                // Extraction du nom/prénom
-                var parts = medecin.NomPrenom?.Trim().Split(' ') ?? new string[] { "Staff", "Member" };
-
                 var user = new ApplicationUser
                 {
                     UserName = medecin.Email,
                     Email = medecin.Email,
-                    FirstName = parts[0],
-                    LastName = parts.Length > 1 ? string.Join(" ", parts.Skip(1)) : "",
-                    // On utilise les nouveaux champs passés en paramètres pour le personnel
+                    FirstName = medecin.NomPrenom.Split(' ')[0],
+                    LastName = medecin.NomPrenom.Contains(" ") ? medecin.NomPrenom.Substring(medecin.NomPrenom.IndexOf(' ') + 1) : "Staff",
                     PhoneNumber = SelectedRole == "Personnel" ? TelephonePersonnel : medecin.Telephone,
                     EmailConfirmed = true
                 };
@@ -116,18 +123,15 @@ namespace MedicalOfficeManagement.Controllers
                         _context.Add(medecin);
                         await _context.SaveChangesAsync();
                     }
-                    // Pour le personnel, on ne fait rien en base SQL : tout est dans Identity
-
                     return RedirectToAction(nameof(Index));
                 }
                 foreach (var error in result.Errors) ModelState.AddModelError("", error.Description);
             }
-
             PopulateSpecialitesViewBag();
             return View(medecin);
         }
 
-        // --- EDIT MÉDECIN (Profil complet) ---
+        // --- ÉDITION MÉDECIN ---
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -141,32 +145,11 @@ namespace MedicalOfficeManagement.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Medecin model)
         {
-            if (id != model.Id) return NotFound();
             ModelState.Remove("ApplicationUser");
             ModelState.Remove("ApplicationUserId");
-
             if (ModelState.IsValid)
             {
-                var medecinToUpdate = await _context.Medecins.Include(m => m.ApplicationUser).FirstOrDefaultAsync(m => m.Id == id);
-                if (medecinToUpdate == null) return NotFound();
-
-                medecinToUpdate.NomPrenom = model.NomPrenom;
-                medecinToUpdate.Specialite = model.Specialite;
-                medecinToUpdate.Adresse = model.Adresse;
-                medecinToUpdate.Telephone = model.Telephone;
-                medecinToUpdate.Email = model.Email;
-
-                if (medecinToUpdate.ApplicationUser != null)
-                {
-                    var user = medecinToUpdate.ApplicationUser;
-                    var parts = model.NomPrenom?.Trim().Split(' ');
-                    user.FirstName = parts?[0] ?? "";
-                    user.LastName = parts?.Length > 1 ? string.Join(" ", parts.Skip(1)) : "";
-                    user.Email = model.Email;
-                    user.UserName = model.Email;
-                    user.PhoneNumber = model.Telephone;
-                    await _userManager.UpdateAsync(user);
-                }
+                _context.Update(model);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
@@ -174,91 +157,60 @@ namespace MedicalOfficeManagement.Controllers
             return View(model);
         }
 
-        // --- EDIT STAFF (Personnel uniquement) ---
-        // --- EDIT STAFF (Personnel uniquement) ---
+        // --- ÉDITION PERSONNEL (SECRETARY) ---
         public async Task<IActionResult> EditStaff(string id)
         {
             if (string.IsNullOrEmpty(id)) return NotFound();
-
             var user = await _userManager.FindByIdAsync(id);
             if (user == null) return NotFound();
 
-            // On crée un modèle temporaire pour la vue
-            var model = new Medecin
-            {
-                ApplicationUserId = user.Id,
-                Email = user.Email,
-                Telephone = user.PhoneNumber,
-                NomPrenom = $"{user.FirstName} {user.LastName}",
-                // On peut utiliser Adresse pour stocker une info supplémentaire dans Identity si besoin, 
-                // ou simplement l'afficher comme "Administrative"
-                Adresse = "Administrative Office"
-            };
-
-            return View(model);
+            return View(new Medecin { 
+                ApplicationUserId = user.Id, 
+                Email = user.Email, 
+                Telephone = user.PhoneNumber, 
+                NomPrenom = $"{user.FirstName} {user.LastName}" 
+            });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditStaff(string id, Medecin model, string ServicePersonnel)
+        public async Task<IActionResult> EditStaff(Medecin model)
         {
-            var user = await _userManager.FindByIdAsync(model.ApplicationUserId);
-            if (user == null) return NotFound();
-
-            // CRUCIAL : On ignore les validations du modèle Medecin (SQL)
             ModelState.Remove("Id");
             ModelState.Remove("Specialite");
             ModelState.Remove("ApplicationUser");
+            ModelState.Remove("Adresse");
 
             if (ModelState.IsValid)
             {
-                var parts = model.NomPrenom?.Trim().Split(' ');
-                user.FirstName = parts?[0] ?? "";
-                user.LastName = parts?.Length > 1 ? string.Join(" ", parts.Skip(1)) : "";
-                user.Email = model.Email;
-                user.UserName = model.Email;
-                user.PhoneNumber = model.Telephone;
-
-                var result = await _userManager.UpdateAsync(user);
-                if (result.Succeeded)
+                var user = await _userManager.FindByIdAsync(model.ApplicationUserId);
+                if (user != null)
                 {
+                    var parts = model.NomPrenom.Split(' ');
+                    user.FirstName = parts[0];
+                    user.LastName = parts.Length > 1 ? string.Join(" ", parts.Skip(1)) : "";
+                    user.Email = model.Email;
+                    user.PhoneNumber = model.Telephone;
+                    await _userManager.UpdateAsync(user);
                     return RedirectToAction(nameof(Index));
                 }
-
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError("", error.Description);
-                }
             }
-
             return View(model);
         }
 
-        // --- DELETE UNIFIÉ (Réutilise une seule vue Delete.cshtml) ---
+        // --- SUPPRESSION (GET & POST) ---
         public async Task<IActionResult> Delete(int? id, string userId)
         {
-            Medecin model;
-
+            Medecin model = null;
             if (id.HasValue && id > 0)
-            {
                 model = await _context.Medecins.Include(m => m.ApplicationUser).FirstOrDefaultAsync(m => m.Id == id);
-            }
             else if (!string.IsNullOrEmpty(userId))
             {
                 var user = await _userManager.FindByIdAsync(userId);
-                if (user == null) return NotFound();
-                model = new Medecin
-                {
-                    ApplicationUserId = user.Id,
-                    NomPrenom = $"{user.FirstName} {user.LastName}",
-                    Email = user.Email,
-                    Specialite = "Administrative Staff",
-                    ApplicationUser = user
-                };
+                if (user != null) model = new Medecin { ApplicationUserId = user.Id, NomPrenom = $"{user.FirstName} {user.LastName}", Email = user.Email, Specialite = "Administrative" };
             }
-            else return NotFound();
 
-            return View(model);
+            return model == null ? NotFound() : View(model);
         }
 
         [HttpPost, ActionName("Delete")]
@@ -283,17 +235,5 @@ namespace MedicalOfficeManagement.Controllers
             }
             return RedirectToAction(nameof(Index));
         }
-    }
-
-    public class StaffVM
-    {
-        public string UserId { get; set; }
-        public int? MedecinId { get; set; }
-        public string NomPrenom { get; set; }
-        public string Email { get; set; }
-        public string Telephone { get; set; }
-        public string Specialite { get; set; }
-        public string Role { get; set; }
-        public string Adresse { get; set; }
     }
 }

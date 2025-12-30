@@ -5,18 +5,20 @@
         <div>
             <div class="inline-flex items-center gap-2 rounded-full bg-brand-50 text-brand-700 px-3 py-1 text-xs font-semibold uppercase tracking-wide">Staff</div>
             <h1 class="page-title mt-2">Add New Staff Member</h1>
-            <p class="page-subtitle">Create an account for a doctor or administrative member.</p>
         </div>
         <a asp-action="Index" class="btn-secondary">Cancel</a>
     </div>
 
     <div class="surface p-8 md:p-10 space-y-6">
+        @* The validation summary is key to seeing remaining issues *@
+        <div asp-validation-summary="All" class="rounded-xl bg-red-50 p-4 text-sm text-red-600 font-bold mb-4"></div>
+
         <form asp-action="Create" method="post" class="space-y-6">
             <div class="form-field">
                 <label class="form-label">Account Type</label>
                 <select name="SelectedRole" id="roleSelector" class="form-input">
                     <option value="Medecin">Doctor</option>
-                    <option value="Personnel">Administrative (Secretary)</option>
+                    <option value="Personnel">Secretary (Personnel)</option>
                 </select>
             </div>
 
@@ -31,27 +33,33 @@
                 </div>
             </div>
 
-            <div id="doctorSection" class="form-grid">
+            <div id="doctorSection" class="space-y-6">
+                @* Fix for image_d0ba6e.png: Address field for Doctors *@
                 <div class="form-field">
-                    <label class="form-label">Medical Specialty</label>
-                    <select asp-for="Specialite" asp-items="ViewBag.Specialites" class="form-input"></select>
+                    <label class="form-label">Office Address</label>
+                    <input asp-for="Adresse" class="form-input" placeholder="Enter clinic address..." />
                 </div>
-                <div class="form-field">
-                    <label class="form-label">Office Phone</label>
-                    <input asp-for="Telephone" class="form-input" />
+
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label class="form-label">Medical Specialty</label>
+                        <select asp-for="Specialite" asp-items="ViewBag.Specialites" class="form-input"></select>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">Office Phone</label>
+                        <input asp-for="Telephone" class="form-input" />
+                    </div>
                 </div>
             </div>
 
-            <div id="secretarySection" style="display:none;" class="space-y-4">
-                <div class="form-grid">
-                    <div class="form-field">
-                        <label class="form-label">Direct Phone Line</label>
-                        <input name="TelephonePersonnel" class="form-input" placeholder="06..." />
-                    </div>
-                    <div class="form-field">
-                        <label class="form-label">Department</label>
-                        <input name="ServicePersonnel" class="form-input" placeholder="Billing, Reception..." />
-                    </div>
+            <div id="secretarySection" style="display:none;" class="form-grid">
+                <div class="form-field">
+                    <label class="form-label">Direct Phone Line</label>
+                    <input name="TelephonePersonnel" class="form-input" />
+                </div>
+                <div class="form-field">
+                    <label class="form-label">Department</label>
+                    <input name="ServicePersonnel" class="form-input" />
                 </div>
             </div>
 
@@ -66,16 +74,9 @@
 @section Scripts {
     <script>
         document.getElementById('roleSelector').addEventListener('change', function () {
-            const docSec = document.getElementById('doctorSection');
-            const secSec = document.getElementById('secretarySection');
-
-            if (this.value === 'Personnel') {
-                docSec.style.display = 'none';
-                secSec.style.display = 'block';
-            } else {
-                docSec.style.display = 'grid';
-                secSec.style.display = 'none';
-            }
+            const isDoctor = this.value === 'Medecin';
+            document.getElementById('doctorSection').style.display = isDoctor ? 'block' : 'none';
+            document.getElementById('secretarySection').style.display = isDoctor ? 'none' : 'grid';
         });
     </script>
 }
