@@ -36,6 +36,8 @@ public partial class MedicalOfficeContext : IdentityDbContext<ApplicationUser>
 
     public virtual DbSet<Salle> Salles { get; set; } = null!;
 
+    public DbSet<Schedule> Schedules { get; set; }
+
     // public virtual DbSet<Utilisateur> Utilisateurs { get; set; } // Ligne retirée
 
     // OnConfiguring est supprimé, la configuration se fera dans Program.cs

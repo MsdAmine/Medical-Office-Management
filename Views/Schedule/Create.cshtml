@@ -1,0 +1,76 @@
+@model MedicalOfficeManagement.Models.Schedule
+
+<div class="page-shell">
+    <div class="page-header mb-6">
+        <h1 class="text-2xl font-bold text-slate-800">Définir un Horaire Hebdomadaire</h1>
+        <p class="text-slate-500">Affectez un médecin à une salle pour une plage horaire fixe.</p>
+    </div>
+
+    <div class="surface p-8 max-w-2xl mx-auto shadow-soft rounded-3xl border border-slate-100 bg-white">
+        <form asp-action="Create" class="space-y-6">
+            <div asp-validation-summary="ModelOnly" class="text-red-500 text-sm"></div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                @* Sélection du Médecin *@
+                <div class="form-field">
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Médecin</label>
+                    <select asp-for="MedecinId" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none transition-all" asp-items="ViewBag.MedecinId">
+                        <option value="">-- Sélectionner un médecin --</option>
+                    </select>
+                    <span asp-validation-for="MedecinId" class="text-red-500 text-xs"></span>
+                </div>
+
+                @* Sélection de la Salle (Affectation) *@
+                <div class="form-field">
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Salle d'affectation</label>
+                    <select asp-for="SalleId" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none transition-all" asp-items="ViewBag.SalleId">
+                        <option value="">-- Sélectionner une salle --</option>
+                    </select>
+                    <span asp-validation-for="SalleId" class="text-red-500 text-xs"></span>
+                </div>
+            </div>
+
+            <div class="form-field">
+                <label class="block text-sm font-bold text-slate-700 mb-2">Jour de la semaine</label>
+                <select asp-for="JourSemaine" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none transition-all">
+                    <option value="1">Lundi</option>
+                    <option value="2">Mardi</option>
+                    <option value="3">Mercredi</option>
+                    <option value="4">Jeudi</option>
+                    <option value="5">Vendredi</option>
+                    <option value="6">Samedi</option>
+                    <option value="0">Dimanche</option>
+                </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="form-field">
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Heure d'arrivée</label>
+                    <input asp-for="HeureArrivee" type="time" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none transition-all" />
+                </div>
+                <div class="form-field">
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Heure de départ</label>
+                    <input asp-for="HeureDepart" type="time" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none transition-all" />
+                </div>
+            </div>
+
+            <div class="form-field">
+                <label class="block text-sm font-bold text-slate-700 mb-2">Notes (Optionnel)</label>
+                <textarea asp-for="Note" rows="2" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none transition-all" placeholder="Ex: Consultation spécialisée..."></textarea>
+            </div>
+
+            <div class="flex gap-4 pt-4">
+                <a asp-action="Index" class="flex-1 px-6 py-3 rounded-xl border border-slate-200 text-slate-600 font-bold text-center hover:bg-slate-50 transition-all">
+                    Annuler
+                </a>
+                <button type="submit" class="flex-1 bg-brand-600 text-white px-6 py-3 rounded-xl font-bold shadow-soft hover:bg-brand-700 transition-all">
+                    Enregistrer l'affectation
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

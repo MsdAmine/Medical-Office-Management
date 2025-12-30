@@ -1,0 +1,57 @@
+@model IEnumerable<MedicalOfficeManagement.Models.Schedule>
+
+<div class="page-shell">
+    <div class="page-header flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Horaires & Affectations</h1>
+            <p class="text-slate-500">Gestion de la présence hebdomadaire des médecins par salle.</p>
+        </div>
+        <a asp-action="Create" class="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-sm transition-all flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            Nouvelle Affectation
+        </a>
+    </div>
+
+    <div class="surface shadow-soft rounded-3xl border border-slate-100 overflow-hidden">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-slate-50 border-b border-slate-100">
+                    <th class="px-6 py-4 text-xs font-bold uppercase text-slate-500">Médecin</th>
+                    <th class="px-6 py-4 text-xs font-bold uppercase text-slate-500">Jour</th>
+                    <th class="px-6 py-4 text-xs font-bold uppercase text-slate-500">Plage Horaire</th>
+                    <th class="px-6 py-4 text-xs font-bold uppercase text-slate-500">Salle Affectée</th>
+                    <th class="px-6 py-4 text-xs font-bold uppercase text-slate-500 text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                @foreach (var item in Model)
+                {
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                        <td class="px-6 py-4 font-semibold text-slate-700">@item.Medecin.NomPrenom</td>
+                        <td class="px-6 py-4">
+                            <span class="px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold">
+                                @item.JourSemaine
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-slate-600">
+                            @item.HeureArrivee.ToString(@"hh\:mm") - @item.HeureDepart.ToString(@"hh\:mm")
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                                <span class="font-medium text-slate-700">@item.Salle.Nom</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <form asp-action="Delete" asp-route-id="@item.Id" method="post" onsubmit="return confirm('Supprimer cette affectation ?');">
+                                <button type="submit" class="text-red-400 hover:text-red-600 transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
