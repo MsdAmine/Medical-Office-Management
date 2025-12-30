@@ -1,89 +1,72 @@
-﻿@using Microsoft.AspNetCore.Identity
-@inject UserManager<ApplicationUser> UserManager
+﻿@using MedicalOfficeManagement.ViewModels.Dashboard
+@model DashboardViewModel
 
 @{
     ViewData["Title"] = "Dashboard";
-    var user = await UserManager.GetUserAsync(User);
-    var fullName = user != null ? $"{user.FirstName} {user.LastName}" : User.Identity?.Name;
 }
 
 <div class="page-shell">
+    @* Section de bienvenue *@
     <div class="page-header">
         <div class="space-y-2">
             <div class="inline-flex items-center gap-2 rounded-full bg-brand-50 text-brand-700 px-3 py-1 text-xs font-semibold uppercase tracking-wide">Dashboard</div>
             <div>
-                <h1 class="page-title">Welcome back, @fullName</h1>
-                <p class="page-subtitle">@DateTime.Now.ToString("dddd, dd MMMM yyyy")</p>
+                <h1 class="page-title">Welcome back, @Model.UserDisplayName</h1>
+                <p class="page-subtitle">@Model.Now.ToString("dddd, dd MMMM yyyy")</p>
             </div>
         </div>
         <div class="flex flex-wrap gap-3">
-            <a asp-controller="Appointments" asp-action="Index" class="btn-secondary">View schedule</a>
-            <a asp-controller="Patients" asp-action="Index" class="btn-primary">Add patient</a>
+            <a href="/RendezVous" class="btn-secondary">View schedule</a>
+            <a href="/Patients/Create" class="btn-primary">Add patient</a>
         </div>
     </div>
 
+    @* Grille des Statistiques *@
     <div class="stat-grid">
+        @if (Model.Stats != null)
+        {
+            @foreach (var stat in Model.Stats)
+            {
+                <div class="stat-card">
+                    <p class="stat-label">@stat.Label</p>
+                    <p class="stat-value @stat.ColorClass">@stat.Value</p>
+                </div>
+            }
+        }
+        @* Carte fixe pour les messages *@
         <div class="stat-card">
-            <p class="stat-label">Appointments</p>
-            <p class="stat-value text-brand-700">@ViewBag.NbRendezVous</p>
-        </div>
-        <div class="stat-card">
-            <p class="stat-label">Total Patients</p>
-            <p class="stat-value text-success">@ViewBag.NbPatients</p>
-        </div>
-        <div class="stat-card">
-            <p class="stat-label">Active Doctors</p>
-            <p class="stat-value text-slate-900">@ViewBag.NbMedecins</p>
-        </div>
-        <div class="stat-card">
-            <p class="stat-label">Messages</p>
+            <p class="stat-label">MESSAGES</p>
             <p class="stat-value text-warning">7</p>
         </div>
     </div>
 
-    <div class="space-y-4">
-        <div class="flex items-center justify-between">
-            <h2 class="section-heading">Quick Actions</h2>
-        </div>
+    @* Section Quick Actions *@
+    <div class="space-y-4 mt-8">
+        <h2 class="section-heading text-lg font-bold text-slate-800">Quick Actions</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <a asp-controller="Medecin" asp-action="Create" class="surface p-6 rounded-2xl hover:shadow-md transition-all flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    <div class="h-12 w-12 rounded-xl bg-brand-50 text-brand-700 flex items-center justify-center">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-                    </div>
-                    <div>
-                        <div class="font-semibold text-slate-900">Add Doctor</div>
-                        <p class="text-sm text-slate-500">Register a new provider</p>
-                    </div>
-                </div>
-                <span class="badge-soft blue">New</span>
-            </a>
-
-            <div class="surface p-6 rounded-2xl flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    <div class="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                    </div>
-                    <div>
-                        <div class="font-semibold text-slate-900">Schedule Appointment</div>
-                        <p class="text-sm text-slate-500">Plan visits and follow-ups</p>
-                    </div>
-                </div>
-                <span class="badge-soft green">Today</span>
-            </div>
-
-            <div class="surface p-6 rounded-2xl flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    <div class="h-12 w-12 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                    </div>
-                    <div>
-                        <div class="font-semibold text-slate-900">Medical Records</div>
-                        <p class="text-sm text-slate-500">Review patient history</p>
-                    </div>
-                </div>
-                <span class="badge-soft amber">Files</span>
-            </div>
+            @if (Model.QuickActions != null)
+            {
+                @foreach (var action in Model.QuickActions)
+                {
+                    <a href="@action.Url" class="surface p-6 rounded-2xl border border-slate-100 hover:shadow-md transition-all flex items-center justify-between bg-white">
+                        <div class="flex items-center gap-4">
+                            <div class="h-12 w-12 rounded-xl @action.ColorClass flex items-center justify-center">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-slate-900">@action.Label</div>
+                                <p class="text-sm text-slate-500">@action.Description</p>
+                            </div>
+                        </div>
+                        @if (!string.IsNullOrEmpty(action.Status))
+                        {
+                            <span class="px-2 py-1 text-xs font-medium rounded-md bg-slate-50 text-slate-600">@action.Status</span>
+                        }
+                    </a>
+                }
+            }
         </div>
     </div>
 </div>

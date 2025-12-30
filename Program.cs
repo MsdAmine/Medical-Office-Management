@@ -13,8 +13,9 @@ builder.Services.AddDbContext<MedicalOfficeContext>(options =>
     options.UseSqlServer(connectionString));
 
 // 2. Configuration Identity
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => {
-    options.SignIn.RequireConfirmedAccount = false; 
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = false;
     options.Password.RequiredLength = 4;
     options.Password.RequireDigit = false;
     options.Password.RequireNonAlphanumeric = false;
@@ -25,7 +26,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => {
 .AddDefaultTokenProviders()
 .AddDefaultUI();
 
-builder.Services.ConfigureApplicationCookie(options => {
+builder.Services.ConfigureApplicationCookie(options =>
+{
     options.LoginPath = "/Identity/Account/Login";
     options.AccessDeniedPath = "/Identity/Account/AccessDenied";
 });
@@ -35,9 +37,12 @@ builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment()) {
+if (app.Environment.IsDevelopment())
+{
     app.UseDeveloperExceptionPage();
-} else {
+}
+else
+{
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
@@ -52,10 +57,14 @@ app.UseAuthorization();
 app.MapRazorPages();
 
 // --- LOGIQUE DE DÉMARRAGE ---
-app.MapGet("/", context => {
-    if (!context.User.Identity?.IsAuthenticated ?? true) {
+app.MapGet("/", context =>
+{
+    if (!context.User.Identity?.IsAuthenticated ?? true)
+    {
         context.Response.Redirect("/Identity/Account/Login");
-    } else {
+    }
+    else
+    {
         context.Response.Redirect("/Home/Index");
     }
     return Task.CompletedTask;
@@ -66,7 +75,8 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 // Seed Data
-using (var scope = app.Services.CreateScope()) {
+using (var scope = app.Services.CreateScope())
+{
     var services = scope.ServiceProvider;
     try { await DbInitializer.SeedRolesAndAdminUser(services); }
     catch (Exception ex) { /* Log error */ }

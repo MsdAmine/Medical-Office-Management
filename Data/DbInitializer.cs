@@ -22,7 +22,7 @@ public static class DbInitializer
 
         // 2. Paramètres de l'Admin
         string adminEmail = "admin@email.com";
-        string adminPassword = "TestPassword1!"; 
+        string adminPassword = "TestPassword1!";
         string adminRole = "Admin";
 
         var adminUser = await userManager.FindByEmailAsync(adminEmail);
@@ -46,7 +46,7 @@ public static class DbInitializer
         else
         {
             // FORCE LA MISE À JOUR (Si l'utilisateur existe déjà)
-            
+
             // On s'assure que l'email est confirmé
             adminUser.EmailConfirmed = true;
             await userManager.UpdateAsync(adminUser);

@@ -21,7 +21,7 @@ namespace MedicalOfficeManagement.Areas.Identity.Pages.Account
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<LoginModel> _logger;
 
-        public LoginModel(SignInManager<ApplicationUser> signInManager, 
+        public LoginModel(SignInManager<ApplicationUser> signInManager,
             UserManager<ApplicationUser> userManager,
             ILogger<LoginModel> logger)
         {
@@ -74,12 +74,12 @@ namespace MedicalOfficeManagement.Areas.Identity.Pages.Account
             if (ModelState.IsValid)
             {
                 var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
-                
+
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
                     var user = await _userManager.FindByEmailAsync(Input.Email);
-                    
+
                     if (user != null)
                     {
                         // Redirection forcée selon le rôle pour éviter l'accès refusé
@@ -87,7 +87,7 @@ namespace MedicalOfficeManagement.Areas.Identity.Pages.Account
                         {
                             return RedirectToAction("DoctorDashboard", "Home");
                         }
-                        
+
                         if (await _userManager.IsInRoleAsync(user, "Admin"))
                         {
                             return RedirectToAction("Index", "Home");
@@ -96,7 +96,7 @@ namespace MedicalOfficeManagement.Areas.Identity.Pages.Account
 
                     return LocalRedirect(returnUrl);
                 }
-                
+
                 if (result.IsLockedOut)
                 {
                     return RedirectToPage("./Lockout");

@@ -62,7 +62,7 @@ namespace MedicalOfficeManagement.Controllers
                 },
                 TotalRecords = 3421
             };
-            
+
             return View(model);
         }
 

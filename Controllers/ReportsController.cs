@@ -22,7 +22,7 @@ namespace MedicalOfficeManagement.Controllers
                 NewPatientsThisMonth = 67,
                 AverageWaitTime = "12 min"
             };
-            
+
             return View(model);
         }
     }

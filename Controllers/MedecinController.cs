@@ -85,7 +85,7 @@ namespace MedicalOfficeManagement.Controllers
             {
                 ModelState.Remove("TelephonePersonnel");
                 ModelState.Remove("ServicePersonnel");
-                if (string.IsNullOrWhiteSpace(medecin.Adresse)) medecin.Adresse = "Cabinet Medical"; 
+                if (string.IsNullOrWhiteSpace(medecin.Adresse)) medecin.Adresse = "Cabinet Medical";
             }
             else
             {
@@ -174,10 +174,11 @@ namespace MedicalOfficeManagement.Controllers
             var user = await _userManager.FindByIdAsync(id);
             if (user == null) return NotFound();
 
-            return View(new Medecin { 
-                ApplicationUserId = user.Id, 
-                Email = user.Email, 
-                Telephone = user.PhoneNumber, 
+            return View(new Medecin
+            {
+                ApplicationUserId = user.Id,
+                Email = user.Email,
+                Telephone = user.PhoneNumber,
                 NomPrenom = $"{user.FirstName} {user.LastName}",
                 Adresse = user.Address
             });

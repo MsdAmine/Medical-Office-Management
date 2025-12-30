@@ -51,7 +51,7 @@ namespace MedicalOfficeManagement.Controllers
                 // LOGIQUE DE DÉTECTION DE CONFLIT
                 // Vérifie si la même salle est occupée le même jour sur le même créneau
                 bool hasConflict = await _context.Schedules
-                    .AnyAsync(s => s.SalleId == schedule.SalleId 
+                    .AnyAsync(s => s.SalleId == schedule.SalleId
                                 && s.JourSemaine == schedule.JourSemaine
                                 && (
                                     (schedule.HeureArrivee >= s.HeureArrivee && schedule.HeureArrivee < s.HeureDepart) ||
