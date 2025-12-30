@@ -1,14 +1,13 @@
-// File: Controllers/PatientsController.cs
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using MedicalOfficeManagement.Models;
-using MedicalOfficeManagement.ViewModels.Patients;
 using Microsoft.AspNetCore.Mvc;
+using MedicalOfficeManagement.Data;
+using MedicalOfficeManagement.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MedicalOfficeManagement.Controllers
 {
+    // Autorisation pour l'administrateur et le rôle de Fatima (Personnel)
+    [Authorize(Roles = "Admin,Personnel")]
     public class PatientsController : Controller
     {
         private readonly MedicalOfficeContext _context;
@@ -18,81 +17,114 @@ namespace MedicalOfficeManagement.Controllers
             _context = context;
         }
 
-        public async Task<ActionResult> Index()
+        // GET: Patients
+        // Affiche la liste complète des patients enregistrés
+        public async Task<IActionResult> Index()
         {
-            var patients = await _context.Patients
-                .Include(p => p.RendezVous)
-                .ToListAsync();
+            var patients = await _context.Patients.ToListAsync();
+            return View(patients);
+        }
 
-            var patientViewModels = patients
-                .Select(p =>
+        // GET: Patients/Details/5
+        // Affiche la fiche complète d'un patient (View File)
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var patient = await _context.Patients
+                .FirstOrDefaultAsync(m => m.Id == id);
+                
+            if (patient == null) return NotFound();
+
+            return View(patient);
+        }
+
+        // GET: Patients/Create
+        // Affiche le formulaire d'enregistrement appelé par le Dashboard
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        // POST: Patients/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("Id,Nom,Prenom,DateNaissance,Sexe,Telephone,Email,Adresse,Antecedents")] Patient patient)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Add(patient);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            return View(patient);
+        }
+
+        // GET: Patients/Edit/5
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var patient = await _context.Patients.FindAsync(id);
+            if (patient == null) return NotFound();
+            
+            return View(patient);
+        }
+
+        // POST: Patients/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Nom,Prenom,DateNaissance,Sexe,Adresse,Telephone,Email,Antecedents")] Patient patient)
+        {
+            if (id != patient.Id) return NotFound();
+
+            if (ModelState.IsValid)
+            {
+                try
                 {
-                    var lastVisit = p.RendezVous
-                        .OrderByDescending(r => r.DateFin != default ? r.DateFin : r.DateDebut)
-                        .Select(r => r.DateFin != default ? r.DateFin : r.DateDebut)
-                        .FirstOrDefault();
+                    _context.Update(patient);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!PatientExists(patient.Id)) return NotFound();
+                    else throw;
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            return View(patient);
+        }
 
-                    var status = CalculatePatientStatus(lastVisit, p.RendezVous.Any());
+        // GET: Patients/Delete/5
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null) return NotFound();
 
-                    return new PatientViewModel
-                    {
-                        Id = p.Id,
-                        FullName = $"{p.Prenom} {p.Nom}",
-                        Phone = p.Telephone ?? "N/A",
-                        Email = p.Email ?? "N/A",
-                        LastVisit = lastVisit == default ? DateTime.Now : lastVisit,
-                        Status = status,
-                        StatusColor = MapStatusColor(status)
-                    };
-                })
-                .OrderBy(p => p.FullName)
-                .ToList();
+            var patient = await _context.Patients
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (patient == null) return NotFound();
 
-            var model = new PatientsIndexViewModel
+            return View(patient);
+        }
+
+        // POST: Patients/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var patient = await _context.Patients.FindAsync(id);
+            if (patient != null)
             {
-                Patients = patientViewModels,
-                TotalPatients = patientViewModels.Count,
-                ActivePatients = patientViewModels.Count(p => p.Status == "Active"),
-                NewThisMonth = patientViewModels.Count(p => p.LastVisit.Month == DateTime.Now.Month && p.LastVisit.Year == DateTime.Now.Year)
-            };
-
-            return View(model);
-        }
-
-        public ActionResult Details(int id)
-        {
-            return View();
-        }
-
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        private static string CalculatePatientStatus(DateTime lastVisit, bool hasVisits)
-        {
-            if (!hasVisits)
-            {
-                return "Pending";
+                _context.Patients.Remove(patient);
             }
 
-            var daysSinceLast = (DateTime.Now - (lastVisit == default ? DateTime.Now : lastVisit)).TotalDays;
-            if (daysSinceLast <= 60)
-            {
-                return "Active";
-            }
-
-            return "Inactive";
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
-        private static string MapStatusColor(string status)
+        private bool PatientExists(int id)
         {
-            return status switch
-            {
-                "Active" => "bg-green-100 text-green-700 border-green-200",
-                "Pending" => "bg-amber-100 text-amber-700 border-amber-200",
-                _ => "bg-gray-100 text-gray-700 border-gray-200"
-            };
+            return _context.Patients.Any(e => e.Id == id);
         }
     }
 }

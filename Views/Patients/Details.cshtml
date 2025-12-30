@@ -1,0 +1,66 @@
+@model MedicalOfficeManagement.Models.Patient
+
+<div class="max-w-4xl mx-auto p-6">
+    @* En-tête du Dossier *@
+    <div class="mb-8 flex justify-between items-start">
+        <div>
+            <a asp-action="Index" class="text-sm text-slate-500 hover:text-brand-600">← Back to Directory</a>
+            <h1 class="text-3xl font-bold text-slate-800 mt-2">Patient File: @Model.Prenom @Model.Nom</h1>
+            <p class="text-slate-500">ID: #PT-@Model.Id.ToString("D4")</p>
+        </div>
+        <div class="flex gap-3">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="px-4 py-2 border border-slate-300 rounded-lg text-slate-600 hover:bg-slate-50 transition font-medium">Edit Info</a>
+            <button class="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition font-medium">New Appointment</button>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        @* Colonne Gauche: Infos Contact *@
+        <div class="space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">Contact Details</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs text-slate-400">Phone</label>
+                        <p class="text-slate-700 font-medium">@(Model.Telephone ?? "Not provided")</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400">Email</label>
+                        <p class="text-slate-700 font-medium">@(Model.Email ?? "Not provided")</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400">Address</label>
+                        <p class="text-slate-700">@(Model.Adresse ?? "No address on file")</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* Colonne Droite: Infos Médicales *@
+        <div class="md:col-span-2 space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">Medical Overview</h3>
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-slate-50 p-4 rounded-lg">
+                        <label class="block text-xs text-slate-400">Date of Birth</label>
+                        <p class="text-slate-700 font-semibold">@(Model.DateNaissance?.ToString("dd MMMM yyyy") ?? "N/A")</p>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-lg">
+                        <label class="block text-xs text-slate-400">Gender</label>
+                        <p class="text-slate-700 font-semibold">@Model.Sexe</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-sm font-semibold text-red-600 mb-2 flex items-center gap-2">
+                        <span class="w-2 h-2 bg-red-600 rounded-full"></span>
+                        Medical History & Allergies
+                    </h4>
+                    <div class="bg-red-50 p-4 rounded-lg border border-red-100 text-red-900 whitespace-pre-line">
+                        @(string.IsNullOrWhiteSpace(Model.Antecedents) ? "No known medical history recorded." : Model.Antecedents)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

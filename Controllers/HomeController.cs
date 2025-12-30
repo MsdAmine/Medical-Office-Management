@@ -2,7 +2,7 @@ using System.Diagnostics;
 using MedicalOfficeManagement.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using MedicalOfficeManagement.Data;
+using MedicalOfficeManagement.Data; 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using MedicalOfficeManagement.ViewModels.Dashboard;
@@ -21,64 +21,65 @@ namespace MedicalOfficeManagement.Controllers
             _userManager = userManager;
         }
 
-        [Authorize(Roles = "Admin")]
+        // Changement crucial : Autoriser "Personnel" au lieu de "Secretary"
+        [Authorize(Roles = "Admin,Personnel")]
         public async Task<IActionResult> Index()
         {
             var user = await _userManager.GetUserAsync(User);
             var today = DateTime.Today;
 
-            // Récupération des compteurs réels (seront à 0 si la base est vide)
-            var nbMedecins = await _context.Medecins.CountAsync();
-            var nbPatients = await _context.Patients.CountAsync();
-            var nbRendezVous = await _context.RendezVous.CountAsync(r => r.DateDebut.Date == today);
+            // Récupération des statistiques réelles
+            var doctorCount = await _context.Medecins.CountAsync();
+            var patientCount = await _context.Patients.CountAsync();
+            var todayAppts = await _context.RendezVous.CountAsync(r => r.DateDebut.Date == today);
 
-            // Initialisation du modèle avec vos propriétés : Label, Description, Url
             var model = new DashboardViewModel
             {
-                UserDisplayName = user?.FirstName ?? "Amine",
+                // Affiche le nom de Fatima ou Amine selon la session
+                UserDisplayName = user?.FirstName ?? "Utilisateur",
                 Now = DateTime.Now,
-
-                // Tuiles de statistiques
-                Stats = new List<StatCardViewModel>
-                {
-                    new StatCardViewModel { Label = "APPOINTMENTS", Value = nbRendezVous.ToString(), ColorClass = "text-brand-700" },
-                    new StatCardViewModel { Label = "TOTAL PATIENTS", Value = nbPatients.ToString(), ColorClass = "text-success" },
-                    new StatCardViewModel { Label = "ACTIVE DOCTORS", Value = nbMedecins.ToString(), ColorClass = "text-slate-900" }
-                },
-
-                // Actions rapides (Quick Actions)
-                QuickActions = new List<QuickActionViewModel>
-                {
-                    new QuickActionViewModel {
-                        Label = "Add Doctor",
-                        Description = "Register a new provider",
-                        Status = "New",
-                        // Utilise "Medecin" car c'est le nom de votre dossier dans Views
-                        Url = "/Medecin/Create",
-                        ColorClass = "bg-brand-50 text-brand-700"
-                    },
-                    new QuickActionViewModel {
-                        Label = "Schedule",
-                        Description = "Plan visits",
-                        Status = "Today",
-                        Icon = "calendar",
-                        // Changé de /RendezVous/ à /Appointments/ pour correspondre à image_3bf650.png
-                        Url = "/Appointments/Create",
-                        ColorClass = "bg-green-50 text-green-700"
-                    },
-                    new QuickActionViewModel {
-                        Label = "Patients",
-                        Description = "View records",
-                        Status = "Files",
-                        Icon = "users",
-                        Url = "/Patients/Index",
-                        ColorClass = "bg-blue-50 text-blue-700"
-                    }
-                }
+                Stats = new List<StatCardViewModel>(),
+                QuickActions = new List<QuickActionViewModel>()
             };
 
-            // Envoi du modèle à la vue pour éviter le crash NullReference
+            // --- LOGIQUE ADMIN ---
+            if (User.IsInRole("Admin"))
+            {
+                model.Stats.Add(new StatCardViewModel { Label = "ACTIVE DOCTORS", Value = doctorCount.ToString(), ColorClass = "text-slate-900" });
+                model.Stats.Add(new StatCardViewModel { Label = "MESSAGES", Value = "7", ColorClass = "text-warning" });
+
+                model.QuickActions.Add(new QuickActionViewModel { 
+                    Label = "Add Doctor", 
+                    Description = "Register a new provider", 
+                    Status = "New",
+                    Icon = "plus",
+                    Url = "/Medecin/Create", // Dossier au singulier dans Views
+                    ColorClass = "bg-brand-50 text-brand-700"
+                });
+            }
+            // --- LOGIQUE PERSONNEL (FATIMA) ---
+            else if (User.IsInRole("Personnel")) 
+            {
+                model.Stats.Add(new StatCardViewModel { Label = "TODAY'S APPOINTMENTS", Value = todayAppts.ToString(), ColorClass = "text-brand-700" });
+                model.Stats.Add(new StatCardViewModel { Label = "TOTAL PATIENTS", Value = patientCount.ToString(), ColorClass = "text-success" });
+
+                model.QuickActions.Add(new QuickActionViewModel { 
+                    Label = "Register Patient", 
+                    Description = "Create medical file", 
+                    Status = "Start",
+                    Icon = "user-plus",
+                    Url = "/Patients/Create", // Dossier existant
+                    ColorClass = "bg-blue-50 text-blue-700"
+                });
+            }
+
             return View(model);
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
     }
 }
