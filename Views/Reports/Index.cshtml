@@ -3,6 +3,8 @@
 
 @{
     ViewBag.Title = "Reports";
+    var access = AccessControl.GetCurrent();
+    var canUseReports = access.ShowReports;
 }
 
 <div class="page-shell">
@@ -14,7 +16,8 @@
                 <p class="page-subtitle">Analytics and performance summaries</p>
             </div>
         </div>
-        <button class="btn-primary">
+        <button class="btn-primary @(canUseReports ? "" : "opacity-60 cursor-not-allowed")"
+                @(canUseReports ? "" : "disabled title=\"Reports are available to billing and admin roles\"")>
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
             </svg>
@@ -22,18 +25,25 @@
         </button>
     </div>
 
+    @if (!canUseReports)
+    {
+        <div class="surface border border-amber-200 bg-amber-50 text-amber-700 p-4 rounded-xl mb-6">
+            Limited access: report exports are visible to administrators and billing roles. Metrics remain read-only.
+        </div>
+    }
+
     <div class="surface p-6 space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
             <div>
                 <label class="form-label">Start Date</label>
-                <input type="date" value="@DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd")" class="form-input">
+                <input type="date" value="@DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd")" class="form-input" @(canUseReports ? "" : "disabled")>
             </div>
             <div>
                 <label class="form-label">End Date</label>
-                <input type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" class="form-input">
+                <input type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" class="form-input" @(canUseReports ? "" : "disabled")>
             </div>
             <div>
-                <button class="btn-primary w-full justify-center">Generate Report</button>
+                <button class="btn-primary w-full justify-center @(canUseReports ? "" : "opacity-60 cursor-not-allowed")" @(canUseReports ? "" : "disabled title=\"Report generation is limited to authorized roles\"")>Generate Report</button>
             </div>
         </div>
     </div>

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MedicalOfficeManagement.Data;
 using MedicalOfficeManagement.Data.Repositories;
+using MedicalOfficeManagement.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +33,8 @@ builder.Services.AddDbContext<MedicalOfficeDbContext>(options =>
 builder.Services.AddScoped<IPatientRepository, PatientRepository>();
 builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
 builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IAccessControlService, AccessControlService>();
 
 // 2. Configuration Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>

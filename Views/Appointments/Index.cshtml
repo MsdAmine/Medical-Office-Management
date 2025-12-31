@@ -3,6 +3,8 @@
 
 @{
     ViewBag.Title = "Appointments";
+    var access = AccessControl.GetCurrent();
+    var canSchedule = access.CanSchedule;
 }
 
 <div class="page-shell">
@@ -14,7 +16,10 @@
                 <p class="page-subtitle">Schedule and manage patient appointments</p>
             </div>
         </div>
-        <button type="button" id="open-appointment" class="btn-primary">
+        <button type="button"
+                id="open-appointment"
+                class="btn-primary @(canSchedule ? "" : "opacity-60 cursor-not-allowed")"
+                @(canSchedule ? "" : "disabled title=\"Scheduling is available to clinical and front desk roles\"")>
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
             </svg>
@@ -172,8 +177,16 @@
                             </td>
                             <td class="px-5 py-3 whitespace-nowrap text-right text-sm space-x-3">
                                 <a href="@Url.Action("Details", "Appointments", new { id = appointment.Id })" class="btn-ghost text-brand-700">View</a>
-                                <a href="@Url.Action("Edit", "Appointments", new { id = appointment.Id })" class="btn-ghost">Edit</a>
-                                <a href="@Url.Action("Cancel", "Appointments", new { id = appointment.Id })" class="btn-ghost text-red-600">Cancel</a>
+                                @if (canSchedule)
+                                {
+                                    <a href="@Url.Action("Edit", "Appointments", new { id = appointment.Id })" class="btn-ghost">Edit</a>
+                                    <a href="@Url.Action("Cancel", "Appointments", new { id = appointment.Id })" class="btn-ghost text-red-600">Cancel</a>
+                                }
+                                else
+                                {
+                                    <span class="btn-ghost text-slate-400 cursor-not-allowed" title="Updates are limited to scheduling roles">Edit</span>
+                                    <span class="btn-ghost text-slate-400 cursor-not-allowed" title="Updates are limited to scheduling roles">Cancel</span>
+                                }
                             </td>
                         </tr>
                     }
