@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
-using MedicalOfficeManagement.Data;
-using MedicalOfficeManagement.Models;
 using MedicalOfficeManagement.ViewModels.Patients;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
+using MedicalOfficeManagement.Data.Repositories;
 
 namespace MedicalOfficeManagement.Controllers
 {
@@ -13,60 +12,58 @@ namespace MedicalOfficeManagement.Controllers
     [Authorize(Roles = "Admin,Personnel")]
     public class PatientsController : Controller
     {
-        private readonly MedicalOfficeContext _context;
+        private readonly IPatientRepository _patientRepository;
 
-        public PatientsController(MedicalOfficeContext context)
+        public PatientsController(IPatientRepository patientRepository)
         {
-            _context = context;
+            _patientRepository = patientRepository;
         }
 
         // GET: Patients
         // Affiche la liste complète des patients enregistrés
         public async Task<IActionResult> Index()
         {
-            var patients = await _context.Patients
-                .Include(p => p.RendezVous)
-                .ThenInclude(r => r.Medecin)
-                .ToListAsync();
+            var cancellationToken = HttpContext.RequestAborted;
+            var patients = await _patientRepository.ListWithAppointmentsAsync(cancellationToken);
 
             var patientViewModels = patients.Select(p =>
             {
-                var lastVisit = p.RendezVous
-                    .OrderByDescending(r => r.DateFin)
+                var lastVisit = p.Appointments
+                    .OrderByDescending(r => r.EndTime)
                     .FirstOrDefault();
 
                 var flags = new List<string>();
-                if (!string.IsNullOrWhiteSpace(p.Antecedents))
+                if (!string.IsNullOrWhiteSpace(p.RiskLevel))
                 {
-                    flags.Add("Chronic");
+                    flags.Add(p.RiskLevel);
                 }
 
-                if (lastVisit == null || lastVisit.DateFin < DateTime.Now.AddDays(-60))
+                if (lastVisit == null || lastVisit.EndTime < DateTime.Now.AddDays(-60))
                 {
                     flags.Add("Follow-up Due");
                 }
 
-                if (p.Antecedents?.Contains("risk", StringComparison.OrdinalIgnoreCase) == true)
+                if (string.Equals(p.RiskLevel, "High", StringComparison.OrdinalIgnoreCase))
                 {
                     flags.Add("High Risk");
                 }
 
                 return new PatientViewModel
                 {
-                    Id = p.Id,
-                    FullName = $"{p.Prenom} {p.Nom}",
-                    Phone = p.Telephone ?? "N/A",
+                    Id = Math.Abs(BitConverter.ToInt32(p.Id.ToByteArray(), 0)),
+                    FullName = $"{p.FirstName} {p.LastName}",
+                    Phone = p.Phone ?? "N/A",
                     Email = p.Email ?? "N/A",
-                    LastVisit = lastVisit?.DateFin,
-                    LastVisitRelative = lastVisit?.DateFin switch
+                    LastVisit = lastVisit?.EndTime,
+                    LastVisitRelative = lastVisit?.EndTime switch
                     {
                         null => "No visits yet",
                         DateTime dt when (DateTime.Now - dt).TotalDays < 1 => "Today",
                         DateTime dt when (DateTime.Now - dt).TotalDays < 7 => $"{(int)(DateTime.Now - dt).TotalDays} days ago",
                         DateTime dt when (DateTime.Now - dt).TotalDays < 30 => $"{(int)((DateTime.Now - dt).TotalDays / 7)} weeks ago",
-                        _ => $"{(int)((DateTime.Now - lastVisit!.DateFin).TotalDays / 30)} months ago"
+                        _ => $"{(int)((DateTime.Now - lastVisit!.EndTime).TotalDays / 30)} months ago"
                     },
-                    PrimaryDoctor = lastVisit?.Medecin?.NomPrenom ?? "Unassigned",
+                    PrimaryDoctor = lastVisit?.Doctor?.FullName ?? "Unassigned",
                     ClinicalFlags = flags.Any() ? flags : new List<string> { "Chronic" }
                 };
             }).ToList();
@@ -86,35 +83,22 @@ namespace MedicalOfficeManagement.Controllers
         // Affiche la fiche complète d'un patient (View File)
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null) return NotFound();
-
-            var patient = await _context.Patients
-                .FirstOrDefaultAsync(m => m.Id == id);
-                
-            if (patient == null) return NotFound();
-
-            return View(patient);
+            return NotFound();
         }
 
         // GET: Patients/Create
         // Affiche le formulaire d'enregistrement appelé par le Dashboard
         public IActionResult Create()
         {
-            return View();
+            return RedirectToAction(nameof(Index));
         }
 
         // POST: Patients/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Nom,Prenom,DateNaissance,Sexe,Telephone,Email,Adresse,Antecedents")] Patient patient)
+        public IActionResult Create(object _)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Add(patient);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(patient);
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Patients/Edit/5
@@ -122,66 +106,29 @@ namespace MedicalOfficeManagement.Controllers
         {
             if (id == null) return NotFound();
 
-            var patient = await _context.Patients.FindAsync(id);
-            if (patient == null) return NotFound();
-            
-            return View(patient);
+            return RedirectToAction(nameof(Index));
         }
 
         // POST: Patients/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Nom,Prenom,DateNaissance,Sexe,Adresse,Telephone,Email,Antecedents")] Patient patient)
+        public IActionResult Edit(int id, object _)
         {
-            if (id != patient.Id) return NotFound();
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(patient);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!PatientExists(patient.Id)) return NotFound();
-                    else throw;
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(patient);
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Patients/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null) return NotFound();
-
-            var patient = await _context.Patients
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (patient == null) return NotFound();
-
-            return View(patient);
+            return RedirectToAction(nameof(Index));
         }
 
         // POST: Patients/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public IActionResult DeleteConfirmed(int id)
         {
-            var patient = await _context.Patients.FindAsync(id);
-            if (patient != null)
-            {
-                _context.Patients.Remove(patient);
-            }
-
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool PatientExists(int id)
-        {
-            return _context.Patients.Any(e => e.Id == id);
         }
     }
 }
