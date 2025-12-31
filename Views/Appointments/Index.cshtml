@@ -62,14 +62,14 @@
                         <option value="">All Doctors</option>
                         @foreach (var doctor in Model.DoctorOptions)
                         {
-                            <option value="@doctor" @(string.Equals(Model.FilterContext.CurrentFilters.Doctor, doctor, StringComparison.OrdinalIgnoreCase) ? "selected" : string.Empty)>@doctor</option>
+                            <option value="@doctor" selected="@(string.Equals(Model.FilterContext.CurrentFilters.Doctor, doctor, StringComparison.OrdinalIgnoreCase) ? "selected" : null)">@doctor</option>
                         }
                     </select>
                     <select name="Status" class="form-input">
                         <option value="">All Status</option>
                         @foreach (var status in Model.StatusOptions)
                         {
-                            <option value="@status" @(string.Equals(Model.FilterContext.CurrentFilters.Status, status, StringComparison.OrdinalIgnoreCase) ? "selected" : string.Empty)>@status</option>
+                            <option value="@status" selected="@(string.Equals(Model.FilterContext.CurrentFilters.Status, status, StringComparison.OrdinalIgnoreCase) ? "selected" : null)">@status</option>
                         }
                     </select>
                 </div>
@@ -78,11 +78,11 @@
             <div class="flex flex-wrap items-end gap-3">
                 <div class="form-field">
                     <label class="form-label">Start date</label>
-                    <input type="date" name="StartDate" value="@(Model.FilterContext.CurrentFilters.StartDate?.ToString(\"yyyy-MM-dd\") ?? string.Empty)" class="form-input" />
+                    <input type="date" name="StartDate" value="@(Model.FilterContext.CurrentFilters.StartDate?.ToString("yyyy-MM-dd") ?? string.Empty)" class="form-input" />
                 </div>
                 <div class="form-field">
                     <label class="form-label">End date</label>
-                    <input type="date" name="EndDate" value="@(Model.FilterContext.CurrentFilters.EndDate?.ToString(\"yyyy-MM-dd\") ?? string.Empty)" class="form-input" />
+                    <input type="date" name="EndDate" value="@(Model.FilterContext.CurrentFilters.EndDate?.ToString("yyyy-MM-dd") ?? string.Empty)" class="form-input" />
                 </div>
                 <div class="flex flex-wrap gap-2">
                     <button type="submit" class="btn-primary">
@@ -111,8 +111,8 @@
             <div class="hidden">
                 <input type="hidden" name="Doctor" value="@Model.FilterContext.CurrentFilters.Doctor" />
                 <input type="hidden" name="Status" value="@Model.FilterContext.CurrentFilters.Status" />
-                <input type="hidden" name="StartDate" value="@(Model.FilterContext.CurrentFilters.StartDate?.ToString(\"o\"))" />
-                <input type="hidden" name="EndDate" value="@(Model.FilterContext.CurrentFilters.EndDate?.ToString(\"o\"))" />
+                <input type="hidden" name="StartDate" value="@(Model.FilterContext.CurrentFilters.StartDate?.ToString("o"))" />
+                <input type="hidden" name="EndDate" value="@(Model.FilterContext.CurrentFilters.EndDate?.ToString("o"))" />
             </div>
             <button type="submit" class="btn-primary">
                 Save current filters as preset
