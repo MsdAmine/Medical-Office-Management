@@ -42,14 +42,15 @@
             }
         }
 
-        <div class="mb-3 px-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Navigation</div>
+        <div class="mb-3 px-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">Navigation</div>
         <div class="space-y-2">
             @foreach (var item in menuItems.Where(m => m.Visible))
             {
                 var isActive = string.Equals(currentController, item.Controller, StringComparison.OrdinalIgnoreCase);
                 <a href="@Url.Action(item.Action, item.Controller)"
-                   class="group flex items-center gap-3 px-3 py-3 rounded-xl border transition-all @(isActive ? "border-brand-200 bg-brand-50 text-brand-800 shadow-sm" : "border-transparent text-slate-700 hover:border-slate-200 hover:bg-slate-50")">
-                    <span class="h-9 w-9 rounded-lg flex items-center justify-center @(isActive ? "bg-white text-brand-700" : "bg-slate-100 text-slate-600 group-hover:text-brand-700")">
+                   aria-current="@(isActive ? "page" : null)"
+                   class="group flex items-center gap-3 px-3 py-3 rounded-xl border transition-all @(isActive ? "border-brand-200 bg-brand-50 text-brand-800 shadow-soft ring-1 ring-brand-100" : "border-transparent text-slate-700 hover:border-slate-200 hover:bg-slate-50")">
+                    <span class="h-9 w-9 rounded-lg flex items-center justify-center @(isActive ? "bg-white text-brand-700 shadow-sm" : "bg-slate-100 text-slate-600 group-hover:text-brand-700")">
                         @if (item.Icon == "home") { 
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-5 h-5"><path stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg> 
                         }
@@ -77,7 +78,7 @@
                             <span class="text-sm font-semibold">@item.Label</span>
                             @if (isActive)
                             {
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-brand-100 text-brand-800">Active</span>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-white text-brand-700 border border-brand-100">Active</span>
                             }
                         </div>
                         <p class="text-xs text-slate-500 mt-1">@item.Description</p>

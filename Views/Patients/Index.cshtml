@@ -1,9 +1,9 @@
 @model MedicalOfficeManagement.ViewModels.Patients.PatientsIndexViewModel
 
 @{
-    var primaryCta = "inline-flex items-center gap-2 rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500";
-    var secondaryCta = "inline-flex items-center gap-2 rounded-xl border border-brand-200 bg-white px-4 py-2 text-sm font-semibold text-brand-700 hover:border-brand-300 hover:bg-brand-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500";
-    var tertiaryCta = "inline-flex items-center gap-1 rounded-lg px-2 py-1 text-sm font-semibold text-brand-700 hover:bg-brand-50 hover:text-brand-800";
+    var primaryCta = "btn-primary px-4 py-2";
+    var secondaryCta = "btn-secondary px-4 py-2";
+    var tertiaryCta = "btn-ghost text-brand-700 hover:text-brand-800 px-2 py-1";
 
     string GetFlagClass(string flag) => flag switch
     {
@@ -14,9 +14,13 @@
     };
 }
 
-<div class="p-6">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-slate-800">Patient Directory</h1>
+<div class="page-shell">
+    <div class="page-header">
+        <div class="space-y-1">
+            <div class="inline-flex items-center gap-2 rounded-full bg-brand-50 text-brand-700 px-3 py-1 text-xs font-semibold uppercase tracking-wide">Patients</div>
+            <h1 class="page-title">Patient Directory</h1>
+            <p class="page-subtitle">Search, triage, and maintain patient records.</p>
+        </div>
         <a asp-action="Create" class="@primaryCta">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -89,17 +93,17 @@
 
     @if (!Model.Patients.Any())
     {
-        <div class="surface p-10 flex flex-col items-center justify-center text-center gap-4">
-            <div class="h-12 w-12 rounded-full bg-brand-50 text-brand-700 flex items-center justify-center">
+        <div class="empty-state">
+            <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-700">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
             </div>
             <div class="space-y-1">
-                <h2 class="text-lg font-semibold text-slate-900">No patients yet</h2>
-                <p class="text-sm text-slate-500">Start your directory by adding a new patient record.</p>
+                <div class="empty-state__title">No patients yet</div>
+                <p class="empty-state__body">Start your directory by adding a new patient record. You can also jump to today’s visits to keep context.</p>
             </div>
-            <div class="flex flex-wrap items-center justify-center gap-3">
+            <div class="mt-4 flex flex-wrap items-center justify-center gap-3">
                 <a asp-action="Create" class="@primaryCta">Add Patient</a>
                 <a href="@Url.Action("Index", "Appointments")" class="@tertiaryCta">View today’s visits</a>
             </div>
