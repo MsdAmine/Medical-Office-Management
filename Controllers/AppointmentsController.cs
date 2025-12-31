@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using MedicalOfficeManagement.Data.Entities;
 using MedicalOfficeManagement.Data.Repositories;
 using MedicalOfficeManagement.ViewModels.Appointments;
+using MedicalOfficeManagement.ViewModels.Filters;
+using MedicalOfficeManagement.Services.Filters;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MedicalOfficeManagement.Controllers
@@ -13,15 +15,36 @@ namespace MedicalOfficeManagement.Controllers
     public class AppointmentsController : Controller
     {
         private readonly IAppointmentRepository _appointmentRepository;
+        private readonly IFilterPresetService _filterPresetService;
 
-        public AppointmentsController(IAppointmentRepository appointmentRepository)
+        public AppointmentsController(
+            IAppointmentRepository appointmentRepository,
+            IFilterPresetService filterPresetService)
         {
             _appointmentRepository = appointmentRepository;
+            _filterPresetService = filterPresetService;
         }
 
-        public async Task<ActionResult> Index()
+        public async Task<ActionResult> Index(
+            [FromQuery] AppointmentsFilterCriteria? filters,
+            Guid? presetId,
+            bool clearPreset = false,
+            string? presetName = null,
+            string? createdByRole = null,
+            bool setAsDefault = false)
         {
             var cancellationToken = HttpContext.RequestAborted;
+            filters ??= new AppointmentsFilterCriteria();
+            var filterContext = _filterPresetService.BuildContext(
+                FilterTargetPage.Appointments,
+                filters,
+                presetId,
+                clearPreset,
+                presetName,
+                createdByRole,
+                setAsDefault);
+            var appliedFilters = filterContext.CurrentFilters;
+
             var windowStart = DateTime.Today.AddDays(-7);
             var windowEnd = DateTime.Today.AddDays(14);
             var appointments = await _appointmentRepository.ListRangeAsync(windowStart, windowEnd, cancellationToken);
@@ -93,12 +116,46 @@ namespace MedicalOfficeManagement.Controllers
                 })
                 .ToList();
 
+            var filtered = appointmentViewModels.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(appliedFilters.Doctor))
+            {
+                filtered = filtered.Where(a =>
+                    string.Equals(a.DoctorName, appliedFilters.Doctor, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrWhiteSpace(appliedFilters.Status))
+            {
+                filtered = filtered.Where(a =>
+                    string.Equals(a.Status, appliedFilters.Status, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (appliedFilters.StartDate.HasValue)
+            {
+                filtered = filtered.Where(a => a.Time.Date >= appliedFilters.StartDate.Value.Date);
+            }
+
+            if (appliedFilters.EndDate.HasValue)
+            {
+                filtered = filtered.Where(a => a.Time.Date <= appliedFilters.EndDate.Value.Date);
+            }
+
+            var filteredAppointments = filtered.ToList();
+
             var model = new AppointmentsIndexViewModel
             {
-                Appointments = appointmentViewModels,
-                TodayCount = appointmentViewModels.Count(a => a.Time.Date == DateTime.Today),
-                ConfirmedCount = appointmentViewModels.Count(a => a.Status == "Confirmed"),
-                WaitingCount = appointmentViewModels.Count(a => a.Status == "Waiting")
+                Appointments = filteredAppointments,
+                TodayCount = filteredAppointments.Count(a => a.Time.Date == DateTime.Today),
+                ConfirmedCount = filteredAppointments.Count(a => a.Status == "Confirmed"),
+                WaitingCount = filteredAppointments.Count(a => a.Status == "Waiting"),
+                FilterContext = filterContext,
+                DoctorOptions = appointmentViewModels
+                    .Select(a => a.DoctorName)
+                    .Where(n => !string.IsNullOrWhiteSpace(n))
+                    .Distinct()
+                    .OrderBy(n => n)
+                    .ToList(),
+                StatusOptions = new List<string> { "Confirmed", "Waiting", "Completed", "Cancelled" }
             };
 
             return View(model);
@@ -107,6 +164,30 @@ namespace MedicalOfficeManagement.Controllers
         public ActionResult Create()
         {
             return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult SavePreset(
+            [FromForm] AppointmentsFilterCriteria? filters,
+            string presetName,
+            string createdByRole = "Clinician",
+            bool setAsDefault = false)
+        {
+            filters ??= new AppointmentsFilterCriteria();
+            if (string.IsNullOrWhiteSpace(presetName))
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+            var preset = _filterPresetService.SavePreset(
+                FilterTargetPage.Appointments,
+                presetName.Trim(),
+                createdByRole,
+                filters,
+                setAsDefault);
+
+            return RedirectToAction(nameof(Index), new { presetId = preset.PresetId });
         }
 
         private static string MapStatus(AppointmentStatus status) =>
