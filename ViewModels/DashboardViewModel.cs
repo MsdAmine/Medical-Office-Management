@@ -14,5 +14,8 @@ namespace MedicalOfficeManagement.ViewModels.Dashboard
         public List<TaskViewModel> Tasks { get; set; } = new();
         public List<ModuleViewModel> Modules { get; set; } = new();
         public List<ActivityViewModel> Activity { get; set; } = new();
+        public int UnreadMessages { get; set; }
+        public string ClinicStatusLabel { get; set; } = "On schedule";
+        public string ClinicStatusTone { get; set; } = "success";
     }
 }

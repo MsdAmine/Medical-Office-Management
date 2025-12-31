@@ -3,6 +3,9 @@
 
 @{
     ViewBag.Title = "Doctors";
+    var primaryCta = "inline-flex items-center gap-2 rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500";
+    var secondaryCta = "inline-flex items-center gap-2 rounded-xl border border-brand-200 bg-white px-4 py-2 text-sm font-semibold text-brand-700 hover:border-brand-300 hover:bg-brand-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500";
+    var tertiaryCta = "inline-flex items-center gap-1 rounded-lg px-2 py-1 text-sm font-semibold text-brand-700 hover:bg-brand-50 hover:text-brand-800";
 }
 
 <div class="page-shell">
@@ -14,7 +17,7 @@
                 <p class="page-subtitle">Medical staff directory and schedules</p>
             </div>
         </div>
-        <a href="@Url.Action("Create", "Doctors")" class="btn-primary">
+        <a href="@Url.Action("Create", "Doctors")" class="@primaryCta">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
             </svg>
@@ -61,49 +64,70 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        @foreach (var doctor in Model.Doctors)
-        {
-            <div class="surface p-6 border-l-4 @doctor.ColorClass rounded-2xl hover:shadow-md transition-all">
-                <div class="flex items-start justify-between mb-4">
-                    <div class="h-12 w-12 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-white flex items-center justify-center font-semibold">Dr</div>
+    @if (!Model.Doctors.Any())
+    {
+        <div class="surface p-10 flex flex-col items-center justify-center text-center gap-4">
+            <div class="h-12 w-12 rounded-full bg-brand-50 text-brand-700 flex items-center justify-center">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+            </div>
+            <div class="space-y-1">
+                <h2 class="text-lg font-semibold text-slate-900">No doctors listed</h2>
+                <p class="text-sm text-slate-500">Add your first provider to keep schedules and contact info organized.</p>
+            </div>
+            <div class="flex flex-wrap items-center justify-center gap-3">
+                <a href="@Url.Action("Create", "Doctors")" class="@primaryCta">Add Doctor</a>
+                <a href="@Url.Action("Index", "Schedule")" class="@tertiaryCta">Open planning</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @foreach (var doctor in Model.Doctors)
+            {
+                <div class="surface p-6 border-l-4 @doctor.ColorClass rounded-2xl hover:shadow-md transition-all">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="h-12 w-12 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-white flex items-center justify-center font-semibold">Dr</div>
+                        @if (doctor.IsAvailable)
+                        {
+                            <span class="badge-soft green">On Duty</span>
+                        }
+                        else
+                        {
+                            <span class="badge-soft blue">Off Duty</span>
+                        }
+                    </div>
+
+                    <h3 class="text-lg font-semibold text-slate-900 mb-1">@doctor.FullName</h3>
+                    <p class="text-sm text-slate-500 mb-4">@doctor.Specialty</p>
+
+                    <div class="space-y-2 mb-4 text-sm text-slate-600">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                            </svg>
+                            @doctor.Phone
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                            @doctor.Email
+                        </div>
+                    </div>
+
                     @if (doctor.IsAvailable)
                     {
-                        <span class="badge-soft green">On Duty</span>
+                        <div class="text-sm text-slate-600 mb-4">
+                            <span class="font-semibold text-slate-900">@doctor.PatientsToday</span> patients scheduled today
+                        </div>
                     }
-                    else
-                    {
-                        <span class="badge-soft blue">Off Duty</span>
-                    }
+
+                    <a href="@Url.Action("Details", "Doctors", new { id = doctor.Id })" class="@secondaryCta w-full justify-center">View Profile</a>
                 </div>
-
-                <h3 class="text-lg font-semibold text-slate-900 mb-1">@doctor.FullName</h3>
-                <p class="text-sm text-slate-500 mb-4">@doctor.Specialty</p>
-
-                <div class="space-y-2 mb-4 text-sm text-slate-600">
-                    <div class="flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
-                        </svg>
-                        @doctor.Phone
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                        </svg>
-                        @doctor.Email
-                    </div>
-                </div>
-
-                @if (doctor.IsAvailable)
-                {
-                    <div class="text-sm text-slate-600 mb-4">
-                        <span class="font-semibold text-slate-900">@doctor.PatientsToday</span> patients scheduled today
-                    </div>
-                }
-
-                <a href="@Url.Action("Details", "Doctors", new { id = doctor.Id })" class="btn-secondary w-full justify-center">View Profile</a>
-            </div>
-        }
-    </div>
+            }
+        </div>
+    }
 </div>
