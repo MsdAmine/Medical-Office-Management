@@ -19,7 +19,7 @@
         <button type="button"
                 id="open-appointment"
                 class="btn-primary @(canSchedule ? "" : "opacity-60 cursor-not-allowed")"
-                @(canSchedule ? "" : "disabled title=\"Scheduling is available to clinical and front desk roles\"")>
+                @(canSchedule ? "" : "disabled aria-disabled=\"true\" title=\"Scheduling is available to clinical and front desk roles\"")>
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
             </svg>
@@ -43,13 +43,13 @@
             <input type="hidden" name="clearPreset" value="true" />
             <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div class="flex flex-wrap gap-2">
-                    <button class="btn-primary" type="button">
+                    <button class="btn-secondary" type="button">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
                         </svg>
                         List View
                     </button>
-                    <button class="btn-secondary" type="button">
+                    <button class="btn-ghost text-slate-600 hover:text-slate-900" type="button">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                         </svg>

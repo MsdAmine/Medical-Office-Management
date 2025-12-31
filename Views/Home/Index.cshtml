@@ -17,15 +17,15 @@
             </div>
         </div>
         <div class="flex flex-wrap gap-3">
-            <a href="/RendezVous" class="btn-secondary">View schedule</a>
             @if (access.CanCreatePatients)
             {
                 <a href="/Patients/Create" class="btn-primary">Add patient</a>
             }
             else
             {
-                <span class="btn-primary opacity-50 cursor-not-allowed" title="Patient creation available to clinical staff and admins">Add patient</span>
+                <button type="button" class="btn-primary" disabled aria-disabled="true" title="Patient creation available to clinical staff and admins">Add patient</button>
             }
+            <a href="/RendezVous" class="btn-secondary">View schedule</a>
         </div>
     </div>
 
@@ -44,7 +44,7 @@
         @* Carte fixe pour les messages *@
         <div class="stat-card">
             <p class="stat-label">MESSAGES</p>
-            <p class="stat-value text-warning">7</p>
+            <p class="stat-value text-brand-700">7</p>
         </div>
     </div>
 
