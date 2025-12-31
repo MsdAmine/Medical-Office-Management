@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MedicalOfficeManagement.Data.Entities;
 using MedicalOfficeManagement.ViewModels.Filters;
+using MedicalOfficeManagement.ViewModels.Heatmaps;
 
 namespace MedicalOfficeManagement.Data.Repositories
 {
@@ -51,10 +52,18 @@ namespace MedicalOfficeManagement.Data.Repositories
     /// </summary>
     public interface IWorkloadService
     {
-        Task<IReadOnlyList<ViewModels.Doctors.DoctorWorkloadViewModel>> GetDoctorWorkloadsAsync(
-            DateTime start,
-            DateTime end,
+        Task<HeatmapViewModel> GetClinicHeatmapAsync(
+            DateTime date,
             int bucketMinutes,
+            int startHour,
+            int endHour,
+            CancellationToken cancellationToken);
+
+        Task<HeatmapViewModel> GetDoctorsHeatmapAsync(
+            DateTime date,
+            int bucketMinutes,
+            int startHour,
+            int endHour,
             CancellationToken cancellationToken);
     }
 }

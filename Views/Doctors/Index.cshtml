@@ -100,6 +100,32 @@
         </div>
     </div>
 
+    @if (Model.WorkloadHeatmap != null)
+    {
+        <div class="surface mt-6 p-6 space-y-4">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div>
+                    <h2 class="section-heading text-lg font-bold text-slate-800">Today’s Workload</h2>
+                    <p class="text-sm text-slate-500">Appointment density per doctor for @Model.WorkloadHeatmap.Date.ToString("dddd")</p>
+                </div>
+                <form method="get" class="flex flex-wrap items-center gap-2 text-sm text-slate-600">
+                    <label class="font-semibold text-slate-700">Bucket</label>
+                    <select name="bucketMinutes" class="form-input w-28" onchange="this.form.submit()">
+                        <option value="15" @(Model.SelectedBucketMinutes == 15 ? "selected" : "")>15 minutes</option>
+                        <option value="30" @(Model.SelectedBucketMinutes == 30 ? "selected" : "")>30 minutes</option>
+                        <option value="60" @(Model.SelectedBucketMinutes == 60 ? "selected" : "")>60 minutes</option>
+                    </select>
+                    <label class="font-semibold text-slate-700 ml-2">Hours</label>
+                    <input type="number" name="startHour" value="@Model.StartHour" class="form-input w-20" min="0" max="23" />
+                    <span class="px-1 text-slate-400">to</span>
+                    <input type="number" name="endHour" value="@Model.EndHour" class="form-input w-20" min="1" max="23" />
+                    <button type="submit" class="btn-secondary ml-2">Apply</button>
+                </form>
+            </div>
+            @await Html.PartialAsync("_Heatmap", Model.WorkloadHeatmap)
+        </div>
+    }
+
     @if (!Model.Doctors.Any())
     {
         <div class="surface p-10 flex flex-col items-center justify-center text-center gap-4">

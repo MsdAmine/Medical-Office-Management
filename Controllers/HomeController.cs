@@ -15,17 +15,20 @@ namespace MedicalOfficeManagement.Controllers
         private readonly IPatientRepository _patientRepository;
         private readonly IAppointmentRepository _appointmentRepository;
         private readonly IDoctorRepository _doctorRepository;
+        private readonly IWorkloadService _workloadService;
 
         public HomeController(
             UserManager<ApplicationUser> userManager,
             IPatientRepository patientRepository,
             IAppointmentRepository appointmentRepository,
-            IDoctorRepository doctorRepository)
+            IDoctorRepository doctorRepository,
+            IWorkloadService workloadService)
         {
             _userManager = userManager;
             _patientRepository = patientRepository;
             _appointmentRepository = appointmentRepository;
             _doctorRepository = doctorRepository;
+            _workloadService = workloadService;
         }
 
         // Changement crucial : Autoriser "Personnel" au lieu de "Secretary"
@@ -35,10 +38,23 @@ namespace MedicalOfficeManagement.Controllers
             var user = await _userManager.GetUserAsync(User);
             var today = DateTime.Today;
             var cancellationToken = HttpContext.RequestAborted;
+            var bucketMinutes = ParseBucketMinutes(Request.Query["bucketMinutes"]);
+            var startHour = ParseHour(Request.Query["startHour"], 8);
+            var endHour = ParseHour(Request.Query["endHour"], 18);
+            if (endHour <= startHour)
+            {
+                endHour = Math.Min(23, startHour + 1);
+            }
 
             var doctors = await _doctorRepository.ListAsync(cancellationToken);
             var patients = await _patientRepository.ListAsync(cancellationToken);
             var todayAppts = await _appointmentRepository.ListForDateAsync(today, cancellationToken);
+            var clinicHeatmap = await _workloadService.GetClinicHeatmapAsync(
+                today,
+                bucketMinutes,
+                startHour,
+                endHour,
+                cancellationToken);
 
             var doctorCount = doctors.Count;
             var patientCount = patients.Count;
@@ -56,7 +72,11 @@ namespace MedicalOfficeManagement.Controllers
                 QuickActions = new List<QuickActionViewModel>(),
                 UnreadMessages = unreadMessages,
                 ClinicStatusLabel = clinicStatusLabel,
-                ClinicStatusTone = clinicStatusTone
+                ClinicStatusTone = clinicStatusTone,
+                ClinicHeatmap = clinicHeatmap,
+                SelectedBucketMinutes = bucketMinutes,
+                StartHour = startHour,
+                EndHour = endHour
             };
 
             // --- LOGIQUE ADMIN ---
@@ -134,6 +154,26 @@ namespace MedicalOfficeManagement.Controllers
             });
 
             return View(model);
+        }
+
+        private static int ParseBucketMinutes(string? input)
+        {
+            if (int.TryParse(input, out var parsed) && (parsed == 15 || parsed == 30 || parsed == 60))
+            {
+                return parsed;
+            }
+
+            return 30;
+        }
+
+        private static int ParseHour(string? input, int fallback)
+        {
+            if (int.TryParse(input, out var parsed) && parsed >= 0 && parsed <= 23)
+            {
+                return parsed;
+            }
+
+            return fallback;
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
