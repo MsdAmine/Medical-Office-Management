@@ -3,6 +3,11 @@
 
 @{
     ViewBag.Title = "Dashboard";
+    var primaryCta = "inline-flex items-center gap-2 rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500";
+    var secondaryCta = "inline-flex items-center gap-2 rounded-xl border border-brand-200 bg-white px-4 py-2 text-sm font-semibold text-brand-700 hover:border-brand-300 hover:bg-brand-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500";
+    var statusBadgeClass = Model.ClinicStatusTone == "success"
+        ? "bg-emerald-100 text-emerald-700"
+        : "bg-amber-100 text-amber-700";
 }
 
 <div class="page-shell">
@@ -11,12 +16,18 @@
             <div class="inline-flex items-center gap-2 rounded-full bg-brand-50 text-brand-700 px-3 py-1 text-xs font-semibold uppercase tracking-wide">Dashboard</div>
             <div>
                 <h1 class="page-title">Welcome back, @Model.UserDisplayName</h1>
-                <p class="page-subtitle">@Model.Now.ToString("dddd, MMMM dd, yyyy") · @Model.Now.ToString("h:mm tt")</p>
+                <div class="flex items-center gap-3 flex-wrap text-sm">
+                    <p class="page-subtitle">@Model.Now.ToString("dddd, MMMM dd, yyyy") · @Model.Now.ToString("h:mm tt")</p>
+                    <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold @statusBadgeClass">
+                        <span class="h-2 w-2 rounded-full bg-current"></span>
+                        @Model.ClinicStatusLabel
+                    </span>
+                </div>
             </div>
         </div>
         <div class="flex flex-wrap gap-3">
-            <a href="@Url.Action("Index", "Appointments")" class="btn-secondary">View Schedule</a>
-            <a href="@Url.Action("Index", "Patients")" class="btn-primary">Add Patient</a>
+            <a href="@Url.Action("Index", "Appointments")" class="@secondaryCta">View Schedule</a>
+            <a href="@Url.Action("Index", "Patients")" class="@primaryCta">Add Patient</a>
         </div>
     </div>
 

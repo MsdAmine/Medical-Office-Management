@@ -1,6 +1,10 @@
 @* File: Views/Dashboard/_QuickActionCard.cshtml *@
 @model MedicalOfficeManagement.ViewModels.Dashboard.QuickActionViewModel
 
+@{
+    var tertiaryCta = "inline-flex items-center gap-2 rounded-lg px-2 py-1 text-sm font-semibold text-brand-700 hover:bg-brand-50 hover:text-brand-800";
+}
+
 <a href="@Model.Url" class="block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 rounded-2xl">
     <div class="surface p-5 h-full transition-all hover:shadow-md hover:-translate-y-0.5">
         <div class="flex items-center justify-between mb-4">
@@ -34,5 +38,14 @@
         </div>
         <div class="font-semibold text-slate-900 mb-1">@Model.Label</div>
         <p class="text-sm text-slate-500">@Model.Description</p>
+        <div class="mt-4 flex items-center justify-between text-xs text-slate-500">
+            <span>Quick action</span>
+            <span class="@tertiaryCta">
+                Open
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </span>
+        </div>
     </div>
 </a>
