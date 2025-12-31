@@ -37,7 +37,7 @@
         }
     </script>
 </head>
-<body class="app-shell">
+<body class="app-shell" data-view="@ViewContext.RouteData.Values["controller"]" data-action="@ViewContext.RouteData.Values["action"]">
     <div class="fixed inset-0 pointer-events-none bg-[radial-gradient(circle_at_10%_20%,rgba(79,70,229,0.06),transparent_25%),radial-gradient(circle_at_90%_10%,rgba(14,165,233,0.08),transparent_20%)]"></div>
     <div class="relative z-10">
         <partial name="_Header" />
@@ -51,6 +51,15 @@
         </div>
     </div>
 
+    <div id="realtime-toast" class="fixed bottom-4 right-4 z-50 hidden">
+        <div class="flex items-center gap-3 rounded-xl bg-slate-900/90 px-4 py-3 text-sm text-white shadow-lg ring-1 ring-white/10">
+            <span class="inline-flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span id="realtime-toast-message">Live updates ready</span>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="~/js/clinic-realtime.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

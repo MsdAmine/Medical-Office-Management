@@ -5,6 +5,7 @@ using MedicalOfficeManagement.Data;
 using MedicalOfficeManagement.Data.Repositories;
 using MedicalOfficeManagement.Services;
 using MedicalOfficeManagement.Services.Filters;
+using MedicalOfficeManagement.Services.RealTime;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,6 +41,8 @@ builder.Services.AddScoped<IWorkloadService, WorkloadService>();
 builder.Services.AddSingleton<IFilterPresetRepository, InMemoryFilterPresetRepository>();
 builder.Services.AddScoped<IFilterPresetService, FilterPresetService>();
 builder.Services.AddMemoryCache();
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<IClinicEventPublisher, ClinicEventPublisher>();
 
 // 2. Configuration Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -84,6 +87,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorPages();
+app.MapHub<ClinicHub>("/hubs/clinic");
 
 // --- LOGIQUE DE DÉMARRAGE ---
 app.MapGet("/", context =>
