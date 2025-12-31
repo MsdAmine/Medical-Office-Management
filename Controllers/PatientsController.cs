@@ -1,6 +1,9 @@
+using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using MedicalOfficeManagement.Data;
 using MedicalOfficeManagement.Models;
+using MedicalOfficeManagement.ViewModels.Patients;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 
@@ -21,8 +24,62 @@ namespace MedicalOfficeManagement.Controllers
         // Affiche la liste complète des patients enregistrés
         public async Task<IActionResult> Index()
         {
-            var patients = await _context.Patients.ToListAsync();
-            return View(patients);
+            var patients = await _context.Patients
+                .Include(p => p.RendezVous)
+                .ThenInclude(r => r.Medecin)
+                .ToListAsync();
+
+            var patientViewModels = patients.Select(p =>
+            {
+                var lastVisit = p.RendezVous
+                    .OrderByDescending(r => r.DateFin)
+                    .FirstOrDefault();
+
+                var flags = new List<string>();
+                if (!string.IsNullOrWhiteSpace(p.Antecedents))
+                {
+                    flags.Add("Chronic");
+                }
+
+                if (lastVisit == null || lastVisit.DateFin < DateTime.Now.AddDays(-60))
+                {
+                    flags.Add("Follow-up Due");
+                }
+
+                if (p.Antecedents?.Contains("risk", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    flags.Add("High Risk");
+                }
+
+                return new PatientViewModel
+                {
+                    Id = p.Id,
+                    FullName = $"{p.Prenom} {p.Nom}",
+                    Phone = p.Telephone ?? "N/A",
+                    Email = p.Email ?? "N/A",
+                    LastVisit = lastVisit?.DateFin,
+                    LastVisitRelative = lastVisit?.DateFin switch
+                    {
+                        null => "No visits yet",
+                        DateTime dt when (DateTime.Now - dt).TotalDays < 1 => "Today",
+                        DateTime dt when (DateTime.Now - dt).TotalDays < 7 => $"{(int)(DateTime.Now - dt).TotalDays} days ago",
+                        DateTime dt when (DateTime.Now - dt).TotalDays < 30 => $"{(int)((DateTime.Now - dt).TotalDays / 7)} weeks ago",
+                        _ => $"{(int)((DateTime.Now - lastVisit!.DateFin).TotalDays / 30)} months ago"
+                    },
+                    PrimaryDoctor = lastVisit?.Medecin?.NomPrenom ?? "Unassigned",
+                    ClinicalFlags = flags.Any() ? flags : new List<string> { "Chronic" }
+                };
+            }).ToList();
+
+            var model = new PatientsIndexViewModel
+            {
+                Patients = patientViewModels,
+                TotalPatients = patientViewModels.Count,
+                ActivePatients = patientViewModels.Count,
+                NewThisMonth = patientViewModels.Count(p => (p.LastVisit ?? DateTime.Now.AddMonths(-1)) >= DateTime.Now.AddMonths(-1))
+            };
+
+            return View(model);
         }
 
         // GET: Patients/Details/5
