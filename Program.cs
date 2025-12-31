@@ -36,8 +36,10 @@ builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
 builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IAccessControlService, AccessControlService>();
+builder.Services.AddScoped<IWorkloadService, WorkloadService>();
 builder.Services.AddSingleton<IFilterPresetRepository, InMemoryFilterPresetRepository>();
 builder.Services.AddScoped<IFilterPresetService, FilterPresetService>();
+builder.Services.AddMemoryCache();
 
 // 2. Configuration Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>

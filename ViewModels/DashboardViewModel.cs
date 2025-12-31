@@ -1,6 +1,7 @@
 // File: ViewModels/Dashboard/DashboardViewModel.cs
 using System;
 using System.Collections.Generic;
+using MedicalOfficeManagement.ViewModels.Heatmaps;
 
 namespace MedicalOfficeManagement.ViewModels.Dashboard
 {
@@ -17,5 +18,9 @@ namespace MedicalOfficeManagement.ViewModels.Dashboard
         public int UnreadMessages { get; set; }
         public string ClinicStatusLabel { get; set; } = "On schedule";
         public string ClinicStatusTone { get; set; } = "success";
+        public HeatmapViewModel? ClinicHeatmap { get; set; }
+        public int SelectedBucketMinutes { get; set; } = 30;
+        public int StartHour { get; set; } = 8;
+        public int EndHour { get; set; } = 18;
     }
 }
