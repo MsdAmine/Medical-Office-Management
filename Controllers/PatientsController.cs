@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using MedicalOfficeManagement.ViewModels.Patients;
 using Microsoft.AspNetCore.Authorization;
 using MedicalOfficeManagement.Data.Repositories;
+using MedicalOfficeManagement.Services.Filters;
+using MedicalOfficeManagement.ViewModels.Filters;
 
 namespace MedicalOfficeManagement.Controllers
 {
@@ -13,17 +15,38 @@ namespace MedicalOfficeManagement.Controllers
     public class PatientsController : Controller
     {
         private readonly IPatientRepository _patientRepository;
+        private readonly IFilterPresetService _filterPresetService;
 
-        public PatientsController(IPatientRepository patientRepository)
+        public PatientsController(
+            IPatientRepository patientRepository,
+            IFilterPresetService filterPresetService)
         {
             _patientRepository = patientRepository;
+            _filterPresetService = filterPresetService;
         }
 
         // GET: Patients
         // Affiche la liste complète des patients enregistrés
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(
+            [FromQuery] PatientsFilterCriteria? filters,
+            Guid? presetId,
+            bool clearPreset = false,
+            string? presetName = null,
+            string? createdByRole = null,
+            bool setAsDefault = false)
         {
             var cancellationToken = HttpContext.RequestAborted;
+            filters ??= new PatientsFilterCriteria();
+            var filterContext = _filterPresetService.BuildContext(
+                FilterTargetPage.Patients,
+                filters,
+                presetId,
+                clearPreset,
+                presetName,
+                createdByRole,
+                setAsDefault);
+            var appliedFilters = filterContext.CurrentFilters;
+
             var patients = await _patientRepository.ListWithAppointmentsAsync(cancellationToken);
 
             var patientViewModels = patients.Select(p =>
@@ -68,12 +91,42 @@ namespace MedicalOfficeManagement.Controllers
                 };
             }).ToList();
 
+            var filteredPatients = patientViewModels.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(appliedFilters.PrimaryDoctor))
+            {
+                filteredPatients = filteredPatients.Where(p =>
+                    string.Equals(p.PrimaryDoctor, appliedFilters.PrimaryDoctor, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrWhiteSpace(appliedFilters.RiskLevel))
+            {
+                filteredPatients = filteredPatients.Where(p =>
+                    p.ClinicalFlags.Any(flag => string.Equals(flag, appliedFilters.RiskLevel, StringComparison.OrdinalIgnoreCase)));
+            }
+
+            if (appliedFilters.FollowUpDueOnly)
+            {
+                filteredPatients = filteredPatients.Where(p => p.ClinicalFlags.Any(flag =>
+                    string.Equals(flag, "Follow-up Due", StringComparison.OrdinalIgnoreCase)));
+            }
+
+            var filteredList = filteredPatients.ToList();
+
             var model = new PatientsIndexViewModel
             {
-                Patients = patientViewModels,
-                TotalPatients = patientViewModels.Count,
-                ActivePatients = patientViewModels.Count,
-                NewThisMonth = patientViewModels.Count(p => (p.LastVisit ?? DateTime.Now.AddMonths(-1)) >= DateTime.Now.AddMonths(-1))
+                Patients = filteredList,
+                TotalPatients = filteredList.Count,
+                ActivePatients = filteredList.Count,
+                NewThisMonth = filteredList.Count(p => (p.LastVisit ?? DateTime.Now.AddMonths(-1)) >= DateTime.Now.AddMonths(-1)),
+                FilterContext = filterContext,
+                DoctorOptions = patientViewModels
+                    .Select(p => p.PrimaryDoctor)
+                    .Where(d => !string.IsNullOrWhiteSpace(d))
+                    .Distinct()
+                    .OrderBy(d => d)
+                    .ToList(),
+                RiskLevels = new List<string> { "Chronic", "High Risk", "Follow-up Due" }
             };
 
             return View(model);
@@ -91,6 +144,30 @@ namespace MedicalOfficeManagement.Controllers
         public IActionResult Create()
         {
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult SavePreset(
+            [FromForm] PatientsFilterCriteria? filters,
+            string presetName,
+            string createdByRole = "Clinician",
+            bool setAsDefault = false)
+        {
+            filters ??= new PatientsFilterCriteria();
+            if (string.IsNullOrWhiteSpace(presetName))
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+            var preset = _filterPresetService.SavePreset(
+                FilterTargetPage.Patients,
+                presetName.Trim(),
+                createdByRole,
+                filters,
+                setAsDefault);
+
+            return RedirectToAction(nameof(Index), new { presetId = preset.PresetId });
         }
 
         // POST: Patients/Create

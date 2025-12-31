@@ -46,39 +46,92 @@
         </div>
     </div>
 
-    <div class="surface p-5 space-y-4">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div class="flex flex-wrap gap-2">
-                <button class="btn-primary">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
-                    </svg>
-                    List View
-                </button>
-                <button class="btn-secondary">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
-                    Calendar View
-                </button>
+    <div class="surface p-5 space-y-5">
+        @await Html.PartialAsync("Filters/_PresetSelector", new MedicalOfficeManagement.ViewModels.Filters.PresetSelectorViewModel
+        {
+            Context = Model.FilterContext,
+            ControllerName = "Appointments"
+        })
+
+        <form method="get" class="space-y-4">
+            <input type="hidden" name="clearPreset" value="true" />
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div class="flex flex-wrap gap-2">
+                    <button class="btn-primary" type="button">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                        </svg>
+                        List View
+                    </button>
+                    <button class="btn-secondary" type="button">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        Calendar View
+                    </button>
+                </div>
+
+                <div class="flex flex-wrap gap-3">
+                    <select name="Doctor" class="form-input">
+                        <option value="">All Doctors</option>
+                        @foreach (var doctor in Model.DoctorOptions)
+                        {
+                            <option value="@doctor" @(string.Equals(Model.FilterContext.CurrentFilters.Doctor, doctor, StringComparison.OrdinalIgnoreCase) ? "selected" : string.Empty)>@doctor</option>
+                        }
+                    </select>
+                    <select name="Status" class="form-input">
+                        <option value="">All Status</option>
+                        @foreach (var status in Model.StatusOptions)
+                        {
+                            <option value="@status" @(string.Equals(Model.FilterContext.CurrentFilters.Status, status, StringComparison.OrdinalIgnoreCase) ? "selected" : string.Empty)>@status</option>
+                        }
+                    </select>
+                </div>
             </div>
 
-            <div class="flex flex-wrap gap-3">
-                <select class="form-input">
-                    <option>All Doctors</option>
-                    <option>Dr. Martinez</option>
-                    <option>Dr. Williams</option>
-                    <option>Dr. Chen</option>
-                </select>
-                <select class="form-input">
-                    <option>All Status</option>
-                    <option>Confirmed</option>
-                    <option>Waiting</option>
-                    <option>Completed</option>
-                    <option>Cancelled</option>
-                </select>
+            <div class="flex flex-wrap items-end gap-3">
+                <div class="form-field">
+                    <label class="form-label">Start date</label>
+                    <input type="date" name="StartDate" value="@(Model.FilterContext.CurrentFilters.StartDate?.ToString(\"yyyy-MM-dd\") ?? string.Empty)" class="form-input" />
+                </div>
+                <div class="form-field">
+                    <label class="form-label">End date</label>
+                    <input type="date" name="EndDate" value="@(Model.FilterContext.CurrentFilters.EndDate?.ToString(\"yyyy-MM-dd\") ?? string.Empty)" class="form-input" />
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button type="submit" class="btn-primary">
+                        Apply filters
+                    </button>
+                    <a asp-action="Index"
+                       asp-controller="Appointments"
+                       asp-route-clearPreset="true"
+                       class="btn-secondary">
+                        Clear filters
+                    </a>
+                </div>
             </div>
-        </div>
+        </form>
+
+        <form method="post" asp-action="SavePreset" class="flex flex-col gap-3 lg:flex-row lg:items-end lg:gap-4">
+            @Html.AntiForgeryToken()
+            <div class="form-field flex-1">
+                <label class="form-label">Preset name</label>
+                <input type="text" name="presetName" class="form-input" placeholder="e.g., Confirmed today" required />
+            </div>
+            <div class="flex items-center gap-2">
+                <input id="appointments-default" type="checkbox" name="setAsDefault" class="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500" />
+                <label for="appointments-default" class="text-sm text-slate-700">Set as default for appointments</label>
+            </div>
+            <div class="hidden">
+                <input type="hidden" name="Doctor" value="@Model.FilterContext.CurrentFilters.Doctor" />
+                <input type="hidden" name="Status" value="@Model.FilterContext.CurrentFilters.Status" />
+                <input type="hidden" name="StartDate" value="@(Model.FilterContext.CurrentFilters.StartDate?.ToString(\"o\"))" />
+                <input type="hidden" name="EndDate" value="@(Model.FilterContext.CurrentFilters.EndDate?.ToString(\"o\"))" />
+            </div>
+            <button type="submit" class="btn-primary">
+                Save current filters as preset
+            </button>
+        </form>
     </div>
 
     <div class="table-shell">

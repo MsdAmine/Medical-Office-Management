@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using MedicalOfficeManagement.Data;
 using MedicalOfficeManagement.Data.Repositories;
 using MedicalOfficeManagement.Services;
+using MedicalOfficeManagement.Services.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +36,8 @@ builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
 builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IAccessControlService, AccessControlService>();
+builder.Services.AddSingleton<IFilterPresetRepository, InMemoryFilterPresetRepository>();
+builder.Services.AddScoped<IFilterPresetService, FilterPresetService>();
 
 // 2. Configuration Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
