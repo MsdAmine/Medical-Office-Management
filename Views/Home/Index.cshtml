@@ -48,6 +48,47 @@
         </div>
     </div>
 
+    <div class="surface mt-8 p-6 space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div>
+                <h2 class="section-heading text-lg font-bold text-slate-800">Clinic Workload Today</h2>
+                <p class="text-sm text-slate-500">Heatmap of appointment density for @Model.Now.ToString("dddd")</p>
+            </div>
+            <form method="get" class="flex flex-wrap items-center gap-2 text-sm text-slate-600">
+                <label class="font-semibold text-slate-700">Bucket</label>
+                <select name="bucketMinutes" class="form-input w-28" onchange="this.form.submit()">
+                    <option value="15" @(Model.SelectedBucketMinutes == 15 ? "selected" : "")>15 minutes</option>
+                    <option value="30" @(Model.SelectedBucketMinutes == 30 ? "selected" : "")>30 minutes</option>
+                    <option value="60" @(Model.SelectedBucketMinutes == 60 ? "selected" : "")>60 minutes</option>
+                </select>
+                <label class="font-semibold text-slate-700 ml-2">Hours</label>
+                <input type="number" name="startHour" value="@Model.StartHour" class="form-input w-20" min="0" max="23" />
+                <span class="px-1 text-slate-400">to</span>
+                <input type="number" name="endHour" value="@Model.EndHour" class="form-input w-20" min="1" max="23" />
+                <button type="submit" class="btn-secondary ml-2">Apply</button>
+            </form>
+        </div>
+        @if (Model.ClinicHeatmap != null)
+        {
+            var clinicRow = Model.ClinicHeatmap.Rows.FirstOrDefault();
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                    <div class="text-slate-500">Total appointments</div>
+                    <div class="text-lg font-semibold text-slate-900">@clinicRow?.TotalAppointments ?? 0</div>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                    <div class="text-slate-500">Utilization</div>
+                    <div class="text-lg font-semibold text-slate-900">@((clinicRow?.UtilizationPercent ?? 0).ToString("0"))%</div>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                    <div class="text-slate-500">Peak</div>
+                    <div class="text-lg font-semibold text-slate-900">@clinicRow?.SummaryText</div>
+                </div>
+            </div>
+            @await Html.PartialAsync("_Heatmap", Model.ClinicHeatmap)
+        }
+    </div>
+
     @* Section Quick Actions *@
     <div class="space-y-4 mt-8">
         <h2 class="section-heading text-lg font-bold text-slate-800">Quick Actions</h2>

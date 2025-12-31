@@ -13,17 +13,30 @@ namespace MedicalOfficeManagement.Controllers
     {
         private readonly IDoctorRepository _doctorRepository;
         private readonly IAppointmentRepository _appointmentRepository;
+        private readonly IWorkloadService _workloadService;
 
-        public DoctorsController(IDoctorRepository doctorRepository, IAppointmentRepository appointmentRepository)
+        public DoctorsController(
+            IDoctorRepository doctorRepository,
+            IAppointmentRepository appointmentRepository,
+            IWorkloadService workloadService)
         {
             _doctorRepository = doctorRepository;
             _appointmentRepository = appointmentRepository;
+            _workloadService = workloadService;
         }
 
         public async Task<ActionResult> Index()
         {
             var today = DateTime.Today;
             var cancellationToken = HttpContext.RequestAborted;
+            var bucketMinutes = ParseBucketMinutes(Request.Query["bucketMinutes"]);
+            var startHour = ParseHour(Request.Query["startHour"], 8);
+            var endHour = ParseHour(Request.Query["endHour"], 18);
+            if (endHour <= startHour)
+            {
+                endHour = Math.Min(23, startHour + 1);
+            }
+
             var doctors = await _doctorRepository.ListAsync(cancellationToken);
 
             var todayAppointments = (await _appointmentRepository.ListForDateAsync(today, cancellationToken))
@@ -62,7 +75,16 @@ namespace MedicalOfficeManagement.Controllers
             {
                 Doctors = doctorViewModels,
                 TotalDoctors = doctorViewModels.Count,
-                OnDutyToday = doctorViewModels.Count(d => d.PatientsToday > 0 || d.IsAvailable)
+                OnDutyToday = doctorViewModels.Count(d => d.PatientsToday > 0 || d.IsAvailable),
+                WorkloadHeatmap = await _workloadService.GetDoctorsHeatmapAsync(
+                    today,
+                    bucketMinutes,
+                    startHour,
+                    endHour,
+                    cancellationToken),
+                SelectedBucketMinutes = bucketMinutes,
+                StartHour = startHour,
+                EndHour = endHour
             };
 
             return View(model);
@@ -71,6 +93,26 @@ namespace MedicalOfficeManagement.Controllers
         public ActionResult Details(int id)
         {
             return View();
+        }
+
+        private static int ParseBucketMinutes(string? input)
+        {
+            if (int.TryParse(input, out var parsed) && (parsed == 15 || parsed == 30 || parsed == 60))
+            {
+                return parsed;
+            }
+
+            return 30;
+        }
+
+        private static int ParseHour(string? input, int fallback)
+        {
+            if (int.TryParse(input, out var parsed) && parsed >= 0 && parsed <= 23)
+            {
+                return parsed;
+            }
+
+            return fallback;
         }
     }
 }
