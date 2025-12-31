@@ -2,6 +2,7 @@ using MedicalOfficeManagement.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MedicalOfficeManagement.Data;
+using MedicalOfficeManagement.Data.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,26 @@ var connectionString = builder.Configuration.GetConnectionString("gestionCabinet
 
 builder.Services.AddDbContext<MedicalOfficeContext>(options =>
     options.UseSqlServer(connectionString));
+
+// Read-only operational data context
+var operationalProvider = builder.Configuration.GetValue<string>("DataProvider") ?? "Sqlite";
+var operationalConnection = builder.Configuration.GetConnectionString("MedicalOfficeDb") ?? "Data Source=medicaloffice.db";
+builder.Services.AddDbContext<MedicalOfficeDbContext>(options =>
+{
+    options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+    if (string.Equals(operationalProvider, "InMemory", StringComparison.OrdinalIgnoreCase))
+    {
+        options.UseInMemoryDatabase("MedicalOfficeDb");
+    }
+    else
+    {
+        options.UseSqlite(operationalConnection);
+    }
+});
+
+builder.Services.AddScoped<IPatientRepository, PatientRepository>();
+builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
+builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
 
 // 2. Configuration Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -80,7 +101,16 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     try { await DbInitializer.SeedRolesAndAdminUser(services); }
     catch (Exception ex) { /* Log error */ }
+
+    try
+    {
+        var dataContext = services.GetRequiredService<MedicalOfficeDbContext>();
+        await SeedData.EnsureSeedDataAsync(dataContext);
+    }
+    catch (Exception ex)
+    {
+        /* Log error */
+    }
 }
 
 app.Run();
-

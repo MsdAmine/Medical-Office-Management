@@ -2,8 +2,7 @@ using System.Diagnostics;
 using MedicalOfficeManagement.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using MedicalOfficeManagement.Data; 
-using Microsoft.EntityFrameworkCore;
+using MedicalOfficeManagement.Data.Repositories;
 using Microsoft.AspNetCore.Identity;
 using MedicalOfficeManagement.ViewModels.Dashboard;
 
@@ -12,13 +11,21 @@ namespace MedicalOfficeManagement.Controllers
     [Authorize]
     public class HomeController : Controller
     {
-        private readonly MedicalOfficeContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IPatientRepository _patientRepository;
+        private readonly IAppointmentRepository _appointmentRepository;
+        private readonly IDoctorRepository _doctorRepository;
 
-        public HomeController(MedicalOfficeContext context, UserManager<ApplicationUser> userManager)
+        public HomeController(
+            UserManager<ApplicationUser> userManager,
+            IPatientRepository patientRepository,
+            IAppointmentRepository appointmentRepository,
+            IDoctorRepository doctorRepository)
         {
-            _context = context;
             _userManager = userManager;
+            _patientRepository = patientRepository;
+            _appointmentRepository = appointmentRepository;
+            _doctorRepository = doctorRepository;
         }
 
         // Changement crucial : Autoriser "Personnel" au lieu de "Secretary"
@@ -27,14 +34,18 @@ namespace MedicalOfficeManagement.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
             var today = DateTime.Today;
+            var cancellationToken = HttpContext.RequestAborted;
 
-            // Récupération des statistiques réelles
-            var doctorCount = await _context.Medecins.CountAsync();
-            var patientCount = await _context.Patients.CountAsync();
-            var todayAppts = await _context.RendezVous.CountAsync(r => r.DateDebut.Date == today);
-            var unreadMessages = Math.Max(0, (int)Math.Round(todayAppts * 0.35));
-            var clinicStatusLabel = todayAppts > 12 ? "Running behind" : "On schedule";
-            var clinicStatusTone = todayAppts > 12 ? "warning" : "success";
+            var doctors = await _doctorRepository.ListAsync(cancellationToken);
+            var patients = await _patientRepository.ListAsync(cancellationToken);
+            var todayAppts = await _appointmentRepository.ListForDateAsync(today, cancellationToken);
+
+            var doctorCount = doctors.Count;
+            var patientCount = patients.Count;
+            var appointmentCount = todayAppts.Count;
+            var unreadMessages = Math.Max(0, (int)Math.Round(appointmentCount * 0.35));
+            var clinicStatusLabel = appointmentCount > 12 ? "Running behind" : "On schedule";
+            var clinicStatusTone = appointmentCount > 12 ? "warning" : "success";
 
             var model = new DashboardViewModel
             {
@@ -63,7 +74,7 @@ namespace MedicalOfficeManagement.Controllers
                 model.Stats.Add(new StatCardViewModel
                 {
                     Label = "TODAY'S APPOINTMENTS",
-                    Value = todayAppts.ToString(),
+                    Value = appointmentCount.ToString(),
                     ColorClass = "text-brand-700",
                     Icon = "calendar",
                     Subtext = "-5% this week",
@@ -85,7 +96,7 @@ namespace MedicalOfficeManagement.Controllers
                 model.Stats.Add(new StatCardViewModel
                 {
                     Label = "TODAY'S APPOINTMENTS",
-                    Value = todayAppts.ToString(),
+                    Value = appointmentCount.ToString(),
                     ColorClass = "text-brand-700",
                     Icon = "calendar",
                     Subtext = "-5% this week",
