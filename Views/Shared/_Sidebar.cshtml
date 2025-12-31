@@ -2,40 +2,49 @@
     <nav class="p-4 flex flex-col h-full">
         @{
             var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+            var access = AccessControl.GetCurrent();
 
-            string dashboardAction = "Index";
-            if (User.IsInRole("Medecin"))
-            {
-                dashboardAction = "DoctorDashboard";
-            }
+            var dashboardAction = access.CurrentRole == AppRole.Physician ? "DoctorDashboard" : "Index";
 
-            var menuItems = new List<(string Controller, string Action, string Label, string Icon, string Description)>
+            var menuItems = new List<(string Controller, string Action, string Label, string Icon, string Description, bool Visible)>
             {
-                ("Home", dashboardAction, "Dashboard", "home", "Overview & workload"),
-                ("Patients", "Index", "Patients", "users", "Records"),
-                ("Appointments", "Index", "Appointments", "calendar", "Scheduling")
+                ("Home", dashboardAction, "Dashboard", "home", "Overview & workload", true),
+                ("Patients", "Index", "Patients", "users", "Records", access.CanViewPatients),
+                ("Appointments", "Index", "Appointments", "calendar", "Scheduling", access.CanManageAppointments)
             };
 
-            // Pour l'Admin et la Secrétaire : Distinction entre Horaires Fixes et Vacations (Congés)
-            if (User.IsInRole("Admin") || User.IsInRole("Secretaire"))
+            // Staff operations (admin/front desk/operations)
+            var showSchedulingOps = access.IsAdmin || access.CurrentRole == AppRole.FrontDesk;
+            if (showSchedulingOps)
             {
-                // 1. Les Horaires hebdomadaires et Affectations de salles
-                menuItems.Add(("Schedule", "Index", "Working Hours", "briefcase", "Weekly shifts & rooms"));
-                
-                // 2. Les Vacations, Congés et Absences (Votre Planning actuel)
-                menuItems.Add(("Planning", "Index", "Vacations", "clock", "Absences & leave"));
+                menuItems.Add(("Schedule", "Index", "Working Hours", "briefcase", "Weekly shifts & rooms", true));
+                menuItems.Add(("Planning", "Index", "Vacations", "clock", "Absences & leave", true));
             }
 
-            if (User.IsInRole("Admin"))
+            if (access.CanManageStaff)
             {
-                menuItems.Add(("Medecin", "Index", "Doctors", "user-md", "Staff management"));
-                menuItems.Add(("Settings", "Index", "Settings", "cog", "System preferences"));
+                menuItems.Add(("Medecin", "Index", "Doctors", "user-md", "Staff management", true));
+            }
+
+            if (access.ShowBilling)
+            {
+                menuItems.Add(("Billing", "Index", "Billing", "briefcase", "Invoices & payments", true));
+            }
+
+            if (access.ShowReports)
+            {
+                menuItems.Add(("Reports", "Index", "Reports", "calendar", "Analytics & exports", true));
+            }
+
+            if (access.CanManageSettings)
+            {
+                menuItems.Add(("Settings", "Index", "Settings", "cog", "System preferences", true));
             }
         }
 
         <div class="mb-3 px-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Navigation</div>
         <div class="space-y-2">
-            @foreach (var item in menuItems)
+            @foreach (var item in menuItems.Where(m => m.Visible))
             {
                 var isActive = string.Equals(currentController, item.Controller, StringComparison.OrdinalIgnoreCase);
                 <a href="@Url.Action(item.Action, item.Controller)"

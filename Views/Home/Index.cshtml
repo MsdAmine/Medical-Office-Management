@@ -3,6 +3,7 @@
 
 @{
     ViewData["Title"] = "Dashboard";
+    var access = AccessControl.GetCurrent();
 }
 
 <div class="page-shell">
@@ -17,7 +18,14 @@
         </div>
         <div class="flex flex-wrap gap-3">
             <a href="/RendezVous" class="btn-secondary">View schedule</a>
-            <a href="/Patients/Create" class="btn-primary">Add patient</a>
+            @if (access.CanCreatePatients)
+            {
+                <a href="/Patients/Create" class="btn-primary">Add patient</a>
+            }
+            else
+            {
+                <span class="btn-primary opacity-50 cursor-not-allowed" title="Patient creation available to clinical staff and admins">Add patient</span>
+            }
         </div>
     </div>
 
