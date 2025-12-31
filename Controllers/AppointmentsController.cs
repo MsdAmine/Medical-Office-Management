@@ -3,35 +3,30 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using MedicalOfficeManagement.Models;
+using MedicalOfficeManagement.Data.Entities;
+using MedicalOfficeManagement.Data.Repositories;
 using MedicalOfficeManagement.ViewModels.Appointments;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace MedicalOfficeManagement.Controllers
 {
     public class AppointmentsController : Controller
     {
-        private readonly MedicalOfficeContext _context;
+        private readonly IAppointmentRepository _appointmentRepository;
 
-        public AppointmentsController(MedicalOfficeContext context)
+        public AppointmentsController(IAppointmentRepository appointmentRepository)
         {
-            _context = context;
+            _appointmentRepository = appointmentRepository;
         }
 
         public async Task<ActionResult> Index()
         {
-            var appointments = await _context.RendezVous
-                .Include(r => r.Patient)
-                .Include(r => r.Medecin)
-                .Include(r => r.Salle)
-                .Where(r => r.DateDebut.Date >= DateTime.Today.AddDays(-7))
-                .OrderBy(r => r.DateDebut)
-                .ToListAsync();
+            var cancellationToken = HttpContext.RequestAborted;
+            var windowStart = DateTime.Today.AddDays(-7);
+            var windowEnd = DateTime.Today.AddDays(14);
+            var appointments = await _appointmentRepository.ListRangeAsync(windowStart, windowEnd, cancellationToken);
 
-            var allVisits = await _context.RendezVous
-                .Include(r => r.Medecin)
-                .ToListAsync();
+            var allVisits = await _appointmentRepository.ListAsync(cancellationToken);
 
             var patientVisits = allVisits
                 .GroupBy(r => r.PatientId)
@@ -39,8 +34,8 @@ namespace MedicalOfficeManagement.Controllers
                     g => g.Key,
                     g => new
                     {
-                        Last = g.OrderByDescending(x => x.DateFin).FirstOrDefault(),
-                        Next = g.Where(x => x.DateDebut > DateTime.Now).OrderBy(x => x.DateDebut).FirstOrDefault()
+                        Last = g.OrderByDescending(x => x.EndTime).FirstOrDefault(),
+                        Next = g.Where(x => x.StartTime > DateTime.Now).OrderBy(x => x.StartTime).FirstOrDefault()
                     });
 
             var overlappingIds = new HashSet<int>();
@@ -50,10 +45,10 @@ namespace MedicalOfficeManagement.Controllers
                 {
                     var a = appointments[i];
                     var b = appointments[j];
-                    if (a.DateDebut < b.DateFin && a.DateFin > b.DateDebut)
+                    if (a.StartTime < b.EndTime && a.EndTime > b.StartTime)
                     {
-                        overlappingIds.Add(a.Id);
-                        overlappingIds.Add(b.Id);
+                        overlappingIds.Add(Math.Abs(BitConverter.ToInt32(a.Id.ToByteArray(), 0)));
+                        overlappingIds.Add(Math.Abs(BitConverter.ToInt32(b.Id.ToByteArray(), 0)));
                     }
                 }
             }
@@ -61,13 +56,13 @@ namespace MedicalOfficeManagement.Controllers
             var appointmentViewModels = appointments
                 .Select(r =>
                 {
-                    var status = NormalizeStatus(r.Statut);
-                    var durationMinutes = Math.Max(15, (int)(r.DateFin - r.DateDebut).TotalMinutes);
+                    var status = MapStatus(r.Status);
+                    var durationMinutes = Math.Max(15, (int)(r.EndTime - r.StartTime).TotalMinutes);
                     patientVisits.TryGetValue(r.PatientId, out var visitInfo);
-                    var lastVisit = visitInfo?.Last?.DateFin;
-                    var nextVisit = visitInfo?.Next?.DateDebut;
+                    var lastVisit = visitInfo?.Last?.EndTime;
+                    var nextVisit = visitInfo?.Next?.StartTime;
                     var riskFlags = new List<string>();
-                    if (r.Patient.Antecedents?.Contains("risk", StringComparison.OrdinalIgnoreCase) == true)
+                    if (string.Equals(r.Patient?.RiskLevel, "High", StringComparison.OrdinalIgnoreCase))
                     {
                         riskFlags.Add("High Risk");
                     }
@@ -78,19 +73,19 @@ namespace MedicalOfficeManagement.Controllers
 
                     return new AppointmentViewModel
                     {
-                        Id = r.Id,
-                        Time = r.DateDebut,
-                        EndTime = r.DateFin,
-                        PatientName = $"{r.Patient.Prenom} {r.Patient.Nom}",
-                        DoctorName = r.Medecin.NomPrenom,
+                        Id = Math.Abs(BitConverter.ToInt32(r.Id.ToByteArray(), 0)),
+                        Time = r.StartTime,
+                        EndTime = r.EndTime,
+                        PatientName = $"{r.Patient?.FirstName} {r.Patient?.LastName}".Trim(),
+                        DoctorName = r.Doctor?.FullName ?? "Unassigned",
                         Status = status,
                         StatusColor = MapStatusColor(status),
                         StatusIcon = MapStatusIcon(status),
-                        VisitType = string.IsNullOrWhiteSpace(r.Motif) ? "Consultation" : r.Motif,
+                        VisitType = "Consultation",
                         DurationLabel = $"{durationMinutes}m",
-                        Room = r.Salle?.Nom ?? "Unassigned",
-                        IsLate = status is not "Cancelled" and not "Completed" && r.DateDebut < DateTime.Now,
-                        HasOverlap = overlappingIds.Contains(r.Id),
+                        Room = r.Room ?? "Unassigned",
+                        IsLate = status is not "Cancelled" and not "Completed" && r.StartTime < DateTime.Now,
+                        HasOverlap = overlappingIds.Contains(Math.Abs(BitConverter.ToInt32(r.Id.ToByteArray(), 0))),
                         PatientLastVisitRelative = FormatRelative(lastVisit),
                         PatientUpcoming = nextVisit?.ToString("MMM dd, h:mm tt") ?? "None scheduled",
                         PatientRiskFlags = riskFlags.Any() ? riskFlags : new List<string> { "Chronic" }
@@ -114,21 +109,14 @@ namespace MedicalOfficeManagement.Controllers
             return View();
         }
 
-        private static string NormalizeStatus(string status)
-        {
-            if (string.IsNullOrWhiteSpace(status))
+        private static string MapStatus(AppointmentStatus status) =>
+            status switch
             {
-                return "Waiting";
-            }
-
-            return status.ToLower() switch
-            {
-                "confirme" or "confirmed" => "Confirmed",
-                "annule" or "cancelled" or "canceled" => "Cancelled",
-                "termine" or "completed" => "Completed",
+                AppointmentStatus.Confirmed => "Confirmed",
+                AppointmentStatus.Completed => "Completed",
+                AppointmentStatus.Cancelled => "Cancelled",
                 _ => "Waiting"
             };
-        }
 
         private static string MapStatusColor(string status)
         {

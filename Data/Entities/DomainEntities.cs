@@ -16,6 +16,8 @@ namespace MedicalOfficeManagement.Data.Entities
         public DateTime DateOfBirth { get; set; }
         public string? RiskLevel { get; set; } // Future: used by saved filters and dashboards.
         public string? PrimaryPhysicianId { get; set; }
+        public string? Phone { get; set; }
+        public string? Email { get; set; }
         public ICollection<AppointmentEntity> Appointments { get; set; } = new List<AppointmentEntity>();
     }
 
@@ -29,8 +31,9 @@ namespace MedicalOfficeManagement.Data.Entities
         public string DoctorId { get; set; } = string.Empty;
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
-        public string Status { get; set; } = string.Empty; // Future: confirm/cancel/waitlist.
+        public AppointmentStatus Status { get; set; } = AppointmentStatus.Waiting; // Future: confirm/cancel/waitlist.
         public string? ClinicId { get; set; }
+        public string? Room { get; set; }
         public int CapacityPerSlot { get; set; } = 1; // Future: used by workload heatmaps.
         public PatientEntity? Patient { get; set; }
         public DoctorEntity? Doctor { get; set; }
@@ -45,6 +48,9 @@ namespace MedicalOfficeManagement.Data.Entities
         public string FullName { get; set; } = string.Empty;
         public string Specialty { get; set; } = string.Empty;
         public string ClinicId { get; set; } = string.Empty;
+        public string? Phone { get; set; }
+        public string? Email { get; set; }
+        public string? Location { get; set; }
         public ICollection<AppointmentEntity> Appointments { get; set; } = new List<AppointmentEntity>();
     }
 
@@ -74,5 +80,13 @@ namespace MedicalOfficeManagement.Data.Entities
         public bool IsDefault { get; set; }
         public DateTime LastUsedUtc { get; set; }
         public DateTime CreatedUtc { get; set; }
+    }
+
+    public enum AppointmentStatus
+    {
+        Waiting = 0,
+        Confirmed = 1,
+        Completed = 2,
+        Cancelled = 3
     }
 }
