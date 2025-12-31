@@ -23,9 +23,9 @@
             <form method="get" class="flex flex-wrap items-center gap-2 text-sm text-slate-600">
                 <label class="font-semibold text-slate-700">Bucket</label>
                 <select name="bucketMinutes" class="form-input w-28" onchange="this.form.submit()">
-                    <option value="15" @(Model.SelectedBucketMinutes == 15 ? "selected" : "")>15 minutes</option>
-                    <option value="30" @(Model.SelectedBucketMinutes == 30 ? "selected" : "")>30 minutes</option>
-                    <option value="60" @(Model.SelectedBucketMinutes == 60 ? "selected" : "")>60 minutes</option>
+                    <option value="15" selected="@(Model.SelectedBucketMinutes == 15 ? "selected" : null)">15 minutes</option>
+                    <option value="30" selected="@(Model.SelectedBucketMinutes == 30 ? "selected" : null)">30 minutes</option>
+                    <option value="60" selected="@(Model.SelectedBucketMinutes == 60 ? "selected" : null)">60 minutes</option>
                 </select>
                 <label class="font-semibold text-slate-700 ml-2">Hours</label>
                 <input type="number" name="startHour" value="@Model.StartHour" class="form-input w-20" min="0" max="23" />

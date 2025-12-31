@@ -46,7 +46,7 @@
                             <option value="">All doctors</option>
                             @foreach (var doctor in Model.DoctorOptions)
                             {
-                                <option value="@doctor" @(string.Equals(Model.FilterContext.CurrentFilters.PrimaryDoctor, doctor, StringComparison.OrdinalIgnoreCase) ? "selected" : string.Empty)>@doctor</option>
+                                <option value="@doctor" selected="@(string.Equals(Model.FilterContext.CurrentFilters.PrimaryDoctor, doctor, StringComparison.OrdinalIgnoreCase) ? "selected" : null)">@doctor</option>
                             }
                         </select>
                     </div>
@@ -56,12 +56,12 @@
                             <option value="">Any flag</option>
                             @foreach (var risk in Model.RiskLevels)
                             {
-                                <option value="@risk" @(string.Equals(Model.FilterContext.CurrentFilters.RiskLevel, risk, StringComparison.OrdinalIgnoreCase) ? "selected" : string.Empty)>@risk</option>
+                                <option value="@risk" selected="@(string.Equals(Model.FilterContext.CurrentFilters.RiskLevel, risk, StringComparison.OrdinalIgnoreCase) ? "selected" : null)">@risk</option>
                             }
                         </select>
                     </div>
                     <div class="flex items-center gap-2 pt-6">
-                        <input id="follow-up-only" type="checkbox" name="FollowUpDueOnly" value="true" @(Model.FilterContext.CurrentFilters.FollowUpDueOnly ? "checked" : string.Empty) class="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500" />
+                        <input id="follow-up-only" type="checkbox" name="FollowUpDueOnly" value="true" checked="@(Model.FilterContext.CurrentFilters.FollowUpDueOnly ? "checked" : null)" class="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500" />
                         <label for="follow-up-only" class="text-sm text-slate-700">Follow-ups due only</label>
                     </div>
                 </div>

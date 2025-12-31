@@ -36,11 +36,11 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
             <div>
                 <label class="form-label">Start Date</label>
-                <input type="date" value="@DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd")" class="form-input" @(canUseReports ? "" : "disabled")>
+                <input type="date" value="@(DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd"))" class="form-input" @(canUseReports ? "" : "disabled")>
             </div>
             <div>
                 <label class="form-label">End Date</label>
-                <input type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" class="form-input" @(canUseReports ? "" : "disabled")>
+                <input type="date" value="@(DateTime.Now.ToString("yyyy-MM-dd"))" class="form-input" @(canUseReports ? "" : "disabled")>
             </div>
             <div>
                 <button class="btn-primary w-full justify-center @(canUseReports ? "" : "opacity-60 cursor-not-allowed")" @(canUseReports ? "" : "disabled title=\"Report generation is limited to authorized roles\"")>Generate Report</button>
