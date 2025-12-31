@@ -62,6 +62,34 @@
                 </select>
             </div>
         </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label class="form-label">Duty Status</label>
+                <select class="form-input">
+                    <option>On Duty</option>
+                    <option>Off Duty</option>
+                    <option>All</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Location</label>
+                <select class="form-input">
+                    <option>All Locations</option>
+                    <option>Primary Clinic</option>
+                    <option>Telehealth</option>
+                    <option>Satellite</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Language</label>
+                <select class="form-input">
+                    <option>Any Language</option>
+                    <option>English</option>
+                    <option>French</option>
+                    <option>Spanish</option>
+                </select>
+            </div>
+        </div>
     </div>
 
     @if (!Model.Doctors.Any())
@@ -101,7 +129,10 @@
                     </div>
 
                     <h3 class="text-lg font-semibold text-slate-900 mb-1">@doctor.FullName</h3>
-                    <p class="text-sm text-slate-500 mb-4">@doctor.Specialty</p>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <span class="inline-flex items-center gap-1 rounded-full bg-slate-50 px-2 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200">@doctor.Role</span>
+                        <span class="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-1 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-200">@doctor.Specialty</span>
+                    </div>
 
                     <div class="space-y-2 mb-4 text-sm text-slate-600">
                         <div class="flex items-center gap-2">
@@ -116,14 +147,63 @@
                             </svg>
                             @doctor.Email
                         </div>
+                        <div class="flex items-center gap-2 text-xs text-slate-500">
+                            <span class="font-medium text-slate-700">Location:</span> @doctor.Location
+                        </div>
+                        <div class="flex items-center gap-2 text-xs text-slate-500">
+                            <span class="font-medium text-slate-700">Language:</span> @doctor.Language
+                        </div>
                     </div>
 
-                    @if (doctor.IsAvailable)
-                    {
-                        <div class="text-sm text-slate-600 mb-4">
-                            <span class="font-semibold text-slate-900">@doctor.PatientsToday</span> patients scheduled today
+                    <div class="grid grid-cols-2 gap-3 mb-4 text-xs text-slate-600">
+                        <div class="p-3 rounded-lg bg-slate-50 border border-slate-100">
+                            <div class="text-slate-500">Next available</div>
+                            <div class="font-semibold text-slate-900">@doctor.NextAvailableSlot</div>
                         </div>
-                    }
+                        <div class="p-3 rounded-lg bg-slate-50 border border-slate-100">
+                            <div class="text-slate-500">Patients today</div>
+                            <div class="font-semibold text-slate-900">@doctor.PatientsToday</div>
+                        </div>
+                        <div class="p-3 rounded-lg bg-slate-50 border border-slate-100">
+                            <div class="text-slate-500">First appt</div>
+                            <div class="font-semibold text-slate-900">@doctor.FirstAppointment</div>
+                        </div>
+                        <div class="p-3 rounded-lg bg-slate-50 border border-slate-100">
+                            <div class="text-slate-500">Last appt</div>
+                            <div class="font-semibold text-slate-900">@doctor.LastAppointment</div>
+                        </div>
+                    </div>
+
+                    <div class="relative group mb-4">
+                        <div class="flex items-center justify-between text-xs text-slate-600">
+                            <div class="font-medium text-slate-800">Next patient</div>
+                            <div class="text-slate-500">Arrives in 12m</div>
+                        </div>
+                        <div class="mt-1 inline-flex items-center gap-2 text-sm font-semibold text-brand-700 cursor-default">
+                            <span class="h-2 w-2 rounded-full bg-amber-500"></span> Hover for preview
+                        </div>
+                        <div class="pointer-events-none absolute left-0 top-full z-10 mt-2 hidden w-64 rounded-lg border border-slate-200 bg-white p-3 shadow-lg transition group-hover:block">
+                            <div class="text-xs uppercase tracking-wide text-slate-500 mb-2">Patient preview</div>
+                            <div class="flex items-center justify-between text-[11px]">
+                                <span class="text-slate-500">Last visit</span>
+                                <span class="font-medium text-slate-800">3 weeks ago</span>
+                            </div>
+                            <div class="flex items-center justify-between text-[11px]">
+                                <span class="text-slate-500">Upcoming</span>
+                                <span class="font-medium text-slate-800">@doctor.NextAvailableSlot</span>
+                            </div>
+                            <div class="mt-2 flex flex-wrap gap-2">
+                                <span class="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-1 text-[11px] font-semibold text-rose-700 ring-1 ring-rose-200">
+                                    <span class="h-2 w-2 rounded-full bg-rose-500"></span>
+                                    High Risk
+                                </span>
+                                <span class="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-1 text-[11px] font-semibold text-indigo-700 ring-1 ring-indigo-200">
+                                    <span class="h-2 w-2 rounded-full bg-indigo-500"></span>
+                                    Follow-up Due
+                                </span>
+                            </div>
+                        </div>
+                    </div>
 
                     <a href="@Url.Action("Details", "Doctors", new { id = doctor.Id })" class="@secondaryCta w-full justify-center">View Profile</a>
                 </div>
