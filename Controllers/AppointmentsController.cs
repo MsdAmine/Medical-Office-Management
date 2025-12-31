@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using MedicalOfficeManagement.Data.Entities;
 using MedicalOfficeManagement.Data.Repositories;
@@ -34,6 +35,33 @@ namespace MedicalOfficeManagement.Controllers
             bool setAsDefault = false)
         {
             var cancellationToken = HttpContext.RequestAborted;
+            var model = await BuildAppointmentsViewModel(filters, presetId, clearPreset, presetName, createdByRole, setAsDefault, cancellationToken);
+            return View(model);
+        }
+
+        [HttpGet]
+        public async Task<PartialViewResult> LiveTable(
+            [FromQuery] AppointmentsFilterCriteria? filters,
+            Guid? presetId,
+            bool clearPreset = false,
+            string? presetName = null,
+            string? createdByRole = null,
+            bool setAsDefault = false)
+        {
+            var cancellationToken = HttpContext.RequestAborted;
+            var model = await BuildAppointmentsViewModel(filters, presetId, clearPreset, presetName, createdByRole, setAsDefault, cancellationToken);
+            return PartialView("_AppointmentsTable", model);
+        }
+
+        private async Task<AppointmentsIndexViewModel> BuildAppointmentsViewModel(
+            AppointmentsFilterCriteria? filters,
+            Guid? presetId,
+            bool clearPreset,
+            string? presetName,
+            string? createdByRole,
+            bool setAsDefault,
+            CancellationToken cancellationToken)
+        {
             filters ??= new AppointmentsFilterCriteria();
             var filterContext = _filterPresetService.BuildContext(
                 FilterTargetPage.Appointments,
@@ -142,7 +170,7 @@ namespace MedicalOfficeManagement.Controllers
 
             var filteredAppointments = filtered.ToList();
 
-            var model = new AppointmentsIndexViewModel
+            return new AppointmentsIndexViewModel
             {
                 Appointments = filteredAppointments,
                 TodayCount = filteredAppointments.Count(a => a.Time.Date == DateTime.Today),
@@ -157,8 +185,6 @@ namespace MedicalOfficeManagement.Controllers
                     .ToList(),
                 StatusOptions = new List<string> { "Confirmed", "Waiting", "Completed", "Cancelled" }
             };
-
-            return View(model);
         }
 
         public ActionResult Create()

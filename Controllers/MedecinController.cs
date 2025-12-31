@@ -5,6 +5,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using MedicalOfficeManagement.Data;
+using MedicalOfficeManagement.Services.RealTime;
+using System;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace MedicalOfficeManagement.Controllers
 {
@@ -25,11 +29,13 @@ namespace MedicalOfficeManagement.Controllers
     {
         private readonly MedicalOfficeContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IClinicEventPublisher _eventPublisher;
 
-        public MedecinController(MedicalOfficeContext context, UserManager<ApplicationUser> userManager)
+        public MedecinController(MedicalOfficeContext context, UserManager<ApplicationUser> userManager, IClinicEventPublisher eventPublisher)
         {
             _context = context;
             _userManager = userManager;
+            _eventPublisher = eventPublisher;
         }
 
         private void PopulateSpecialitesViewBag()
@@ -118,6 +124,20 @@ namespace MedicalOfficeManagement.Controllers
                         medecin.ApplicationUserId = user.Id;
                         _context.Add(medecin);
                         await _context.SaveChangesAsync();
+
+                        await _eventPublisher.PublishDoctorAvailabilityChangedAsync(new DoctorAvailabilityUpdateDto
+                        {
+                            EntityId = medecin.Id.ToString(),
+                            EntityType = "Doctor",
+                            EventType = "DoctorCreated",
+                            DoctorId = medecin.Id.ToString(),
+                            DoctorName = medecin.NomPrenom,
+                            IsAvailable = true,
+                            PatientsToday = 0,
+                            Date = DateTime.Today,
+                            ChangeReason = "ProfileCreated",
+                            AffectedViews = new[] { "Doctors", "Dashboard" }
+                        }, HttpContext.RequestAborted);
                     }
                     return RedirectToAction(nameof(Index));
                 }
@@ -161,6 +181,20 @@ namespace MedicalOfficeManagement.Controllers
 
                     _context.Update(medecin);
                     await _context.SaveChangesAsync();
+
+                    await _eventPublisher.PublishDoctorAvailabilityChangedAsync(new DoctorAvailabilityUpdateDto
+                    {
+                        EntityId = medecin.Id.ToString(),
+                        EntityType = "Doctor",
+                        EventType = "DoctorUpdated",
+                        DoctorId = medecin.Id.ToString(),
+                        DoctorName = medecin.NomPrenom,
+                        IsAvailable = true,
+                        PatientsToday = 0,
+                        Date = DateTime.Today,
+                        ChangeReason = "ProfileUpdated",
+                        AffectedViews = new[] { "Doctors", "Dashboard" }
+                    }, HttpContext.RequestAborted);
                     return RedirectToAction(nameof(Index));
                 }
             }
@@ -237,6 +271,19 @@ namespace MedicalOfficeManagement.Controllers
                     var user = medecin.ApplicationUser;
                     _context.Medecins.Remove(medecin);
                     await _context.SaveChangesAsync();
+                    await _eventPublisher.PublishDoctorAvailabilityChangedAsync(new DoctorAvailabilityUpdateDto
+                    {
+                        EntityId = medecin.Id.ToString(),
+                        EntityType = "Doctor",
+                        EventType = "DoctorDeleted",
+                        DoctorId = medecin.Id.ToString(),
+                        DoctorName = medecin.NomPrenom,
+                        IsAvailable = false,
+                        PatientsToday = 0,
+                        Date = DateTime.Today,
+                        ChangeReason = "ProfileDeleted",
+                        AffectedViews = new[] { "Doctors", "Dashboard" }
+                    }, HttpContext.RequestAborted);
                     if (user != null) await _userManager.DeleteAsync(user);
                 }
             }

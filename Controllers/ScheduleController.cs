@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MedicalOfficeManagement.Models;
 using Microsoft.AspNetCore.Authorization;
+using MedicalOfficeManagement.Services.RealTime;
+using System;
 
 namespace MedicalOfficeManagement.Controllers
 {
@@ -10,10 +12,12 @@ namespace MedicalOfficeManagement.Controllers
     public class ScheduleController : Controller
     {
         private readonly MedicalOfficeContext _context;
+        private readonly IClinicEventPublisher _eventPublisher;
 
-        public ScheduleController(MedicalOfficeContext context)
+        public ScheduleController(MedicalOfficeContext context, IClinicEventPublisher eventPublisher)
         {
             _context = context;
+            _eventPublisher = eventPublisher;
         }
 
         // GET: Schedule
@@ -68,6 +72,21 @@ namespace MedicalOfficeManagement.Controllers
                 {
                     _context.Add(schedule);
                     await _context.SaveChangesAsync();
+
+                    var doctor = await _context.Medecins.FindAsync(schedule.MedecinId);
+                    await _eventPublisher.PublishDoctorAvailabilityChangedAsync(new DoctorAvailabilityUpdateDto
+                    {
+                        EntityId = schedule.Id.ToString(),
+                        EntityType = "Schedule",
+                        EventType = "DoctorAvailabilityChanged",
+                        DoctorId = schedule.MedecinId.ToString(),
+                        DoctorName = doctor?.NomPrenom ?? $"Doctor {schedule.MedecinId}",
+                        IsAvailable = true,
+                        PatientsToday = 0,
+                        Date = DateTime.Today,
+                        ChangeReason = "ScheduleCreated",
+                        AffectedViews = new[] { "Doctors", "Dashboard" }
+                    }, HttpContext.RequestAborted);
                     return RedirectToAction(nameof(Index));
                 }
             }
@@ -88,6 +107,21 @@ namespace MedicalOfficeManagement.Controllers
             {
                 _context.Schedules.Remove(schedule);
                 await _context.SaveChangesAsync();
+
+                var doctor = await _context.Medecins.FindAsync(schedule.MedecinId);
+                await _eventPublisher.PublishDoctorAvailabilityChangedAsync(new DoctorAvailabilityUpdateDto
+                {
+                    EntityId = schedule.Id.ToString(),
+                    EntityType = "Schedule",
+                    EventType = "DoctorAvailabilityChanged",
+                    DoctorId = schedule.MedecinId.ToString(),
+                    DoctorName = doctor?.NomPrenom ?? $"Doctor {schedule.MedecinId}",
+                    IsAvailable = true,
+                    PatientsToday = 0,
+                    Date = DateTime.Today,
+                    ChangeReason = "ScheduleDeleted",
+                    AffectedViews = new[] { "Doctors", "Dashboard" }
+                }, HttpContext.RequestAborted);
             }
             return RedirectToAction(nameof(Index));
         }

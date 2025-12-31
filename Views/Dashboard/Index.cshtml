@@ -31,11 +31,9 @@
         </div>
     </div>
 
-    <div class="stat-grid">
-        @foreach (var stat in Model.Stats)
-        {
-            <partial name="_StatCard" model="stat" />
-        }
+    <div id="dashboard-live-section"
+         data-partial-url="@Url.Action("DashboardLiveTiles", "Home", new { bucketMinutes = Model.SelectedBucketMinutes, startHour = Model.StartHour, endHour = Model.EndHour })">
+        @await Html.PartialAsync("_LiveTiles", Model)
     </div>
 
     <div class="space-y-4">
