@@ -3,6 +3,8 @@
 
 @{
     ViewBag.Title = "Billing";
+    var access = AccessControl.GetCurrent();
+    var canEditBilling = access.CanEditBilling;
 }
 
 <div class="page-shell">
@@ -14,7 +16,10 @@
                 <p class="page-subtitle">Track invoices and payment status</p>
             </div>
         </div>
-        <button type="button" id="open-invoice" class="btn-primary">
+        <button type="button"
+                id="open-invoice"
+                class="btn-primary @(canEditBilling ? "" : "opacity-60 cursor-not-allowed")"
+                @(canEditBilling ? "" : "disabled title=\"Billing edits are limited to billing and admin roles\"")>
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
             </svg>
@@ -110,9 +115,13 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">@invoice.DueDate.ToString("MMM dd, yyyy")</td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm space-x-3">
                                 <a href="@Url.Action("Details", "Billing", new { id = invoice.Id })" class="btn-ghost text-brand-700">View</a>
-                                @if (invoice.Status != "Paid")
+                                @if (invoice.Status != "Paid" && canEditBilling)
                                 {
                                     <a href="@Url.Action("RecordPayment", "Billing", new { id = invoice.Id })" class="btn-ghost text-success">Record Payment</a>
+                                }
+                                else if (invoice.Status != "Paid")
+                                {
+                                    <span class="btn-ghost text-slate-400 cursor-not-allowed" title="Payments can be recorded by billing teams">Record Payment</span>
                                 }
                             </td>
                         </tr>
