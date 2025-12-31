@@ -1,44 +1,142 @@
 // File: ViewModels/Filters/FilterPresetViewModel.cs
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MedicalOfficeManagement.ViewModels.Filters
 {
-    /// <summary>
-    /// Future use: represents a saved filter preset that can be applied to list screens.
-    /// </summary>
-    public class FilterPresetViewModel
+    public enum FilterTargetPage
     {
-        public string Id { get; set; } = string.Empty; // Future: stable identifier (e.g., GUID/slug).
+        Patients,
+        Appointments
+    }
+
+    public abstract class FilterCriteriaBase
+    {
+        public abstract FilterTargetPage TargetPage { get; }
+
+        public virtual bool HasValues() => false;
+
+        public abstract FilterCriteriaBase Clone();
+    }
+
+    public class AppointmentsFilterCriteria : FilterCriteriaBase
+    {
+        public override FilterTargetPage TargetPage => FilterTargetPage.Appointments;
+
+        public string? Doctor { get; set; }
+
+        public string? Status { get; set; }
+
+        public DateTime? StartDate { get; set; }
+
+        public DateTime? EndDate { get; set; }
+
+        public override bool HasValues() =>
+            !string.IsNullOrWhiteSpace(Doctor) ||
+            !string.IsNullOrWhiteSpace(Status) ||
+            StartDate.HasValue ||
+            EndDate.HasValue;
+
+        public override FilterCriteriaBase Clone() => new AppointmentsFilterCriteria
+        {
+            Doctor = Doctor,
+            Status = Status,
+            StartDate = StartDate,
+            EndDate = EndDate
+        };
+    }
+
+    public class PatientsFilterCriteria : FilterCriteriaBase
+    {
+        public override FilterTargetPage TargetPage => FilterTargetPage.Patients;
+
+        public string? PrimaryDoctor { get; set; }
+
+        public string? RiskLevel { get; set; }
+
+        public bool FollowUpDueOnly { get; set; }
+
+        public override bool HasValues() =>
+            !string.IsNullOrWhiteSpace(PrimaryDoctor) ||
+            !string.IsNullOrWhiteSpace(RiskLevel) ||
+            FollowUpDueOnly;
+
+        public override FilterCriteriaBase Clone() => new PatientsFilterCriteria
+        {
+            PrimaryDoctor = PrimaryDoctor,
+            RiskLevel = RiskLevel,
+            FollowUpDueOnly = FollowUpDueOnly
+        };
+    }
+
+    public class FilterPreset
+    {
+        public Guid PresetId { get; set; } = Guid.NewGuid();
+
         public string Name { get; set; } = string.Empty;
-        public string OwnerUserId { get; set; } = string.Empty; // Future: personalize presets per user/clinic.
-        public string Scope { get; set; } = string.Empty; // Expected values: "Patients", "Appointments", etc.
-        public Dictionary<string, string[]> Criteria { get; set; } = new(); // Keyed by field names; values are operator-ready tokens.
-        public bool IsDefault { get; set; } // Future: auto-apply on page load.
-        public DateTime LastUsedUtc { get; set; }
-        public DateTime CreatedUtc { get; set; }
-        public string Description { get; set; } = string.Empty; // Future: explain intent to clinicians.
+
+        public FilterTargetPage TargetPage { get; set; }
+
+        public FilterCriteriaBase Criteria { get; set; } = default!;
+
+        public bool IsDefault { get; set; }
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public string CreatedByRole { get; set; } = string.Empty;
     }
 
-    /// <summary>
-    /// Future use: describes the application context when binding a preset to a filterable query.
-    /// </summary>
-    public class FilterPresetApplicationContext
+    public interface IFilterContextViewModel
     {
-        public string Scope { get; set; } = string.Empty; // Aligns with the target ViewModel or controller action.
-        public string? UserId { get; set; } // Future: drive personalization and RBAC-aware filtering.
-        public string? ClinicId { get; set; } // Future: constrain presets to clinic/department.
-        public Dictionary<string, string[]> ActiveCriteria { get; set; } = new(); // Resolved criteria after preset merge + ad-hoc filters.
+        FilterTargetPage TargetPage { get; }
+
+        Guid? ActivePresetId { get; }
+
+        IReadOnlyList<FilterPreset> Presets { get; }
+
+        FilterPreset? ActivePreset { get; }
+
+        bool HasActivePreset { get; }
+
+        bool IsPresetActive(Guid presetId);
+
+        bool CanSavePreset { get; set; }
+
+        bool CanEditPreset { get; set; }
     }
 
-    /*
-     * Future persistence strategy:
-     * - Persist presets via EF Core in a dedicated table (e.g., FilterPresets) keyed by tenant/user.
-     * - Store Criteria as JSON for flexible field support; add indexed columns for common filters (date ranges, risk flags).
-     * - Server-side application: translate Criteria into LINQ expressions per scope (Patients/Appointments) using a field registry.
-     * - Support clinic-level defaults and user overrides by layering presets (system -> clinic -> user).
-     * Razor hook points (no markup yet):
-     * - Patients/Index and Appointments/Index: inject FilterPresetViewModel into the page ViewModel to hydrate filter drawers.
-     * - Shared partial for preset selection + save actions, receiving the current FilterPresetApplicationContext.
-     */
+    public class FilterContextViewModel<TCriteria> : IFilterContextViewModel where TCriteria : FilterCriteriaBase
+    {
+        public FilterTargetPage TargetPage { get; set; }
+
+        public TCriteria CurrentFilters { get; set; } = default!;
+
+        public List<FilterPreset> Presets { get; set; } = new();
+
+        public Guid? ActivePresetId { get; set; }
+
+        public bool CanSavePreset { get; set; } = true;
+
+        public bool CanEditPreset { get; set; } = true;
+
+        public FilterPreset? ActivePreset => Presets.FirstOrDefault(p => p.PresetId == ActivePresetId);
+
+        public bool HasActivePreset => ActivePresetId.HasValue;
+
+        public bool IsPresetActive(Guid presetId) => ActivePresetId == presetId;
+
+        IReadOnlyList<FilterPreset> IFilterContextViewModel.Presets => Presets;
+    }
+
+    public class PresetSelectorViewModel
+    {
+        public required IFilterContextViewModel Context { get; set; }
+
+        public string ControllerName { get; set; } = string.Empty;
+
+        public string ActionName { get; set; } = "Index";
+
+        public string ManagePresetsHref { get; set; } = "#";
+    }
 }
