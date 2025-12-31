@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using MedicalOfficeManagement.Data.Repositories;
 using MedicalOfficeManagement.ViewModels.Doctors;
@@ -27,11 +28,59 @@ namespace MedicalOfficeManagement.Controllers
 
         public async Task<ActionResult> Index()
         {
-            var today = DateTime.Today;
             var cancellationToken = HttpContext.RequestAborted;
-            var bucketMinutes = ParseBucketMinutes(Request.Query["bucketMinutes"]);
-            var startHour = ParseHour(Request.Query["startHour"], 8);
-            var endHour = ParseHour(Request.Query["endHour"], 18);
+            var model = await BuildDoctorsViewModel(
+                ParseBucketMinutes(Request.Query["bucketMinutes"]),
+                ParseHour(Request.Query["startHour"], 8),
+                ParseHour(Request.Query["endHour"], 18),
+                cancellationToken);
+            return View(model);
+        }
+
+        [HttpGet]
+        public async Task<PartialViewResult> LivePanel(int? bucketMinutes, int? startHour, int? endHour)
+        {
+            var cancellationToken = HttpContext.RequestAborted;
+            var model = await BuildDoctorsViewModel(
+                ParseBucketMinutes(bucketMinutes?.ToString() ?? Request.Query["bucketMinutes"]),
+                ParseHour(startHour?.ToString() ?? Request.Query["startHour"], 8),
+                ParseHour(endHour?.ToString() ?? Request.Query["endHour"], 18),
+                cancellationToken);
+            return PartialView("_DoctorsLiveSection", model);
+        }
+
+        public ActionResult Details(int id)
+        {
+            return View();
+        }
+
+        private static int ParseBucketMinutes(string? input)
+        {
+            if (int.TryParse(input, out var parsed) && (parsed == 15 || parsed == 30 || parsed == 60))
+            {
+                return parsed;
+            }
+
+            return 30;
+        }
+
+        private static int ParseHour(string? input, int fallback)
+        {
+            if (int.TryParse(input, out var parsed) && parsed >= 0 && parsed <= 23)
+            {
+                return parsed;
+            }
+
+            return fallback;
+        }
+
+        private async Task<DoctorsIndexViewModel> BuildDoctorsViewModel(
+            int bucketMinutes,
+            int startHour,
+            int endHour,
+            CancellationToken cancellationToken)
+        {
+            var today = DateTime.Today;
             if (endHour <= startHour)
             {
                 endHour = Math.Min(23, startHour + 1);
@@ -71,7 +120,7 @@ namespace MedicalOfficeManagement.Controllers
                 };
             }).ToList();
 
-            var model = new DoctorsIndexViewModel
+            return new DoctorsIndexViewModel
             {
                 Doctors = doctorViewModels,
                 TotalDoctors = doctorViewModels.Count,
@@ -86,33 +135,6 @@ namespace MedicalOfficeManagement.Controllers
                 StartHour = startHour,
                 EndHour = endHour
             };
-
-            return View(model);
-        }
-
-        public ActionResult Details(int id)
-        {
-            return View();
-        }
-
-        private static int ParseBucketMinutes(string? input)
-        {
-            if (int.TryParse(input, out var parsed) && (parsed == 15 || parsed == 30 || parsed == 60))
-            {
-                return parsed;
-            }
-
-            return 30;
-        }
-
-        private static int ParseHour(string? input, int fallback)
-        {
-            if (int.TryParse(input, out var parsed) && parsed >= 0 && parsed <= 23)
-            {
-                return parsed;
-            }
-
-            return fallback;
         }
     }
 }

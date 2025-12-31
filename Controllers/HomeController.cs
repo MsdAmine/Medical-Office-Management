@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using MedicalOfficeManagement.Data.Repositories;
 using Microsoft.AspNetCore.Identity;
 using MedicalOfficeManagement.ViewModels.Dashboard;
+using System.Threading;
 
 namespace MedicalOfficeManagement.Controllers
 {
@@ -35,12 +36,56 @@ namespace MedicalOfficeManagement.Controllers
         [Authorize(Roles = "Admin,Personnel")]
         public async Task<IActionResult> Index()
         {
+            var cancellationToken = HttpContext.RequestAborted;
+            var model = await BuildDashboardViewModel(
+                ParseBucketMinutes(Request.Query["bucketMinutes"]),
+                ParseHour(Request.Query["startHour"], 8),
+                ParseHour(Request.Query["endHour"], 18),
+                cancellationToken);
+
+            return View(model);
+        }
+
+        [HttpGet]
+        public async Task<PartialViewResult> DashboardLiveTiles(int? bucketMinutes, int? startHour, int? endHour)
+        {
+            var cancellationToken = HttpContext.RequestAborted;
+            var model = await BuildDashboardViewModel(
+                ParseBucketMinutes(bucketMinutes?.ToString() ?? Request.Query["bucketMinutes"]),
+                ParseHour(startHour?.ToString() ?? Request.Query["startHour"], 8),
+                ParseHour(endHour?.ToString() ?? Request.Query["endHour"], 18),
+                cancellationToken);
+            return PartialView("~/Views/Dashboard/_LiveTiles.cshtml", model);
+        }
+
+        private static int ParseBucketMinutes(string? input)
+        {
+            if (int.TryParse(input, out var parsed) && (parsed == 15 || parsed == 30 || parsed == 60))
+            {
+                return parsed;
+            }
+
+            return 30;
+        }
+
+        private static int ParseHour(string? input, int fallback)
+        {
+            if (int.TryParse(input, out var parsed) && parsed >= 0 && parsed <= 23)
+            {
+                return parsed;
+            }
+
+            return fallback;
+        }
+
+        private async Task<DashboardViewModel> BuildDashboardViewModel(
+            int bucketMinutes,
+            int startHour,
+            int endHour,
+            CancellationToken cancellationToken)
+        {
             var user = await _userManager.GetUserAsync(User);
             var today = DateTime.Today;
-            var cancellationToken = HttpContext.RequestAborted;
-            var bucketMinutes = ParseBucketMinutes(Request.Query["bucketMinutes"]);
-            var startHour = ParseHour(Request.Query["startHour"], 8);
-            var endHour = ParseHour(Request.Query["endHour"], 18);
             if (endHour <= startHour)
             {
                 endHour = Math.Min(23, startHour + 1);
@@ -65,7 +110,6 @@ namespace MedicalOfficeManagement.Controllers
 
             var model = new DashboardViewModel
             {
-                // Affiche le nom de Fatima ou Amine selon la session
                 UserDisplayName = user?.FirstName ?? "Utilisateur",
                 Now = DateTime.Now,
                 Stats = new List<StatCardViewModel>(),
@@ -79,7 +123,6 @@ namespace MedicalOfficeManagement.Controllers
                 EndHour = endHour
             };
 
-            // --- LOGIQUE ADMIN ---
             if (User.IsInRole("Admin"))
             {
                 model.Stats.Add(new StatCardViewModel
@@ -101,17 +144,17 @@ namespace MedicalOfficeManagement.Controllers
                     TrendTone = "negative"
                 });
 
-                model.QuickActions.Add(new QuickActionViewModel { 
-                    Label = "Add Doctor", 
-                    Description = "Register a new provider", 
+                model.QuickActions.Add(new QuickActionViewModel
+                {
+                    Label = "Add Doctor",
+                    Description = "Register a new provider",
                     Status = "New",
                     Icon = "plus",
-                    Url = "/Medecin/Create", // Dossier au singulier dans Views
+                    Url = "/Medecin/Create",
                     ColorClass = "bg-brand-50 text-brand-700"
                 });
             }
-            // --- LOGIQUE PERSONNEL (FATIMA) ---
-            else if (User.IsInRole("Personnel")) 
+            else if (User.IsInRole("Personnel"))
             {
                 model.Stats.Add(new StatCardViewModel
                 {
@@ -132,12 +175,13 @@ namespace MedicalOfficeManagement.Controllers
                     TrendTone = "positive"
                 });
 
-                model.QuickActions.Add(new QuickActionViewModel { 
-                    Label = "Register Patient", 
-                    Description = "Create medical file", 
+                model.QuickActions.Add(new QuickActionViewModel
+                {
+                    Label = "Register Patient",
+                    Description = "Create medical file",
                     Status = "Start",
                     Icon = "user-plus",
-                    Url = "/Patients/Create", // Dossier existant
+                    Url = "/Patients/Create",
                     ColorClass = "bg-blue-50 text-blue-700"
                 });
             }
@@ -153,27 +197,7 @@ namespace MedicalOfficeManagement.Controllers
                 IsEmptyState = model.UnreadMessages == 0
             });
 
-            return View(model);
-        }
-
-        private static int ParseBucketMinutes(string? input)
-        {
-            if (int.TryParse(input, out var parsed) && (parsed == 15 || parsed == 30 || parsed == 60))
-            {
-                return parsed;
-            }
-
-            return 30;
-        }
-
-        private static int ParseHour(string? input, int fallback)
-        {
-            if (int.TryParse(input, out var parsed) && parsed >= 0 && parsed <= 23)
-            {
-                return parsed;
-            }
-
-            return fallback;
+            return model;
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
