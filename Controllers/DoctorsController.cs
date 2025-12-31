@@ -34,6 +34,9 @@ namespace MedicalOfficeManagement.Controllers
                 todayAppointments.TryGetValue(d.Id, out var doctorAppointments);
                 var appointmentList = doctorAppointments ?? new List<RendezVou>();
                 var isAvailable = !appointmentList.Any(r => r.DateDebut <= DateTime.Now && r.DateFin >= DateTime.Now);
+                var firstAppointment = appointmentList.OrderBy(r => r.DateDebut).FirstOrDefault();
+                var lastAppointment = appointmentList.OrderByDescending(r => r.DateFin).FirstOrDefault();
+                var nextSlot = appointmentList.Where(r => r.DateFin > DateTime.Now).OrderBy(r => r.DateFin).FirstOrDefault();
 
                 return new DoctorViewModel
                 {
@@ -44,7 +47,13 @@ namespace MedicalOfficeManagement.Controllers
                     Email = d.Email,
                     IsAvailable = isAvailable,
                     PatientsToday = appointmentList.Count,
-                    ColorClass = isAvailable ? "bg-green-50 border-green-200" : "bg-gray-50 border-gray-200"
+                    ColorClass = isAvailable ? "bg-green-50 border-green-200" : "bg-gray-50 border-gray-200",
+                    Role = "MD",
+                    Location = d.Adresse,
+                    Language = "English / French",
+                    FirstAppointment = firstAppointment?.DateDebut.ToString("h:mm tt") ?? "—",
+                    LastAppointment = lastAppointment?.DateFin.ToString("h:mm tt") ?? "—",
+                    NextAvailableSlot = nextSlot == null ? "Now" : nextSlot.DateFin.ToString("h:mm tt")
                 };
             }).ToList();
 
