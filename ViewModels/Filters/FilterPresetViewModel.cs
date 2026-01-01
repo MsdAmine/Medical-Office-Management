@@ -72,7 +72,7 @@ namespace MedicalOfficeManagement.ViewModels.Filters
 
     public class FilterPreset
     {
-        public Guid PresetId { get; set; } = Guid.NewGuid();
+        public int Id { get; set; }
 
         public string Name { get; set; } = string.Empty;
 
@@ -91,7 +91,7 @@ namespace MedicalOfficeManagement.ViewModels.Filters
     {
         FilterTargetPage TargetPage { get; }
 
-        Guid? ActivePresetId { get; }
+        int? ActivePresetId { get; }
 
         IReadOnlyList<FilterPreset> Presets { get; }
 
@@ -99,7 +99,7 @@ namespace MedicalOfficeManagement.ViewModels.Filters
 
         bool HasActivePreset { get; }
 
-        bool IsPresetActive(Guid presetId);
+        bool IsPresetActive(int presetId);
 
         bool CanSavePreset { get; set; }
 
@@ -114,17 +114,19 @@ namespace MedicalOfficeManagement.ViewModels.Filters
 
         public List<FilterPreset> Presets { get; set; } = new();
 
-        public Guid? ActivePresetId { get; set; }
+        public int? ActivePresetId { get; set; }
 
         public bool CanSavePreset { get; set; } = true;
 
         public bool CanEditPreset { get; set; } = true;
 
-        public FilterPreset? ActivePreset => Presets.FirstOrDefault(p => p.PresetId == ActivePresetId);
+        public FilterPreset? ActivePreset => ActivePresetId.HasValue
+            ? Presets.FirstOrDefault(p => p.Id == ActivePresetId.Value)
+            : null;
 
         public bool HasActivePreset => ActivePresetId.HasValue;
 
-        public bool IsPresetActive(Guid presetId) => ActivePresetId == presetId;
+        public bool IsPresetActive(int presetId) => ActivePresetId == presetId;
 
         IReadOnlyList<FilterPreset> IFilterContextViewModel.Presets => Presets;
     }
