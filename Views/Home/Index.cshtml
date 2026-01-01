@@ -8,6 +8,11 @@
     var isNurse = User.IsInRole(nameof(AppRole.Nurse));
     var isReceptionist = User.IsInRole(nameof(AppRole.Receptionist));
     var isBilling = User.IsInRole(nameof(AppRole.Billing));
+    var roleLabel = isAdmin ? "Admin"
+        : isPhysician ? "Physician"
+        : isReceptionist ? "Reception"
+        : isBilling ? "Billing"
+        : "User";
     var canRegisterPatients = isAdmin || isPhysician || isNurse || isReceptionist;
     var canViewSchedule = isAdmin || isPhysician || isNurse || isReceptionist;
     var showFinanceWidget = isAdmin || isBilling;
