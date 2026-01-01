@@ -2,127 +2,162 @@
 @model MedicalOfficeManagement.ViewModels.Appointments.AppointmentsIndexViewModel
 
 <div class="stat-grid">
-    <div class="stat-card">
+    <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
         <div class="stat-label">Today's Appointments</div>
-        <div class="stat-value">@Model.TodayCount</div>
+        <div class="stat-value text-3xl">@Model.TodayCount</div>
+        <p class="text-xs text-slate-500">Clinically scheduled for today</p>
     </div>
-    <div class="stat-card">
+    <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
         <div class="stat-label">Confirmed</div>
-        <div class="stat-value text-success">@Model.ConfirmedCount</div>
+        <div class="stat-value text-3xl text-success">@Model.ConfirmedCount</div>
+        <p class="text-xs text-slate-500">Checked-in or pre-registered</p>
     </div>
-    <div class="stat-card">
+    <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
         <div class="stat-label">Waiting</div>
-        <div class="stat-value text-brand-700">@Model.WaitingCount</div>
+        <div class="stat-value text-3xl text-brand-700">@Model.WaitingCount</div>
+        <p class="text-xs text-slate-500">In lobby / triage</p>
     </div>
-    <div class="stat-card">
+    <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
         <div class="stat-label">Utilization</div>
-        <div class="stat-value text-slate-900">@(Model.TodayCount == 0 ? "0%" : "75%")</div>
+        <div class="stat-value text-3xl text-slate-900">@(Model.TodayCount == 0 ? "0%" : "75%")</div>
+        <p class="text-xs text-slate-500">Capacity booked today</p>
     </div>
 </div>
 
 <div class="table-shell">
-    <div class="overflow-x-auto">
-        <table class="w-full">
-            <thead class="table-head">
-                <tr>
-                    <th class="px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Time</th>
-                    <th class="px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Patient</th>
-                    <th class="px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Doctor</th>
-                    <th class="px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Visit Type</th>
-                    <th class="px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Duration</th>
-                    <th class="px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Room</th>
-                    <th class="px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Status</th>
-                    <th class="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="table-body">
-                @foreach (var appointment in Model.Appointments)
-                {
-                    var statusClass = appointment.Status switch
+    <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+        @if (!Model.Appointments.Any())
+        {
+            <div class="flex items-center justify-between px-6 py-10">
+                <div class="flex items-start gap-3">
+                    <div class="h-12 w-12 rounded-full bg-slate-50 text-brand-700 flex items-center justify-center ring-1 ring-slate-200">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-lg font-semibold text-slate-900">No appointments scheduled</div>
+                        <p class="text-sm text-slate-500">Schedule a patient to see live status, rooming, and handoffs.</p>
+                    </div>
+                </div>
+                <a href="@Url.Action("Create", "Appointments")" class="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Schedule
+                </a>
+            </div>
+        }
+        else
+        {
+            <table class="w-full">
+                <thead class="table-head border-b border-slate-200">
+                    <tr>
+                        <th class="px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Time</th>
+                        <th class="px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Patient</th>
+                        <th class="px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Doctor</th>
+                        <th class="px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Visit Type</th>
+                        <th class="px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Duration</th>
+                        <th class="px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Room</th>
+                        <th class="px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Status</th>
+                        <th class="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="table-body divide-y divide-slate-100">
+                    @foreach (var appointment in Model.Appointments)
                     {
-                        "Confirmed" => "badge-solid green",
-                        "Waiting" => "badge-soft amber",
-                        "Cancelled" => "badge-soft red",
-                        _ => "badge-soft blue"
-                    };
-                    <tr class="text-sm align-top">
-                        <td class="px-5 py-3 whitespace-nowrap">
-                            <div class="flex items-center gap-2">
-                                <div class="text-sm font-semibold text-slate-900">@appointment.Time.ToString("h:mm tt")</div>
-                                @if (appointment.IsLate)
-                                {
-                                    <span class="inline-flex h-2 w-2 rounded-full bg-rose-500" title="Late"></span>
-                                }
-                                @if (appointment.HasOverlap)
-                                {
-                                    <span class="inline-flex h-2 w-2 rounded-full bg-amber-500" title="Overlapping appointment"></span>
-                                }
-                            </div>
-                            <div class="text-xs text-slate-500">@appointment.Time.ToString("MMM dd, yyyy")</div>
-                        </td>
-                        <td class="px-5 py-3 whitespace-nowrap">
-                            <div class="relative group inline-flex flex-col">
-                                <span class="text-sm font-semibold text-brand-700">@appointment.PatientName</span>
-                                <div class="pointer-events-none absolute left-0 top-full z-10 mt-2 hidden w-64 rounded-lg border border-slate-200 bg-white p-3 shadow-lg transition group-hover:block">
-                                    <div class="text-xs uppercase tracking-wide text-slate-500 mb-2">Patient preview</div>
-                                    <div class="flex items-center justify-between text-[11px]">
-                                        <span class="text-slate-500">Last visit</span>
-                                        <span class="font-medium text-slate-800">@appointment.PatientLastVisitRelative</span>
-                                    </div>
-                                    <div class="flex items-center justify-between text-[11px]">
-                                        <span class="text-slate-500">Upcoming</span>
-                                        <span class="font-medium text-slate-800">@appointment.PatientUpcoming</span>
-                                    </div>
-                                    <div class="mt-2 flex flex-wrap gap-2">
-                                        @foreach (var flag in appointment.PatientRiskFlags)
-                                        {
-                                            <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-1 text-[11px] font-semibold text-amber-700 ring-1 ring-amber-200">
-                                                <span class="h-2 w-2 rounded-full bg-amber-500"></span>
-                                                @flag
-                                            </span>
-                                        }
+                        var statusClass = appointment.Status switch
+                        {
+                            "Confirmed" => "bg-emerald-50 text-emerald-700 ring-emerald-200",
+                            "Waiting" => "bg-amber-50 text-amber-700 ring-amber-200",
+                            "Cancelled" => "bg-rose-50 text-rose-700 ring-rose-200",
+                            _ => "bg-indigo-50 text-indigo-700 ring-indigo-200"
+                        };
+                        <tr class="text-sm align-top hover:bg-slate-50/80">
+                            <td class="px-5 py-3 whitespace-nowrap">
+                                <div class="flex items-center gap-2">
+                                    <div class="text-sm font-semibold text-slate-900">@appointment.Time.ToString("h:mm tt")</div>
+                                    @if (appointment.IsLate)
+                                    {
+                                        <span class="inline-flex h-2 w-2 rounded-full bg-rose-500" title="Late"></span>
+                                    }
+                                    @if (appointment.HasOverlap)
+                                    {
+                                        <span class="inline-flex h-2 w-2 rounded-full bg-amber-500" title="Overlapping appointment"></span>
+                                    }
+                                </div>
+                                <div class="text-xs text-slate-500">@appointment.Time.ToString("MMM dd, yyyy")</div>
+                            </td>
+                            <td class="px-5 py-3 whitespace-nowrap">
+                                <div class="relative group inline-flex flex-col">
+                                    <span class="text-sm font-semibold text-brand-700">@appointment.PatientName</span>
+                                    <div class="pointer-events-none absolute left-0 top-full z-10 mt-2 hidden w-64 rounded-lg border border-slate-200 bg-white p-3 shadow-lg transition group-hover:block">
+                                        <div class="text-xs uppercase tracking-wide text-slate-500 mb-2">Patient preview</div>
+                                        <div class="flex items-center justify-between text-[11px]">
+                                            <span class="text-slate-500">Last visit</span>
+                                            <span class="font-medium text-slate-800">@appointment.PatientLastVisitRelative</span>
+                                        </div>
+                                        <div class="flex items-center justify-between text-[11px]">
+                                            <span class="text-slate-500">Upcoming</span>
+                                            <span class="font-medium text-slate-800">@appointment.PatientUpcoming</span>
+                                        </div>
+                                        <div class="mt-2 flex flex-wrap gap-2">
+                                            @foreach (var flag in appointment.PatientRiskFlags)
+                                            {
+                                                <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-1 text-[11px] font-semibold text-amber-700 ring-1 ring-amber-200">
+                                                    <span class="h-2 w-2 rounded-full bg-amber-500"></span>
+                                                    @flag
+                                                </span>
+                                            }
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="text-xs text-slate-500">Arrives @appointment.Time.AddMinutes(-10).ToString("h:mm tt")</div>
-                        </td>
-                        <td class="px-5 py-3 whitespace-nowrap text-sm text-slate-700">
-                            <div class="font-medium text-slate-900">@appointment.DoctorName</div>
-                            <div class="text-xs text-slate-500">On duty</div>
-                        </td>
-                        <td class="px-5 py-3 whitespace-nowrap text-sm text-slate-700">
-                            <span class="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-200">
-                                <span class="h-2 w-2 rounded-full bg-indigo-500"></span>
-                                @appointment.VisitType
-                            </span>
-                        </td>
-                        <td class="px-5 py-3 whitespace-nowrap text-sm text-slate-700">@appointment.DurationLabel</td>
-                        <td class="px-5 py-3 whitespace-nowrap text-sm text-slate-700">@appointment.Room</td>
-                        <td class="px-5 py-3 whitespace-nowrap">
-                            <span class="@statusClass uppercase tracking-wide">
-                                <span class="h-2 w-2 rounded-full bg-current/80"></span>
-                                @appointment.Status
-                            </span>
-                        </td>
-                        <td class="px-5 py-3 whitespace-nowrap text-right">
-                            <div class="inline-flex items-center gap-2">
-                                <button class="btn-ghost text-brand-700 hover:text-brand-800">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                    Details
-                                </button>
-                                <button class="btn-ghost text-slate-500 hover:text-slate-700">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                                    </svg>
-                                    Actions
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+                                <div class="text-xs text-slate-500">Arrives @appointment.Time.AddMinutes(-10).ToString("h:mm tt")</div>
+                            </td>
+                            <td class="px-5 py-3 whitespace-nowrap text-sm text-slate-700">
+                                <div class="font-medium text-slate-900">@appointment.DoctorName</div>
+                                <div class="text-xs text-slate-500">On duty</div>
+                            </td>
+                            <td class="px-5 py-3 whitespace-nowrap text-sm text-slate-700">
+                                <span class="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-200">
+                                    <span class="h-2 w-2 rounded-full bg-indigo-500"></span>
+                                    @appointment.VisitType
+                                </span>
+                            </td>
+                            <td class="px-5 py-3 whitespace-nowrap text-sm text-slate-700">@appointment.DurationLabel</td>
+                            <td class="px-5 py-3 whitespace-nowrap text-sm text-slate-700">@appointment.Room</td>
+                            <td class="px-5 py-3 whitespace-nowrap">
+                                <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ring-1 ring-inset @statusClass">
+                                    <span class="h-2 w-2 rounded-full bg-current/70"></span>
+                                    @appointment.Status
+                                </span>
+                            </td>
+                            <td class="px-5 py-3 whitespace-nowrap text-right">
+                                <details class="relative inline-block group">
+                                    <summary class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
+                                        Actions
+                                        <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                    </summary>
+                                    <div class="absolute right-0 mt-2 w-48 rounded-lg border border-slate-200 bg-white shadow-lg ring-1 ring-black/5">
+                                        <ul class="py-1 text-left text-sm text-slate-700">
+                                            <li>
+                                                <a href="@Url.Action("Details", "Appointments", new { id = appointment.Id })" class="flex items-center gap-2 px-3 py-2 hover:bg-slate-50 focus:bg-slate-50">
+                                                    <span class="h-2 w-2 rounded-full bg-brand-500"></span> View Details
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="@Url.Action("Edit", "Appointments", new { id = appointment.Id })" class="flex items-center gap-2 px-3 py-2 hover:bg-slate-50 focus:bg-slate-50">
+                                                    <span class="h-2 w-2 rounded-full bg-amber-500"></span> Edit Appointment
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </details>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
     </div>
 </div>
