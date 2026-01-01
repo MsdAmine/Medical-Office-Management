@@ -1,16 +1,14 @@
 @* File: Views/Doctors/_DoctorsLiveSection.cshtml *@
 @model MedicalOfficeManagement.ViewModels.Doctors.DoctorsIndexViewModel
 
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-    <div class="stat-card">
-        <div class="stat-label">Total Doctors</div>
-        <div class="stat-value">@Model.TotalDoctors</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-label">On Duty Today</div>
-        <div class="stat-value text-success">@Model.OnDutyToday</div>
-    </div>
-</div>
+@await Html.PartialAsync("Partials/KpiGrid", new KpiGridModel
+{
+    Items = new []
+    {
+        new KpiCardModel { Label = "Total Doctors", Value = Model.TotalDoctors.ToString(), Helper = "Directory count" },
+        new KpiCardModel { Label = "On Duty Today", Value = Model.OnDutyToday.ToString(), Helper = "Scheduled on shift", DeltaTone = "success" }
+    }
+})
 
 @if (Model.WorkloadHeatmap != null)
 {

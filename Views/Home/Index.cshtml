@@ -13,127 +13,244 @@
     var showFinanceWidget = isAdmin || isBilling;
 }
 
-<div class="page-shell">
-    @* Section de bienvenue *@
-    <div class="page-header">
-        <div class="space-y-2">
-            <div class="inline-flex items-center gap-2 rounded-full bg-brand-50 text-brand-700 px-3 py-1 text-xs font-semibold uppercase tracking-wide">Dashboard</div>
-            <div>
-                <h1 class="page-title">Welcome back, @Model.UserDisplayName</h1>
-                <p class="page-subtitle">@Model.Now.ToString("dddd, dd MMMM yyyy")</p>
-            </div>
-        </div>
-        <div class="flex flex-wrap gap-3">
-            @if (canRegisterPatients)
-            {
-                <a href="/Patients/Create" class="btn-primary">Add patient</a>
-            }
-            else
-            {
-                <button type="button" class="btn-primary" disabled aria-disabled="true" title="Patient creation available to clinical staff and admins">Add patient</button>
-            }
-            @if (canViewSchedule)
-            {
-                <a href="/Appointments" class="btn-secondary">View schedule</a>
-            }
-        </div>
-    </div>
-
-    @* Grille des Statistiques *@
-    <div class="stat-grid">
-        @if (Model.Stats != null)
+<div class="space-y-6">
+    @{
+        var headerActions = new List<ToolbarAction>
         {
-            @foreach (var stat in Model.Stats)
+            new ToolbarAction { Label = "New patient", Href = "/Patients/Create", Style = "primary", Disabled = !canRegisterPatients, Tooltip = "Create a record" },
+            new ToolbarAction { Label = "Schedule", Href = "/Appointments", Style = "secondary", Disabled = !canViewSchedule, Tooltip = "Open appointments" },
+            new ToolbarAction { Label = "Export", Href = "/Reports", Style = "ghost", Tooltip = "Jump to reporting" }
+        };
+        var headerModel = new PageHeaderModel
+        {
+            Title = $"Welcome back, {Model.UserDisplayName}",
+            Subtitle = Model.Now.ToString("dddd, dd MMMM yyyy"),
+            ContextTag = "Dashboard",
+            RoleBadge = roleLabel,
+            RoleTone = isAdmin ? "success" : "info",
+            Actions = headerActions
+        };
+    }
+    @await Html.PartialAsync("Partials/PageHeader", headerModel)
+
+    @await Html.PartialAsync("Partials/Toolbar", new[]
+    {
+        new ToolbarAction { Label = "Triage queue", Href = "/Patients", Style = "secondary" },
+        new ToolbarAction { Label = "Today schedule", Href = "/Appointments", Style = "quiet" },
+        new ToolbarAction { Label = "Escalations", Href = "/Reports", Style = "ghost" }
+    })
+
+    @{
+        var kpis = new List<KpiCardModel>();
+        if (Model.Stats != null)
+        {
+            foreach (var stat in Model.Stats)
             {
-                <div class="stat-card">
-                    <p class="stat-label">@stat.Label</p>
-                    <p class="stat-value @stat.ColorClass">@stat.Value</p>
-                </div>
+                var tone = stat.ColorClass?.Contains("danger") == true ? "danger" :
+                           stat.ColorClass?.Contains("success") == true ? "success" :
+                           "neutral";
+                kpis.Add(new KpiCardModel { Label = stat.Label, Value = stat.Value, Helper = "Live metric", DeltaTone = tone });
             }
         }
-        @* Carte fixe pour les messages *@
-        <div class="stat-card">
-            <p class="stat-label">MESSAGES</p>
-            <p class="stat-value text-brand-700">7</p>
-        </div>
-        @if (showFinanceWidget)
+        if (showFinanceWidget)
         {
-            <div class="stat-card border border-amber-100 bg-amber-50">
-                <p class="stat-label text-amber-700">FINANCE</p>
-                <p class="stat-value text-amber-700">$42,300</p>
-                <p class="text-xs text-amber-700/80">Pending reimbursements requiring billing review</p>
-            </div>
+            kpis.Add(new KpiCardModel { Label = "Finance", Value = "$42,300", Helper = "Pending reimbursement", Delta = "4 alerts", DeltaTone = "warning" });
         }
-    </div>
+        kpis.Add(new KpiCardModel { Label = "Inbox", Value = "14", Helper = "Unread clinical updates", DeltaTone = "neutral", Delta = "3 urgent" });
+    }
+    @await Html.PartialAsync("Partials/KpiGrid", new KpiGridModel { Items = kpis })
 
-    <div class="surface mt-8 p-6 space-y-4">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-            <div>
-                <h2 class="section-heading text-lg font-bold text-slate-800">Clinic Workload Today</h2>
-                <p class="text-sm text-slate-500">Heatmap of appointment density for @Model.Now.ToString("dddd")</p>
-            </div>
-            <form method="get" class="flex flex-wrap items-center gap-2 text-sm text-slate-600">
-                <label class="font-semibold text-slate-700">Bucket</label>
-                <select name="bucketMinutes" class="form-input w-28" onchange="this.form.submit()">
-                    <option value="15" selected="@(Model.SelectedBucketMinutes == 15 ? "selected" : null)">15 minutes</option>
-                    <option value="30" selected="@(Model.SelectedBucketMinutes == 30 ? "selected" : null)">30 minutes</option>
-                    <option value="60" selected="@(Model.SelectedBucketMinutes == 60 ? "selected" : null)">60 minutes</option>
-                </select>
-                <label class="font-semibold text-slate-700 ml-2">Hours</label>
-                <input type="number" name="startHour" value="@Model.StartHour" class="form-input w-20" min="0" max="23" />
-                <span class="px-1 text-slate-400">to</span>
-                <input type="number" name="endHour" value="@Model.EndHour" class="form-input w-20" min="1" max="23" />
-                <button type="submit" class="btn-secondary ml-2">Apply</button>
-            </form>
-        </div>
-        @if (Model.ClinicHeatmap != null)
-        {
-            var clinicRow = Model.ClinicHeatmap.Rows.FirstOrDefault();
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
-                    <div class="text-slate-500">Total appointments</div>
-                    <div class="text-lg font-semibold text-slate-900">@clinicRow?.TotalAppointments ?? 0</div>
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <div class="xl:col-span-2 space-y-4">
+            <div class="card p-5 space-y-3">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                    <div>
+                        <h2 class="section-heading">Clinic workload today</h2>
+                        <p class="section-caption">Density and room utilization for @Model.Now.ToString("dddd")</p>
+                    </div>
+                    <form method="get" class="flex flex-wrap items-center gap-2 text-sm text-slate-600">
+                        <label class="font-semibold text-slate-700">Bucket</label>
+                        <select name="bucketMinutes" class="form-input w-28" onchange="this.form.submit()">
+                            <option value="15" selected="@(Model.SelectedBucketMinutes == 15 ? "selected" : null)">15 minutes</option>
+                            <option value="30" selected="@(Model.SelectedBucketMinutes == 30 ? "selected" : null)">30 minutes</option>
+                            <option value="60" selected="@(Model.SelectedBucketMinutes == 60 ? "selected" : null)">60 minutes</option>
+                        </select>
+                        <label class="font-semibold text-slate-700 ml-2">Hours</label>
+                        <input type="number" name="startHour" value="@Model.StartHour" class="form-input w-20" min="0" max="23" />
+                        <span class="px-1 text-slate-400">to</span>
+                        <input type="number" name="endHour" value="@Model.EndHour" class="form-input w-20" min="1" max="23" />
+                        <button type="submit" class="btn btn-secondary ml-2">Apply</button>
+                    </form>
                 </div>
-                <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
-                    <div class="text-slate-500">Utilization</div>
-                    <div class="text-lg font-semibold text-slate-900">@((clinicRow?.UtilizationPercent ?? 0).ToString("0"))%</div>
-                </div>
-                <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
-                    <div class="text-slate-500">Peak</div>
-                    <div class="text-lg font-semibold text-slate-900">@clinicRow?.SummaryText</div>
-                </div>
-            </div>
-            @await Html.PartialAsync("_Heatmap", Model.ClinicHeatmap)
-        }
-    </div>
-
-    @* Section Quick Actions *@
-    <div class="space-y-4 mt-8">
-        <h2 class="section-heading text-lg font-bold text-slate-800">Quick Actions</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            @if (Model.QuickActions != null)
-            {
-                @foreach (var action in Model.QuickActions)
+                @if (Model.ClinicHeatmap != null)
                 {
-                    <a href="@action.Url" class="surface p-6 rounded-2xl border border-slate-100 hover:shadow-md transition-all flex items-center justify-between bg-white">
-                        <div class="flex items-center gap-4">
-                            <div class="h-12 w-12 rounded-xl @action.ColorClass flex items-center justify-center">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                                </svg>
-                            </div>
+                    var clinicRow = Model.ClinicHeatmap.Rows.FirstOrDefault();
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                            <div class="text-slate-500">Total appointments</div>
+                            <div class="text-lg font-semibold text-slate-900">@clinicRow?.TotalAppointments ?? 0</div>
+                        </div>
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                            <div class="text-slate-500">Utilization</div>
+                            <div class="text-lg font-semibold text-slate-900">@((clinicRow?.UtilizationPercent ?? 0).ToString("0"))%</div>
+                        </div>
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                            <div class="text-slate-500">Peak</div>
+                            <div class="text-lg font-semibold text-slate-900">@clinicRow?.SummaryText</div>
+                        </div>
+                    </div>
+                    @await Html.PartialAsync("_Heatmap", Model.ClinicHeatmap)
+                }
+            </div>
+
+            <div class="card p-5 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="section-heading">Today focus</h2>
+                    <span class="badge info">Live view</span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div class="focus-panel p-4">
+                        <div class="text-xs uppercase font-semibold text-slate-500">Check-ins</div>
+                        <div class="text-2xl font-bold text-slate-900 mt-1">6 waiting</div>
+                        <p class="text-sm text-slate-600">Prioritize arrivals over 10 minutes.</p>
+                    </div>
+                    <div class="focus-panel p-4">
+                        <div class="text-xs uppercase font-semibold text-slate-500">Clinical flags</div>
+                        <div class="text-2xl font-bold text-amber-700 mt-1">3 high-risk</div>
+                        <p class="text-sm text-slate-600">Confirm vitals and meds before visit.</p>
+                    </div>
+                    <div class="focus-panel p-4">
+                        <div class="text-xs uppercase font-semibold text-slate-500">Billing holds</div>
+                        <div class="text-2xl font-bold text-rose-700 mt-1">4 invoices</div>
+                        <p class="text-sm text-slate-600">Pending review to release claims.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            <div class="card p-5 space-y-3">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-semibold text-slate-900">Role views</h3>
+                    <span class="badge neutral">@roleLabel mode</span>
+                </div>
+                @if (isAdmin)
+                {
+                    <div class="space-y-3">
+                        <div class="flex items-start gap-3">
+                            <span class="badge info">Admin</span>
                             <div>
-                                <div class="font-semibold text-slate-900">@action.Label</div>
-                                <p class="text-sm text-slate-500">@action.Description</p>
+                                <div class="font-semibold text-slate-900">Operational overview</div>
+                                <p class="text-sm text-slate-600">Monitor staffing, utilization, billing alerts. Jump to staffing or finance escalations.</p>
                             </div>
                         </div>
-                        @if (!string.IsNullOrEmpty(action.Status))
-                        {
-                            <span class="px-2 py-1 text-xs font-medium rounded-md bg-slate-50 text-slate-600">@action.Status</span>
-                        }
-                    </a>
+                        <div class="flex items-start gap-3">
+                            <span class="badge success">Actions</span>
+                            <ul class="text-sm text-slate-700 space-y-1 list-disc pl-4">
+                                <li>Balance rooms and shifts</li>
+                                <li>Review overdue invoices and reimbursements</li>
+                                <li>Approve schedule exceptions</li>
+                            </ul>
+                        </div>
+                    </div>
                 }
-            }
+                else if (isPhysician)
+                {
+                    <div class="space-y-3">
+                        <div class="flex items-start gap-3">
+                            <span class="badge info">Physician</span>
+                            <div>
+                                <div class="font-semibold text-slate-900">Clinical day view</div>
+                                <p class="text-sm text-slate-600">Today’s schedule, patient alerts, follow-ups due, chart shortcuts.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span class="badge neutral">Shortcuts</span>
+                            <ul class="text-sm text-slate-700 space-y-1 list-disc pl-4">
+                                <li>Review high-risk follow-ups</li>
+                                <li>Mark visits completed with notes</li>
+                                <li>Message care team</li>
+                            </ul>
+                        </div>
+                    </div>
+                }
+                else if (isReceptionist)
+                {
+                    <div class="space-y-3">
+                        <div class="flex items-start gap-3">
+                            <span class="badge info">Front desk</span>
+                            <div>
+                                <div class="font-semibold text-slate-900">Check-in queue</div>
+                                <p class="text-sm text-slate-600">Appointments today, cancellations, quick registration links.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span class="badge neutral">Reminders</span>
+                            <ul class="text-sm text-slate-700 space-y-1 list-disc pl-4">
+                                <li>Confirm arrivals and room assignments</li>
+                                <li>Contact next scheduled patients</li>
+                                <li>Capture copay at desk</li>
+                            </ul>
+                        </div>
+                    </div>
+                }
+                else if (isBilling)
+                {
+                    <div class="space-y-3">
+                        <div class="flex items-start gap-3">
+                            <span class="badge info">Billing</span>
+                            <div>
+                                <div class="font-semibold text-slate-900">Finance dashboard</div>
+                                <p class="text-sm text-slate-600">AR aging, overdue invoices, payment activity, export actions.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span class="badge neutral">Focus</span>
+                            <ul class="text-sm text-slate-700 space-y-1 list-disc pl-4">
+                                <li>Review overdue claims</li>
+                                <li>Confirm payments received today</li>
+                                <li>Export daily reconciliation</li>
+                            </ul>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-sm text-slate-600">View limited to your role.</div>
+                }
+            </div>
+
+            <div class="card p-5 space-y-3">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-semibold text-slate-900">Quick actions</h3>
+                    <span class="badge neutral">Shortcuts</span>
+                </div>
+                <div class="space-y-2">
+                    @if (Model.QuickActions != null)
+                    {
+                        @foreach (var action in Model.QuickActions)
+                        {
+                            <a href="@action.Url" class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 transition">
+                                <div class="flex items-center gap-3">
+                                    <span class="h-10 w-10 rounded-lg @action.ColorClass flex items-center justify-center">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                        </svg>
+                                    </span>
+                                    <div>
+                                        <div class="text-sm font-semibold text-slate-900">@action.Label</div>
+                                        <p class="text-xs text-slate-500">@action.Description</p>
+                                    </div>
+                                </div>
+                                @if (!string.IsNullOrEmpty(action.Status))
+                                {
+                                    <span class="badge neutral">@action.Status</span>
+                                }
+                            </a>
+                        }
+                    }
+                </div>
+            </div>
         </div>
     </div>
 </div>

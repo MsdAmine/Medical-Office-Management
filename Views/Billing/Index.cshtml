@@ -6,50 +6,33 @@
     var canEditBilling = User.IsInRole(nameof(AppRole.Admin)) || User.IsInRole(nameof(AppRole.Billing));
 }
 
-<div class="page-shell">
-    <div class="page-header">
-        <div class="space-y-2">
-            <div class="inline-flex items-center gap-2 rounded-full bg-brand-50 text-brand-700 px-3 py-1 text-xs font-semibold uppercase tracking-wide">Finance</div>
-            <div>
-                <h1 class="page-title">Billing</h1>
-                <p class="page-subtitle">Track invoices and payment status</p>
-            </div>
-        </div>
-        <button type="button"
-                id="open-invoice"
-                class="btn-primary @(canEditBilling ? "" : "opacity-60 cursor-not-allowed")"
-                @(canEditBilling ? "" : "disabled title=\"Billing edits are limited to billing and admin roles\"")>
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-            </svg>
-            Create Invoice
-        </button>
-    </div>
+<div class="space-y-6">
+    @await Html.PartialAsync("Partials/PageHeader", new PageHeaderModel
+    {
+        Title = "Billing",
+        Subtitle = "Finance dashboard with AR aging and payment activity.",
+        ContextTag = "Finance",
+        RoleBadge = canEditBilling ? "Billing control" : "View only",
+        RoleTone = canEditBilling ? "success" : "warning",
+        Actions = new []
+        {
+            new ToolbarAction { Label = "Create invoice", Style = "primary", DataTarget = "#invoice-modal", IsButton = true, Disabled = !canEditBilling },
+            new ToolbarAction { Label = "Export AR", Href = Url.Action("Index", "Reports"), Style = "secondary" }
+        }
+    })
 
-    <div class="stat-grid">
-        <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
-            <div class="stat-label">Total Due</div>
-            <div class="stat-value text-3xl text-amber-600">$@Model.TotalDue.ToString("N2")</div>
-            <p class="text-xs text-slate-500">Outstanding balance across payers</p>
-        </div>
-        <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
-            <div class="stat-label">Paid This Month</div>
-            <div class="stat-value text-3xl text-success">$@Model.PaidThisMonth.ToString("N2")</div>
-            <p class="text-xs text-slate-500">Collected and reconciled</p>
-        </div>
-        <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
-            <div class="stat-label">Overdue Invoices</div>
-            <div class="stat-value text-3xl text-danger">@Model.OverdueCount</div>
-            <p class="text-xs text-slate-500">Needs follow-up</p>
-        </div>
-        <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
-            <div class="stat-label">Collection Rate</div>
-            <div class="stat-value text-3xl text-slate-900">93%</div>
-            <p class="text-xs text-slate-500">Month-to-date success</p>
-        </div>
-    </div>
+    @await Html.PartialAsync("Partials/KpiGrid", new KpiGridModel
+    {
+        Items = new []
+        {
+            new KpiCardModel { Label = "Total Due", Value = $"${Model.TotalDue:N2}", Helper = "Outstanding balance", DeltaTone = "warning", Delta = "Watch aging" },
+            new KpiCardModel { Label = "Paid This Month", Value = $"${Model.PaidThisMonth:N2}", Helper = "Collected and reconciled", DeltaTone = "success" },
+            new KpiCardModel { Label = "Overdue Invoices", Value = Model.OverdueCount.ToString(), Helper = "Needs follow-up", DeltaTone = "danger" },
+            new KpiCardModel { Label = "Collection Rate", Value = "93%", Helper = "Month-to-date success", DeltaTone = "neutral" }
+        }
+    })
 
-    <div class="surface p-6 space-y-4">
+    <div class="card p-5 space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div class="md:col-span-2">
                 <label class="form-label">Search</label>
@@ -57,9 +40,7 @@
                     <input type="text"
                            placeholder="Search by patient name or invoice ID..."
                            class="form-input pl-10">
-                    <svg class="absolute left-3 top-2.5 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                    </svg>
+                    <span class="iconify absolute left-3 top-2.5 w-5 h-5 text-slate-400" data-icon="solar:magnifer-bold"></span>
                 </div>
             </div>
             <div>
@@ -83,109 +64,75 @@
         </div>
     </div>
 
-    <div class="table-shell">
-        <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+    @await Html.PartialAsync("Partials/TableShell", new TableShellModel
+    {
+        Title = "Invoices",
+        Description = "Status pills, due dates, and role-aware actions.",
+        Actions = new [] { new ToolbarAction { Label = "Create invoice", DataTarget = "#invoice-modal", IsButton = true, Style = "primary", Disabled = !canEditBilling } },
+        TableContent = @<text>
             @if (!Model.Invoices.Any())
             {
-                <div class="flex items-center justify-between px-6 py-10">
-                    <div class="flex items-start gap-3">
-                        <div class="h-12 w-12 rounded-full bg-slate-50 text-brand-700 flex items-center justify-center ring-1 ring-slate-200">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6M9 8h6m2-5H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2z"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <div class="text-lg font-semibold text-slate-900">No invoices recorded</div>
-                            <p class="text-sm text-slate-500">Create the first invoice to start tracking billing performance.</p>
-                        </div>
-                    </div>
-                    <button type="button"
-                            id="open-invoice-empty"
-                            class="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-700 @(canEditBilling ? "" : "opacity-60 cursor-not-allowed")"
-                            @(canEditBilling ? "" : "disabled")>
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                        Create Invoice
-                    </button>
-                </div>
+                @await Html.PartialAsync("Partials/EmptyState", new EmptyStateModel
+                {
+                    Title = "No invoices recorded",
+                    Body = "Create the first invoice to start tracking billing performance.",
+                    Icon = "solar:bill-list-bold",
+                    PrimaryAction = new ToolbarAction { Label = "Create invoice", Style = "primary", DataTarget = "#invoice-modal", IsButton = true, Disabled = !canEditBilling }
+                })
             }
             else
             {
-                <table class="w-full">
-                    <thead class="table-head border-b border-slate-200">
+                <table>
+                    <thead>
                         <tr>
-                            <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Invoice ID</th>
-                            <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Patient</th>
-                            <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Amount</th>
-                            <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Status</th>
-                            <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Due Date</th>
-                            <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Actions</th>
+                            <th>Invoice ID</th>
+                            <th>Patient</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Due Date</th>
+                            <th class="text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="table-body divide-y divide-slate-100">
+                    <tbody>
                         @foreach (var invoice in Model.Invoices)
                         {
                             var tone = invoice.StatusColor?.Contains("green") == true
-                                ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
+                                ? "badge success"
                                 : invoice.StatusColor?.Contains("red") == true
-                                    ? "bg-rose-50 text-rose-700 ring-rose-200"
-                                    : "bg-indigo-50 text-indigo-700 ring-indigo-200";
-
-                            <tr class="hover:bg-slate-50/80">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900">#@invoice.Id</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                    ? "badge danger"
+                                    : "badge warning";
+                            <tr>
+                                <td class="font-semibold text-slate-900">#@invoice.Id</td>
+                                <td>
                                     <div class="text-sm font-semibold text-slate-900">@invoice.PatientName</div>
                                     <div class="text-xs text-slate-500">Invoice: @invoice.InvoiceDate.ToString("MMM dd, yyyy")</div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900">$@invoice.Amount.ToString("N2")</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ring-1 ring-inset @tone">
-                                        <span class="h-2 w-2 rounded-full bg-current/70"></span>
-                                        @invoice.Status
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">@invoice.DueDate.ToString("MMM dd, yyyy")</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
-                                    <details class="relative inline-block group">
-                                        <summary class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
-                                            Actions
-                                            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                                        </summary>
-                                        <div class="absolute right-0 mt-2 w-48 rounded-lg border border-slate-200 bg-white shadow-lg ring-1 ring-black/5">
-                                            <ul class="py-1 text-left text-sm text-slate-700">
-                                                <li>
-                                                    <a href="@Url.Action("Details", "Billing", new { id = invoice.Id })" class="flex items-center gap-2 px-3 py-2 hover:bg-slate-50 focus:bg-slate-50">
-                                                        <span class="h-2 w-2 rounded-full bg-brand-500"></span> View Details
-                                                    </a>
-                                                </li>
-                                                @if (invoice.Status != "Paid" && canEditBilling)
-                                                {
-                                                    <li>
-                                                        <a href="@Url.Action("RecordPayment", "Billing", new { id = invoice.Id })" class="flex items-center gap-2 px-3 py-2 hover:bg-slate-50 focus:bg-slate-50">
-                                                            <span class="h-2 w-2 rounded-full bg-emerald-500"></span> Record Payment
-                                                        </a>
-                                                    </li>
-                                                }
-                                                else if (invoice.Status != "Paid")
-                                                {
-                                                    <li>
-                                                        <span class="flex items-center gap-2 px-3 py-2 text-slate-400 cursor-not-allowed">
-                                                            <span class="h-2 w-2 rounded-full bg-slate-300"></span> Record Payment
-                                                        </span>
-                                                    </li>
-                                                }
-                                            </ul>
-                                        </div>
-                                    </details>
+                                <td class="font-semibold text-slate-900">$@invoice.Amount.ToString("N2")</td>
+                                <td><span class="@tone">@invoice.Status</span></td>
+                                <td class="text-sm text-slate-600">@invoice.DueDate.ToString("MMM dd, yyyy")</td>
+                                <td class="text-right">
+                                    @await Html.PartialAsync("Partials/ActionMenu", new ActionMenuModel
+                                    {
+                                        Items = new List<ActionMenuItem>
+                                        {
+                                            new ActionMenuItem { Label = "View Details", Href = Url.Action("Details", "Billing", new { id = invoice.Id }) },
+                                            new ActionMenuItem
+                                            {
+                                                Label = "Record Payment",
+                                                Href = invoice.Status != "Paid" && canEditBilling ? Url.Action("RecordPayment", "Billing", new { id = invoice.Id }) : null,
+                                                Disabled = invoice.Status == "Paid" || !canEditBilling,
+                                                Tone = "success"
+                                            }
+                                        }
+                                    })
                                 </td>
                             </tr>
                         }
                     </tbody>
                 </table>
             }
-        </div>
-    </div>
+        </text>
+    })
 </div>
 
 <div id="invoice-modal" class="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 hidden">
@@ -251,7 +198,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const modal = document.getElementById('invoice-modal');
-        const triggers = document.querySelectorAll('#open-invoice, #open-invoice-empty');
+        const triggers = document.querySelectorAll('[data-target=\"#invoice-modal\"]');
 
         const toggleModal = (isOpen) => {
             modal?.classList.toggle('hidden', !isOpen);

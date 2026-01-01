@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/app.css" asp-append-version="true" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -36,16 +37,32 @@
             }
         }
     </script>
+    <style type="text/tailwindcss">
+        @layer components {
+            .nav-link {
+                @apply flex items-center gap-3 px-3 py-2.5 text-sm font-semibold rounded-xl border transition;
+            }
+            .nav-link-active {
+                @apply border-brand-100 bg-brand-50 text-brand-800 shadow-soft ring-1 ring-brand-100;
+            }
+            .nav-link-idle {
+                @apply border-transparent text-slate-700 hover:border-slate-200 hover:bg-slate-50;
+            }
+        }
+    </style>
+    <script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
 </head>
 <body class="app-shell" data-view="@ViewContext.RouteData.Values["controller"]" data-action="@ViewContext.RouteData.Values["action"]">
     <div class="relative z-10 min-h-screen">
         <partial name="_Header" />
 
-        <div class="flex pt-16">
+        <div class="flex pt-20">
             <partial name="_Sidebar" />
 
-            <main class="flex-1 ml-64 bg-white/40">
-                @RenderBody()
+            <main class="flex-1 ml-64 bg-white/40 min-h-screen">
+                <div class="max-w-[120rem] mx-auto px-6 py-6 lg:px-10 lg:py-8 space-y-6">
+                    @RenderBody()
+                </div>
             </main>
         </div>
     </div>

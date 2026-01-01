@@ -9,23 +9,20 @@
     var canViewFinancials = User.IsInRole(nameof(AppRole.Admin)) || User.IsInRole(nameof(AppRole.Billing));
 }
 
-<div class="page-shell">
-    <div class="page-header">
-        <div class="space-y-2">
-            <div class="inline-flex items-center gap-2 rounded-full bg-brand-50 text-brand-700 px-3 py-1 text-xs font-semibold uppercase tracking-wide">Analytics</div>
-            <div>
-                <h1 class="page-title">Reports</h1>
-                <p class="page-subtitle">Analytics and performance summaries</p>
-            </div>
-        </div>
-        <button class="btn-primary @(canUseReports ? "" : "opacity-60 cursor-not-allowed")"
-                @(canUseReports ? "" : "disabled title=\"Reports are available to billing and admin roles\"")>
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-            </svg>
-            Export Report
-        </button>
-    </div>
+<div class="space-y-6">
+    @await Html.PartialAsync("Partials/PageHeader", new PageHeaderModel
+    {
+        Title = "Reports",
+        Subtitle = "Report builder with filters and export actions.",
+        ContextTag = "Analytics",
+        RoleBadge = canUseReports ? "Export enabled" : "Read-only",
+        RoleTone = canUseReports ? "success" : "warning",
+        Actions = new []
+        {
+            new ToolbarAction { Label = "Export report", Style = "primary", Disabled = !canUseReports },
+            new ToolbarAction { Label = "Schedule email", Style = "secondary", Disabled = !canUseReports }
+        }
+    })
 
     @if (!canUseReports)
     {
@@ -34,114 +31,103 @@
         </div>
     }
 
-    <div class="surface p-6 space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-            <div>
-                <label class="form-label">Start Date</label>
-                <input type="date" value="@(DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd"))" class="form-input" @(canUseReports ? "" : "disabled")>
-            </div>
-            <div>
-                <label class="form-label">End Date</label>
-                <input type="date" value="@(DateTime.Now.ToString("yyyy-MM-dd"))" class="form-input" @(canUseReports ? "" : "disabled")>
-            </div>
-            <div>
-                <button class="btn-primary w-full justify-center @(canUseReports ? "" : "opacity-60 cursor-not-allowed")" @(canUseReports ? "" : "disabled title=\"Report generation is limited to authorized roles\"")>Generate Report</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="surface p-6 space-y-6">
-        <div class="flex items-center justify-between">
-            <h2 class="section-heading">Appointments</h2>
-            <span class="pill">Utilization snapshot</span>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
-                <div class="stat-label">Today</div>
-                <div class="stat-value text-3xl text-brand-700">@Model.AppointmentsToday</div>
-                <p class="text-xs text-slate-500">Same-day utilization</p>
-            </div>
-            <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
-                <div class="stat-label">This Week</div>
-                <div class="stat-value text-3xl text-brand-700">@Model.AppointmentsThisWeek</div>
-                <p class="text-xs text-slate-500">Rolling 7 days</p>
-            </div>
-            <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
-                <div class="stat-label">This Month</div>
-                <div class="stat-value text-3xl text-brand-700">@Model.AppointmentsThisMonth</div>
-                <p class="text-xs text-slate-500">Month-to-date</p>
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <div class="card p-5 space-y-4">
+            <h3 class="text-sm font-semibold text-slate-900">Report builder</h3>
+            <div class="space-y-3">
+                <div>
+                    <label class="form-label">Report type</label>
+                    <select class="form-input" @(canUseReports ? "" : "disabled")>
+                        <option>Appointments utilization</option>
+                        <option>Revenue summary</option>
+                        <option>New patients</option>
+                        <option>Physician productivity</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="form-label">Start Date</label>
+                        <input type="date" value="@(DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd"))" class="form-input" @(canUseReports ? "" : "disabled")>
+                    </div>
+                    <div>
+                        <label class="form-label">End Date</label>
+                        <input type="date" value="@(DateTime.Now.ToString("yyyy-MM-dd"))" class="form-input" @(canUseReports ? "" : "disabled")>
+                    </div>
+                </div>
+                <div>
+                    <label class="form-label">Filters</label>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="chip active">Clinic</span>
+                        <span class="chip">Physician</span>
+                        <span class="chip">Payer</span>
+                    </div>
+                </div>
+                <button class="btn btn-primary w-full justify-center @(canUseReports ? "" : "opacity-60 cursor-not-allowed")" @(canUseReports ? "" : "disabled title=\"Report generation is limited to authorized roles\"")>Generate</button>
             </div>
         </div>
-        <div class="surface-muted p-8 rounded-2xl border border-dashed border-slate-200">
-            <div class="flex items-center justify-center h-60 text-center space-y-2 flex-col">
-                <svg class="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                </svg>
-                <p class="text-sm text-slate-600">Appointments Trend Chart</p>
-                <p class="text-xs text-slate-500">Visual representation of appointment data over time</p>
+        <div class="xl:col-span-2 card p-5 space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="text-sm font-semibold text-slate-900">Summary</div>
+                    <p class="text-xs text-slate-500">KPIs, chart placeholder, and export actions.</p>
+                </div>
+                <div class="flex gap-2">
+                    <button class="btn btn-secondary @(canUseReports ? "" : "opacity-60 cursor-not-allowed")" @(canUseReports ? "" : "disabled")>Export CSV</button>
+                    <button class="btn btn-ghost @(canUseReports ? "" : "opacity-60 cursor-not-allowed")" @(canUseReports ? "" : "disabled")>Share</button>
+                </div>
+            </div>
+            @await Html.PartialAsync("Partials/KpiGrid", new KpiGridModel
+            {
+                Items = new []
+                {
+                    new KpiCardModel { Label = "Appointments today", Value = Model.AppointmentsToday.ToString(), Helper = "Same-day utilization" },
+                    new KpiCardModel { Label = "This week", Value = Model.AppointmentsThisWeek.ToString(), Helper = "Rolling 7 days" },
+                    new KpiCardModel { Label = "This month", Value = Model.AppointmentsThisMonth.ToString(), Helper = "Month-to-date" }
+                }
+            })
+            <div class="surface-muted p-8 rounded-2xl border border-dashed border-slate-200">
+                <div class="flex items-center justify-center h-60 text-center space-y-2 flex-col">
+                    <svg class="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    <p class="text-sm text-slate-600">Report visualization placeholder</p>
+                    <p class="text-xs text-slate-500">Use exports to share with leadership</p>
+                </div>
             </div>
         </div>
     </div>
 
     @if (canViewFinancials)
     {
-        <div class="surface p-6 space-y-6">
-            <div class="flex items-center justify-between">
-                <h2 class="section-heading">Revenue</h2>
-                <span class="pill">Financial health</span>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
-                    <div class="stat-label">Today</div>
-                    <div class="stat-value text-3xl text-success">$@Model.RevenueToday.ToString("N2")</div>
-                    <p class="text-xs text-slate-500">Daily collection</p>
-                </div>
-                <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
-                    <div class="stat-label">This Week</div>
-                    <div class="stat-value text-3xl text-success">$@Model.RevenueThisWeek.ToString("N2")</div>
-                    <p class="text-xs text-slate-500">Week-to-date</p>
-                </div>
-                <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
-                    <div class="stat-label">This Month</div>
-                    <div class="stat-value text-3xl text-success">$@Model.RevenueThisMonth.ToString("N2")</div>
-                    <p class="text-xs text-slate-500">Month-to-date</p>
-                </div>
-            </div>
-            <div class="surface-muted p-8 rounded-2xl border border-dashed border-slate-200">
-                <div class="flex items-center justify-center h-60 text-center space-y-2 flex-col">
-                    <svg class="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
-                    </svg>
-                    <p class="text-sm text-slate-600">Revenue Trend Chart</p>
-                    <p class="text-xs text-slate-500">Visual representation of revenue data over time</p>
-                </div>
+        @await Html.PartialAsync("Partials/KpiGrid", new KpiGridModel
+        {
+            Items = new []
+            {
+                new KpiCardModel { Label = "Revenue today", Value = $"${Model.RevenueToday:N2}", Helper = "Daily collection", DeltaTone = "success" },
+                new KpiCardModel { Label = "This week", Value = $"${Model.RevenueThisWeek:N2}", Helper = "Week-to-date", DeltaTone = "success" },
+                new KpiCardModel { Label = "This month", Value = $"${Model.RevenueThisMonth:N2}", Helper = "Month-to-date", DeltaTone = "success" }
+            }
+        })
+        <div class="surface-muted p-8 rounded-2xl border border-dashed border-slate-200">
+            <div class="flex items-center justify-center h-60 text-center space-y-2 flex-col">
+                <svg class="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
+                </svg>
+                <p class="text-sm text-slate-600">Revenue trend placeholder</p>
+                <p class="text-xs text-slate-500">Export for finance review</p>
             </div>
         </div>
     }
 
-    <div class="surface p-6 space-y-6">
-        <div class="flex items-center justify-between">
-            <h2 class="section-heading">New Patients</h2>
-            <span class="pill">Growth</span>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
-                <div class="stat-label">Today</div>
-                <div class="stat-value text-3xl text-indigo-700">@Model.NewPatientsToday</div>
-                <p class="text-xs text-slate-500">Intake captured</p>
-            </div>
-            <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
-                <div class="stat-label">This Week</div>
-                <div class="stat-value text-3xl text-indigo-700">@Model.NewPatientsThisWeek</div>
-                <p class="text-xs text-slate-500">Rolling growth</p>
-            </div>
-            <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
-                <div class="stat-label">This Month</div>
-                <div class="stat-value text-3xl text-indigo-700">@Model.NewPatientsThisMonth</div>
-                <p class="text-xs text-slate-500">Month-to-date</p>
-            </div>
-        </div>
-    </div>
+    @await Html.PartialAsync("Partials/KpiGrid", new KpiGridModel
+    {
+        Items = new []
+        {
+            new KpiCardModel { Label = "New patients today", Value = Model.NewPatientsToday.ToString(), Helper = "Intake captured" },
+            new KpiCardModel { Label = "This week", Value = Model.NewPatientsThisWeek.ToString(), Helper = "Rolling growth" },
+            new KpiCardModel { Label = "This month", Value = Model.NewPatientsThisMonth.ToString(), Helper = "Month-to-date" }
+        }
+    })
 
     <div class="surface p-6 space-y-4">
         <h2 class="section-heading">Performance Metrics</h2>

@@ -7,41 +7,30 @@
     var canManageStaff = User.IsInRole(nameof(AppRole.Admin));
 }
 
-<div class="page-shell">
-    <div class="page-header">
-        <div class="space-y-2">
-            <div class="inline-flex items-center gap-2 rounded-full bg-brand-50 text-brand-700 px-3 py-1 text-xs font-semibold uppercase tracking-wide">Staff</div>
-            <div>
-                <h1 class="page-title">Doctors</h1>
-                <p class="page-subtitle">Medical staff directory and schedules</p>
-            </div>
-        </div>
-        @if (canManageStaff)
+<div class="space-y-6">
+    @await Html.PartialAsync("Partials/PageHeader", new PageHeaderModel
+    {
+        Title = "Doctor directory",
+        Subtitle = "Staff availability, specialties, and contact details.",
+        ContextTag = "Staff",
+        RoleBadge = canManageStaff ? "Admin controls" : "View only",
+        RoleTone = canManageStaff ? "success" : "warning",
+        Actions = new []
         {
-            <a href="@Url.Action("Create", "Doctors")" class="@primaryCta">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-                Add Doctor
-            </a>
+            new ToolbarAction { Label = "Add doctor", Href = Url.Action("Create", "Doctors"), Style = "primary", Disabled = !canManageStaff },
+            new ToolbarAction { Label = "Planning", Href = Url.Action("Index", "Schedule"), Style = "secondary" }
         }
-        else
-        {
-            <span class="@primaryCta opacity-60 cursor-not-allowed" title="Staff management is limited to administrators">Add Doctor</span>
-        }
-    </div>
+    })
 
-    <div class="surface p-6 space-y-4">
+    <div class="card p-5 space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="md:col-span-2">
                 <label class="form-label">Search</label>
                 <div class="relative">
                     <input type="text"
-                           placeholder="Search by name or specialty..."
+                           placeholder="Search by name, specialty, or language..."
                            class="form-input pl-10">
-                    <svg class="absolute left-3 top-2.5 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                    </svg>
+                    <span class="iconify w-5 h-5 text-slate-400 absolute left-3 top-2.5" data-icon="solar:magnifer-bold"></span>
                 </div>
             </div>
             <div>

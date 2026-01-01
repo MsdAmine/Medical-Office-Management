@@ -7,108 +7,109 @@
                       User.IsInRole(nameof(AppRole.Physician)) ||
                       User.IsInRole(nameof(AppRole.Nurse)) ||
                       User.IsInRole(nameof(AppRole.Receptionist));
+    var isBilling = User.IsInRole(nameof(AppRole.Billing));
+    var presetOptions = new List<PresetOption>
+    {
+        new PresetOption { Label = "Default", Url = Url.Action("Index", "Appointments", new { clearPreset = true }), Active = !Model.FilterContext.HasActivePreset, Description = "All appointments" }
+    };
+    presetOptions.AddRange(Model.FilterContext.Presets.Select(p => new PresetOption
+    {
+        Label = p.Name,
+        Url = Url.Action("Index", "Appointments", new { presetId = p.Id }),
+        Active = Model.FilterContext.IsPresetActive(p.Id),
+        Description = p.CreatedByRole
+    }));
+    var filterChips = new List<FilterChipModel>();
+    if (!string.IsNullOrWhiteSpace(Model.FilterContext.CurrentFilters.Doctor))
+    {
+        filterChips.Add(new FilterChipModel { Label = $"Doctor: {Model.FilterContext.CurrentFilters.Doctor}", Tone = "active" });
+    }
+    if (!string.IsNullOrWhiteSpace(Model.FilterContext.CurrentFilters.Status))
+    {
+        filterChips.Add(new FilterChipModel { Label = $"Status: {Model.FilterContext.CurrentFilters.Status}", Tone = "warning" });
+    }
+    if (Model.FilterContext.CurrentFilters.StartDate.HasValue || Model.FilterContext.CurrentFilters.EndDate.HasValue)
+    {
+        filterChips.Add(new FilterChipModel { Label = $"Range: {Model.FilterContext.CurrentFilters.StartDate:MMM dd} - {Model.FilterContext.CurrentFilters.EndDate:MMM dd}", Tone = "success" });
+    }
 }
 
-<div class="page-shell">
-    <div class="page-header">
-        <div class="space-y-2">
-            <div class="inline-flex items-center gap-2 rounded-full bg-brand-50 text-brand-700 px-3 py-1 text-xs font-semibold uppercase tracking-wide">Schedule</div>
-            <div>
-                <h1 class="page-title">Appointments</h1>
-                <p class="page-subtitle">Schedule and manage patient appointments</p>
-            </div>
-        </div>
-        <button type="button"
-                id="open-appointment"
-                class="btn-primary @(canSchedule ? "" : "opacity-60 cursor-not-allowed")"
-                @(canSchedule ? "" : "disabled aria-disabled=\"true\" title=\"Scheduling is available to clinical and front desk roles\"")>
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-            </svg>
-            Schedule Appointment
-        </button>
-    </div>
-
-    <div id="appointments-live-container"
-         data-partial-url="@($"{Url.Action("LiveTable", "Appointments")}{Context.Request.QueryString}")">
-        @await Html.PartialAsync("_AppointmentsTable", Model)
-    </div>
-
-    <div class="surface p-5 space-y-5">
-        @await Html.PartialAsync("Filters/_PresetSelector", new MedicalOfficeManagement.ViewModels.Filters.PresetSelectorViewModel
+<div class="space-y-6">
+    @await Html.PartialAsync("Partials/PageHeader", new PageHeaderModel
+    {
+        Title = "Appointments",
+        Subtitle = "Segmented control for list or calendar. Arrival indicators and check-in ready.",
+        ContextTag = "Schedule",
+        RoleBadge = isBilling ? "Billing view-only" : canSchedule ? "Scheduling enabled" : "View only",
+        RoleTone = canSchedule ? "success" : "warning",
+        Actions = new []
         {
-            Context = Model.FilterContext,
-            ControllerName = "Appointments"
-        })
+            new ToolbarAction { Label = "Schedule appointment", Style = "primary", DataTarget = "#appointment-modal", IsButton = true, Disabled = !canSchedule, Tooltip = "Available to clinical and front desk roles" },
+            new ToolbarAction { Label = "Open calendar", Href = "#", Style = "secondary" }
+        }
+    })
 
-        <form method="get" class="space-y-4">
-            <input type="hidden" name="clearPreset" value="true" />
-            <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                <div class="flex flex-wrap gap-2">
-                    <button class="btn-secondary" type="button">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
-                        </svg>
-                        List View
-                    </button>
-                    <button class="btn-ghost text-slate-600 hover:text-slate-900" type="button">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        </svg>
-                        Calendar View
-                    </button>
-                </div>
+    @await Html.PartialAsync("Partials/PresetsBar", new PresetsBarModel { Title = "Presets", Options = presetOptions })
 
-                <div class="flex flex-wrap gap-3">
-                    <select name="Doctor" class="form-input">
-                        <option value="">All Doctors</option>
-                        @foreach (var doctor in Model.DoctorOptions)
-                        {
-                            <option value="@doctor" selected="@(string.Equals(Model.FilterContext.CurrentFilters.Doctor, doctor, StringComparison.OrdinalIgnoreCase) ? "selected" : null)">@doctor</option>
-                        }
-                    </select>
-                    <select name="Status" class="form-input">
-                        <option value="">All Status</option>
-                        @foreach (var status in Model.StatusOptions)
-                        {
-                            <option value="@status" selected="@(string.Equals(Model.FilterContext.CurrentFilters.Status, status, StringComparison.OrdinalIgnoreCase) ? "selected" : null)">@status</option>
-                        }
-                    </select>
-                </div>
+    <div class="card p-5 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex gap-2">
+                <button class="btn btn-secondary">
+                    <span class="iconify w-4 h-4" data-icon="solar:list-bold"></span>
+                    List view
+                </button>
+                <button class="btn btn-ghost text-slate-600 hover:text-slate-900">
+                    <span class="iconify w-4 h-4" data-icon="solar:calendar-bold"></span>
+                    Calendar
+                </button>
             </div>
+            @await Html.PartialAsync("Partials/FilterChips", new FilterChipsModel { Chips = filterChips.Any() ? filterChips : new [] { new FilterChipModel { Label = "No filters", Tone = "muted" } } })
+        </div>
 
-            <div class="flex flex-wrap items-end gap-3">
-                <div class="form-field">
-                    <label class="form-label">Start date</label>
+        <form method="get" class="grid grid-cols-1 lg:grid-cols-5 gap-3 items-end">
+            <input type="hidden" name="clearPreset" value="true" />
+            <div class="lg:col-span-2">
+                <label class="form-label">Date range</label>
+                <div class="flex gap-2">
                     <input type="date" name="StartDate" value="@(Model.FilterContext.CurrentFilters.StartDate?.ToString("yyyy-MM-dd") ?? string.Empty)" class="form-input" />
-                </div>
-                <div class="form-field">
-                    <label class="form-label">End date</label>
                     <input type="date" name="EndDate" value="@(Model.FilterContext.CurrentFilters.EndDate?.ToString("yyyy-MM-dd") ?? string.Empty)" class="form-input" />
                 </div>
-                <div class="flex flex-wrap gap-2">
-                    <button type="submit" class="btn-primary">
-                        Apply filters
-                    </button>
-                    <a asp-action="Index"
-                       asp-controller="Appointments"
-                       asp-route-clearPreset="true"
-                       class="btn-secondary">
-                        Clear filters
-                    </a>
-                </div>
+            </div>
+            <div>
+                <label class="form-label">Doctor</label>
+                <select name="Doctor" class="form-input">
+                    <option value="">All Doctors</option>
+                    @foreach (var doctor in Model.DoctorOptions)
+                    {
+                        <option value="@doctor" selected="@(string.Equals(Model.FilterContext.CurrentFilters.Doctor, doctor, StringComparison.OrdinalIgnoreCase) ? "selected" : null)">@doctor</option>
+                    }
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Status</label>
+                <select name="Status" class="form-input">
+                    <option value="">All Status</option>
+                    @foreach (var status in Model.StatusOptions)
+                    {
+                        <option value="@status" selected="@(string.Equals(Model.FilterContext.CurrentFilters.Status, status, StringComparison.OrdinalIgnoreCase) ? "selected" : null)">@status</option>
+                    }
+                </select>
+            </div>
+            <div class="flex gap-2 justify-end">
+                <button type="submit" class="btn btn-primary">Apply</button>
+                <a asp-action="Index" asp-controller="Appointments" asp-route-clearPreset="true" class="btn btn-secondary">Clear</a>
             </div>
         </form>
 
-        <form method="post" asp-action="SavePreset" class="flex flex-col gap-3 lg:flex-row lg:items-end lg:gap-4">
+        <form method="post" asp-action="SavePreset" class="grid grid-cols-1 lg:grid-cols-3 gap-3 items-end">
             @Html.AntiForgeryToken()
-            <div class="form-field flex-1">
-                <label class="form-label">Preset name</label>
-                <input type="text" name="presetName" class="form-input" placeholder="e.g., Confirmed today" required />
-            </div>
-            <div class="flex items-center gap-2">
-                <input id="appointments-default" type="checkbox" name="setAsDefault" class="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500" />
-                <label for="appointments-default" class="text-sm text-slate-700">Set as default for appointments</label>
+            <div class="lg:col-span-2">
+                <label class="form-label">Save filters as preset</label>
+                <input type="text" name="presetName" class="form-input" placeholder="e.g., Today confirmed" required />
+                <div class="flex items-center gap-2 mt-2">
+                    <input id="appointments-default" type="checkbox" name="setAsDefault" class="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500" />
+                    <label for="appointments-default" class="text-sm text-slate-700">Set as default</label>
+                </div>
             </div>
             <div class="hidden">
                 <input type="hidden" name="Doctor" value="@Model.FilterContext.CurrentFilters.Doctor" />
@@ -116,12 +117,14 @@
                 <input type="hidden" name="StartDate" value="@(Model.FilterContext.CurrentFilters.StartDate?.ToString("o"))" />
                 <input type="hidden" name="EndDate" value="@(Model.FilterContext.CurrentFilters.EndDate?.ToString("o"))" />
             </div>
-            <button type="submit" class="btn-primary">
-                Save current filters as preset
-            </button>
+            <button type="submit" class="btn btn-primary">Save preset</button>
         </form>
     </div>
 
+    <div id="appointments-live-container"
+         data-partial-url="@($"{Url.Action("LiveTable", "Appointments")}{Context.Request.QueryString}")">
+        @await Html.PartialAsync("_AppointmentsTable", Model)
+    </div>
 </div>
 
 <div id="appointment-modal" class="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 hidden">
@@ -186,13 +189,12 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const modal = document.getElementById('appointment-modal');
-        const trigger = document.getElementById('open-appointment');
+        const toggleModal = (isOpen) => modal?.classList.toggle('hidden', !isOpen);
 
-        const toggleModal = (isOpen) => {
-            modal?.classList.toggle('hidden', !isOpen);
-        };
+        document.querySelectorAll('[data-target="#appointment-modal"]').forEach(btn => {
+            btn.addEventListener('click', () => toggleModal(true));
+        });
 
-        trigger?.addEventListener('click', () => toggleModal(true));
         modal?.addEventListener('click', (event) => {
             if (event.target === modal) {
                 toggleModal(false);

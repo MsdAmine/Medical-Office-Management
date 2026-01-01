@@ -1,0 +1,21 @@
+@model MedicalOfficeManagement.ViewModels.UI.PresetsBarModel
+
+<div class="command-bar">
+    <div>
+        <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">@Model.Title</div>
+        <p class="text-sm text-slate-600">Switch between saved views to keep clinical context.</p>
+    </div>
+    <div class="flex items-center gap-2 flex-wrap justify-end">
+        @foreach (var option in Model.Options)
+        {
+            <a href="@option.Url"
+               class="chip @(option.Active ? "active" : "")">
+                @option.Label
+                @if (!string.IsNullOrEmpty(option.Description))
+                {
+                    <span class="text-[11px] text-slate-500 ml-1">@option.Description</span>
+                }
+            </a>
+        }
+    </div>
+</div>
