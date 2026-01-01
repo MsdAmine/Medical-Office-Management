@@ -2,41 +2,51 @@
     <nav class="p-4 flex flex-col h-full space-y-6">
         @{
             var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
-            var access = AccessControl.GetCurrent();
+            var isAdmin = User.IsInRole(nameof(AppRole.Admin));
+            var isPhysician = User.IsInRole(nameof(AppRole.Physician));
+            var isNurse = User.IsInRole(nameof(AppRole.Nurse));
+            var isBilling = User.IsInRole(nameof(AppRole.Billing));
+            var isReceptionist = User.IsInRole(nameof(AppRole.Receptionist));
 
-            var dashboardAction = access.CurrentRole == AppRole.Physician ? "DoctorDashboard" : "Index";
+            var dashboardAction = isPhysician ? "DoctorDashboard" : "Index";
+            var showPatients = isAdmin || isPhysician || isNurse || isReceptionist;
+            var showAppointments = isAdmin || isPhysician || isNurse || isReceptionist;
+            var showSchedulingOps = isAdmin || isReceptionist;
+            var showStaff = isAdmin;
+            var showBilling = isAdmin || isBilling;
+            var showReports = isAdmin || isPhysician || isBilling;
+            var showSettings = isAdmin;
 
             var menuItems = new List<(string Controller, string Action, string Label, string Icon, string Description, bool Visible)>
             {
                 ("Home", dashboardAction, "Dashboard", "home", "Overview & workload", true),
-                ("Patients", "Index", "Patients", "users", "Records", access.CanViewPatients),
-                ("Appointments", "Index", "Appointments", "calendar", "Scheduling", access.CanManageAppointments)
+                ("Patients", "Index", "Patients", "users", "Records", showPatients),
+                ("Appointments", "Index", "Appointments", "calendar", "Scheduling", showAppointments)
             };
 
             // Staff operations (admin/front desk/operations)
-            var showSchedulingOps = access.IsAdmin || access.CurrentRole == AppRole.FrontDesk;
             if (showSchedulingOps)
             {
                 menuItems.Add(("Schedule", "Index", "Working Hours", "briefcase", "Weekly shifts & rooms", true));
                 menuItems.Add(("Planning", "Index", "Vacations", "clock", "Absences & leave", true));
             }
 
-            if (access.CanManageStaff)
+            if (showStaff)
             {
                 menuItems.Add(("Medecin", "Index", "Doctors", "user-md", "Staff management", true));
             }
 
-            if (access.ShowBilling)
+            if (showBilling)
             {
                 menuItems.Add(("Billing", "Index", "Billing", "briefcase", "Invoices & payments", true));
             }
 
-            if (access.ShowReports)
+            if (showReports)
             {
                 menuItems.Add(("Reports", "Index", "Reports", "calendar", "Analytics & exports", true));
             }
 
-            if (access.CanManageSettings)
+            if (showSettings)
             {
                 menuItems.Add(("Settings", "Index", "Settings", "cog", "System preferences", true));
             }

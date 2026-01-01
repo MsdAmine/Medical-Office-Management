@@ -3,8 +3,10 @@
 
 @{
     ViewBag.Title = "Appointments";
-    var access = AccessControl.GetCurrent();
-    var canSchedule = access.CanSchedule;
+    var canSchedule = User.IsInRole(nameof(AppRole.Admin)) ||
+                      User.IsInRole(nameof(AppRole.Physician)) ||
+                      User.IsInRole(nameof(AppRole.Nurse)) ||
+                      User.IsInRole(nameof(AppRole.Receptionist));
 }
 
 <div class="page-shell">
