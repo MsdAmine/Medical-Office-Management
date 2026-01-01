@@ -28,21 +28,25 @@
     </div>
 
     <div class="stat-grid">
-        <div class="stat-card">
+        <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
             <div class="stat-label">Total Due</div>
-            <div class="stat-value text-amber-600">$@Model.TotalDue.ToString("N2")</div>
+            <div class="stat-value text-3xl text-amber-600">$@Model.TotalDue.ToString("N2")</div>
+            <p class="text-xs text-slate-500">Outstanding balance across payers</p>
         </div>
-        <div class="stat-card">
+        <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
             <div class="stat-label">Paid This Month</div>
-            <div class="stat-value text-success">$@Model.PaidThisMonth.ToString("N2")</div>
+            <div class="stat-value text-3xl text-success">$@Model.PaidThisMonth.ToString("N2")</div>
+            <p class="text-xs text-slate-500">Collected and reconciled</p>
         </div>
-        <div class="stat-card">
+        <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
             <div class="stat-label">Overdue Invoices</div>
-            <div class="stat-value text-danger">@Model.OverdueCount</div>
+            <div class="stat-value text-3xl text-danger">@Model.OverdueCount</div>
+            <p class="text-xs text-slate-500">Needs follow-up</p>
         </div>
-        <div class="stat-card">
+        <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
             <div class="stat-label">Collection Rate</div>
-            <div class="stat-value text-slate-900">93%</div>
+            <div class="stat-value text-3xl text-slate-900">93%</div>
+            <p class="text-xs text-slate-500">Month-to-date success</p>
         </div>
     </div>
 
@@ -81,53 +85,106 @@
     </div>
 
     <div class="table-shell">
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="table-head">
-                    <tr>
-                        <th class="px-6 py-3">Invoice ID</th>
-                        <th class="px-6 py-3">Patient</th>
-                        <th class="px-6 py-3">Amount</th>
-                        <th class="px-6 py-3">Status</th>
-                        <th class="px-6 py-3">Due Date</th>
-                        <th class="px-6 py-3 text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="table-body">
-                    @foreach (var invoice in Model.Invoices)
-                    {
-                        var tone = invoice.StatusColor?.Contains("green") == true
-                            ? "green"
-                            : invoice.StatusColor?.Contains("red") == true
-                                ? "red"
-                                : "blue";
-
+        <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+            @if (!Model.Invoices.Any())
+            {
+                <div class="flex items-center justify-between px-6 py-10">
+                    <div class="flex items-start gap-3">
+                        <div class="h-12 w-12 rounded-full bg-slate-50 text-brand-700 flex items-center justify-center ring-1 ring-slate-200">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6M9 8h6m2-5H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text-lg font-semibold text-slate-900">No invoices recorded</div>
+                            <p class="text-sm text-slate-500">Create the first invoice to start tracking billing performance.</p>
+                        </div>
+                    </div>
+                    <button type="button"
+                            id="open-invoice-empty"
+                            class="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-700 @(canEditBilling ? "" : "opacity-60 cursor-not-allowed")"
+                            @(canEditBilling ? "" : "disabled")>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Create Invoice
+                    </button>
+                </div>
+            }
+            else
+            {
+                <table class="w-full">
+                    <thead class="table-head border-b border-slate-200">
                         <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900">#@invoice.Id</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-semibold text-slate-900">@invoice.PatientName</div>
-                                <div class="text-xs text-slate-500">Invoice: @invoice.InvoiceDate.ToString("MMM dd, yyyy")</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900">$@invoice.Amount.ToString("N2")</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="badge-soft @tone">@invoice.Status</span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">@invoice.DueDate.ToString("MMM dd, yyyy")</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm space-x-3">
-                                <a href="@Url.Action("Details", "Billing", new { id = invoice.Id })" class="btn-ghost text-brand-700">View</a>
-                                @if (invoice.Status != "Paid" && canEditBilling)
-                                {
-                                    <a href="@Url.Action("RecordPayment", "Billing", new { id = invoice.Id })" class="btn-ghost text-success">Record Payment</a>
-                                }
-                                else if (invoice.Status != "Paid")
-                                {
-                                    <span class="btn-ghost text-slate-400 cursor-not-allowed" title="Payments can be recorded by billing teams">Record Payment</span>
-                                }
-                            </td>
+                            <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Invoice ID</th>
+                            <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Patient</th>
+                            <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Amount</th>
+                            <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Status</th>
+                            <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Due Date</th>
+                            <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Actions</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody class="table-body divide-y divide-slate-100">
+                        @foreach (var invoice in Model.Invoices)
+                        {
+                            var tone = invoice.StatusColor?.Contains("green") == true
+                                ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
+                                : invoice.StatusColor?.Contains("red") == true
+                                    ? "bg-rose-50 text-rose-700 ring-rose-200"
+                                    : "bg-indigo-50 text-indigo-700 ring-indigo-200";
+
+                            <tr class="hover:bg-slate-50/80">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900">#@invoice.Id</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-semibold text-slate-900">@invoice.PatientName</div>
+                                    <div class="text-xs text-slate-500">Invoice: @invoice.InvoiceDate.ToString("MMM dd, yyyy")</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900">$@invoice.Amount.ToString("N2")</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ring-1 ring-inset @tone">
+                                        <span class="h-2 w-2 rounded-full bg-current/70"></span>
+                                        @invoice.Status
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">@invoice.DueDate.ToString("MMM dd, yyyy")</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                                    <details class="relative inline-block group">
+                                        <summary class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
+                                            Actions
+                                            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                        </summary>
+                                        <div class="absolute right-0 mt-2 w-48 rounded-lg border border-slate-200 bg-white shadow-lg ring-1 ring-black/5">
+                                            <ul class="py-1 text-left text-sm text-slate-700">
+                                                <li>
+                                                    <a href="@Url.Action("Details", "Billing", new { id = invoice.Id })" class="flex items-center gap-2 px-3 py-2 hover:bg-slate-50 focus:bg-slate-50">
+                                                        <span class="h-2 w-2 rounded-full bg-brand-500"></span> View Details
+                                                    </a>
+                                                </li>
+                                                @if (invoice.Status != "Paid" && canEditBilling)
+                                                {
+                                                    <li>
+                                                        <a href="@Url.Action("RecordPayment", "Billing", new { id = invoice.Id })" class="flex items-center gap-2 px-3 py-2 hover:bg-slate-50 focus:bg-slate-50">
+                                                            <span class="h-2 w-2 rounded-full bg-emerald-500"></span> Record Payment
+                                                        </a>
+                                                    </li>
+                                                }
+                                                else if (invoice.Status != "Paid")
+                                                {
+                                                    <li>
+                                                        <span class="flex items-center gap-2 px-3 py-2 text-slate-400 cursor-not-allowed">
+                                                            <span class="h-2 w-2 rounded-full bg-slate-300"></span> Record Payment
+                                                        </span>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    </details>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
         </div>
     </div>
 </div>
@@ -195,13 +252,13 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const modal = document.getElementById('invoice-modal');
-        const trigger = document.getElementById('open-invoice');
+        const triggers = document.querySelectorAll('#open-invoice, #open-invoice-empty');
 
         const toggleModal = (isOpen) => {
             modal?.classList.toggle('hidden', !isOpen);
         };
 
-        trigger?.addEventListener('click', () => toggleModal(true));
+        triggers.forEach(trigger => trigger?.addEventListener('click', () => toggleModal(true)));
         modal?.addEventListener('click', (event) => {
             if (event.target === modal) {
                 toggleModal(false);

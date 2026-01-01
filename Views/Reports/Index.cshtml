@@ -54,17 +54,20 @@
             <span class="pill">Utilization snapshot</span>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="stat-card">
+            <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
                 <div class="stat-label">Today</div>
-                <div class="stat-value text-brand-700">@Model.AppointmentsToday</div>
+                <div class="stat-value text-3xl text-brand-700">@Model.AppointmentsToday</div>
+                <p class="text-xs text-slate-500">Same-day utilization</p>
             </div>
-            <div class="stat-card">
+            <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
                 <div class="stat-label">This Week</div>
-                <div class="stat-value text-brand-700">@Model.AppointmentsThisWeek</div>
+                <div class="stat-value text-3xl text-brand-700">@Model.AppointmentsThisWeek</div>
+                <p class="text-xs text-slate-500">Rolling 7 days</p>
             </div>
-            <div class="stat-card">
+            <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
                 <div class="stat-label">This Month</div>
-                <div class="stat-value text-brand-700">@Model.AppointmentsThisMonth</div>
+                <div class="stat-value text-3xl text-brand-700">@Model.AppointmentsThisMonth</div>
+                <p class="text-xs text-slate-500">Month-to-date</p>
             </div>
         </div>
         <div class="surface-muted p-8 rounded-2xl border border-dashed border-slate-200">
@@ -84,17 +87,20 @@
             <span class="pill">Financial health</span>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="stat-card">
+            <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
                 <div class="stat-label">Today</div>
-                <div class="stat-value text-success">$@Model.RevenueToday.ToString("N2")</div>
+                <div class="stat-value text-3xl text-success">$@Model.RevenueToday.ToString("N2")</div>
+                <p class="text-xs text-slate-500">Daily collection</p>
             </div>
-            <div class="stat-card">
+            <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
                 <div class="stat-label">This Week</div>
-                <div class="stat-value text-success">$@Model.RevenueThisWeek.ToString("N2")</div>
+                <div class="stat-value text-3xl text-success">$@Model.RevenueThisWeek.ToString("N2")</div>
+                <p class="text-xs text-slate-500">Week-to-date</p>
             </div>
-            <div class="stat-card">
+            <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
                 <div class="stat-label">This Month</div>
-                <div class="stat-value text-success">$@Model.RevenueThisMonth.ToString("N2")</div>
+                <div class="stat-value text-3xl text-success">$@Model.RevenueThisMonth.ToString("N2")</div>
+                <p class="text-xs text-slate-500">Month-to-date</p>
             </div>
         </div>
         <div class="surface-muted p-8 rounded-2xl border border-dashed border-slate-200">
@@ -114,17 +120,20 @@
             <span class="pill">Growth</span>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="stat-card">
+            <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
                 <div class="stat-label">Today</div>
-                <div class="stat-value text-indigo-700">@Model.NewPatientsToday</div>
+                <div class="stat-value text-3xl text-indigo-700">@Model.NewPatientsToday</div>
+                <p class="text-xs text-slate-500">Intake captured</p>
             </div>
-            <div class="stat-card">
+            <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
                 <div class="stat-label">This Week</div>
-                <div class="stat-value text-indigo-700">@Model.NewPatientsThisWeek</div>
+                <div class="stat-value text-3xl text-indigo-700">@Model.NewPatientsThisWeek</div>
+                <p class="text-xs text-slate-500">Rolling growth</p>
             </div>
-            <div class="stat-card">
+            <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
                 <div class="stat-label">This Month</div>
-                <div class="stat-value text-indigo-700">@Model.NewPatientsThisMonth</div>
+                <div class="stat-value text-3xl text-indigo-700">@Model.NewPatientsThisMonth</div>
+                <p class="text-xs text-slate-500">Month-to-date</p>
             </div>
         </div>
     </div>
