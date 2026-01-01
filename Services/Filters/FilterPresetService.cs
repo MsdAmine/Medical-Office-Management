@@ -118,7 +118,7 @@ namespace MedicalOfficeManagement.Services.Filters
                         EndDate = DateTime.Today.AddDays(1).AddTicks(-1)
                     },
                     DateTime.UtcNow.AddDays(-2),
-                    "FrontDesk")
+                    "Receptionist")
             }
         };
 

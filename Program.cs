@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MedicalOfficeManagement.Data;
 using MedicalOfficeManagement.Data.Repositories;
+using MedicalOfficeManagement.Data.Seeders;
 using MedicalOfficeManagement.Services;
 using MedicalOfficeManagement.Services.Filters;
 using MedicalOfficeManagement.Services.RealTime;
@@ -111,7 +112,11 @@ app.MapControllerRoute(
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    try { await DbInitializer.SeedRolesAndAdminUser(services); }
+    try
+    {
+        await RoleSeeder.SeedAsync(services);
+        await UserSeeder.SeedAsync(services);
+    }
     catch (Exception ex) { /* Log error */ }
 
     try
