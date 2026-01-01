@@ -3,8 +3,7 @@
 
 @{
     ViewBag.Title = "Billing";
-    var access = AccessControl.GetCurrent();
-    var canEditBilling = access.CanEditBilling;
+    var canEditBilling = User.IsInRole(nameof(AppRole.Admin)) || User.IsInRole(nameof(AppRole.Billing));
 }
 
 <div class="page-shell">

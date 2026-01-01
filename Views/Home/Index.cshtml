@@ -3,7 +3,14 @@
 
 @{
     ViewData["Title"] = "Dashboard";
-    var access = AccessControl.GetCurrent();
+    var isAdmin = User.IsInRole(nameof(AppRole.Admin));
+    var isPhysician = User.IsInRole(nameof(AppRole.Physician));
+    var isNurse = User.IsInRole(nameof(AppRole.Nurse));
+    var isReceptionist = User.IsInRole(nameof(AppRole.Receptionist));
+    var isBilling = User.IsInRole(nameof(AppRole.Billing));
+    var canRegisterPatients = isAdmin || isPhysician || isNurse || isReceptionist;
+    var canViewSchedule = isAdmin || isPhysician || isNurse || isReceptionist;
+    var showFinanceWidget = isAdmin || isBilling;
 }
 
 <div class="page-shell">
@@ -17,7 +24,7 @@
             </div>
         </div>
         <div class="flex flex-wrap gap-3">
-            @if (access.CanCreatePatients)
+            @if (canRegisterPatients)
             {
                 <a href="/Patients/Create" class="btn-primary">Add patient</a>
             }
@@ -25,7 +32,10 @@
             {
                 <button type="button" class="btn-primary" disabled aria-disabled="true" title="Patient creation available to clinical staff and admins">Add patient</button>
             }
-            <a href="/RendezVous" class="btn-secondary">View schedule</a>
+            @if (canViewSchedule)
+            {
+                <a href="/Appointments" class="btn-secondary">View schedule</a>
+            }
         </div>
     </div>
 
@@ -46,6 +56,14 @@
             <p class="stat-label">MESSAGES</p>
             <p class="stat-value text-brand-700">7</p>
         </div>
+        @if (showFinanceWidget)
+        {
+            <div class="stat-card border border-amber-100 bg-amber-50">
+                <p class="stat-label text-amber-700">FINANCE</p>
+                <p class="stat-value text-amber-700">$42,300</p>
+                <p class="text-xs text-amber-700/80">Pending reimbursements requiring billing review</p>
+            </div>
+        }
     </div>
 
     <div class="surface mt-8 p-6 space-y-4">

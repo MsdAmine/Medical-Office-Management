@@ -3,8 +3,10 @@
 
 @{
     ViewBag.Title = "Reports";
-    var access = AccessControl.GetCurrent();
-    var canUseReports = access.ShowReports;
+    var canUseReports = User.IsInRole(nameof(AppRole.Admin)) ||
+                        User.IsInRole(nameof(AppRole.Billing)) ||
+                        User.IsInRole(nameof(AppRole.Physician));
+    var canViewFinancials = User.IsInRole(nameof(AppRole.Admin)) || User.IsInRole(nameof(AppRole.Billing));
 }
 
 <div class="page-shell">
@@ -81,38 +83,41 @@
         </div>
     </div>
 
-    <div class="surface p-6 space-y-6">
-        <div class="flex items-center justify-between">
-            <h2 class="section-heading">Revenue</h2>
-            <span class="pill">Financial health</span>
+    @if (canViewFinancials)
+    {
+        <div class="surface p-6 space-y-6">
+            <div class="flex items-center justify-between">
+                <h2 class="section-heading">Revenue</h2>
+                <span class="pill">Financial health</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
+                    <div class="stat-label">Today</div>
+                    <div class="stat-value text-3xl text-success">$@Model.RevenueToday.ToString("N2")</div>
+                    <p class="text-xs text-slate-500">Daily collection</p>
+                </div>
+                <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
+                    <div class="stat-label">This Week</div>
+                    <div class="stat-value text-3xl text-success">$@Model.RevenueThisWeek.ToString("N2")</div>
+                    <p class="text-xs text-slate-500">Week-to-date</p>
+                </div>
+                <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
+                    <div class="stat-label">This Month</div>
+                    <div class="stat-value text-3xl text-success">$@Model.RevenueThisMonth.ToString("N2")</div>
+                    <p class="text-xs text-slate-500">Month-to-date</p>
+                </div>
+            </div>
+            <div class="surface-muted p-8 rounded-2xl border border-dashed border-slate-200">
+                <div class="flex items-center justify-center h-60 text-center space-y-2 flex-col">
+                    <svg class="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
+                    </svg>
+                    <p class="text-sm text-slate-600">Revenue Trend Chart</p>
+                    <p class="text-xs text-slate-500">Visual representation of revenue data over time</p>
+                </div>
+            </div>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
-                <div class="stat-label">Today</div>
-                <div class="stat-value text-3xl text-success">$@Model.RevenueToday.ToString("N2")</div>
-                <p class="text-xs text-slate-500">Daily collection</p>
-            </div>
-            <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
-                <div class="stat-label">This Week</div>
-                <div class="stat-value text-3xl text-success">$@Model.RevenueThisWeek.ToString("N2")</div>
-                <p class="text-xs text-slate-500">Week-to-date</p>
-            </div>
-            <div class="stat-card border border-slate-100 rounded-2xl bg-white/80">
-                <div class="stat-label">This Month</div>
-                <div class="stat-value text-3xl text-success">$@Model.RevenueThisMonth.ToString("N2")</div>
-                <p class="text-xs text-slate-500">Month-to-date</p>
-            </div>
-        </div>
-        <div class="surface-muted p-8 rounded-2xl border border-dashed border-slate-200">
-            <div class="flex items-center justify-center h-60 text-center space-y-2 flex-col">
-                <svg class="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
-                </svg>
-                <p class="text-sm text-slate-600">Revenue Trend Chart</p>
-                <p class="text-xs text-slate-500">Visual representation of revenue data over time</p>
-            </div>
-        </div>
-    </div>
+    }
 
     <div class="surface p-6 space-y-6">
         <div class="flex items-center justify-between">

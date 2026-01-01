@@ -4,7 +4,7 @@
 @{
     ViewBag.Title = "Doctors";
     var primaryCta = "inline-flex items-center gap-2 rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500";
-    var access = AccessControl.GetCurrent();
+    var canManageStaff = User.IsInRole(nameof(AppRole.Admin));
 }
 
 <div class="page-shell">
@@ -16,7 +16,7 @@
                 <p class="page-subtitle">Medical staff directory and schedules</p>
             </div>
         </div>
-        @if (access.CanManageStaff)
+        @if (canManageStaff)
         {
             <a href="@Url.Action("Create", "Doctors")" class="@primaryCta">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

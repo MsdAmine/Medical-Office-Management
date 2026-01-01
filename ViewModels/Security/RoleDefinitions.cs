@@ -11,7 +11,7 @@ namespace MedicalOfficeManagement.ViewModels.Security
         Admin,
         Physician,
         Nurse,
-        FrontDesk,
+        Receptionist,
         Billing
     }
 
@@ -47,16 +47,14 @@ namespace MedicalOfficeManagement.ViewModels.Security
                 [AppRole.Physician] = PermissionFlag.CanCreatePatient |
                                        PermissionFlag.CanEditPatient |
                                        PermissionFlag.CanScheduleAppointment |
-                                       PermissionFlag.CanViewBilling |
                                        PermissionFlag.CanViewReports,
 
                 [AppRole.Nurse] = PermissionFlag.CanCreatePatient |
                                   PermissionFlag.CanEditPatient |
                                   PermissionFlag.CanScheduleAppointment,
 
-                [AppRole.FrontDesk] = PermissionFlag.CanCreatePatient |
-                                       PermissionFlag.CanScheduleAppointment |
-                                       PermissionFlag.CanViewBilling,
+                [AppRole.Receptionist] = PermissionFlag.CanCreatePatient |
+                                          PermissionFlag.CanScheduleAppointment,
 
                 [AppRole.Billing] = PermissionFlag.CanViewBilling |
                                      PermissionFlag.CanEditBilling |
