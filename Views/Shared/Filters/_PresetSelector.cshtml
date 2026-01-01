@@ -17,9 +17,9 @@
                 <div class="flex flex-wrap gap-2">
                     @foreach (var preset in ctx.Presets)
                     {
-                        var isActive = ctx.IsPresetActive(preset.PresetId);
+                        var isActive = ctx.IsPresetActive(preset.Id);
                         <form method="get" asp-controller="@Model.ControllerName" asp-action="@Model.ActionName" class="inline">
-                            <input type="hidden" name="presetId" value="@preset.PresetId" />
+                            <input type="hidden" name="presetId" value="@preset.Id" />
                             <button type="submit" class="inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-semibold @((isActive ? "bg-brand-50 text-brand-800 border-brand-200" : "bg-white text-slate-700 hover:bg-slate-50 border-slate-200"))">
                                 <span class="inline-flex items-center gap-1">
                                     @if (isActive)

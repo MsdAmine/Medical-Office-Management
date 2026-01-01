@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using MedicalOfficeManagement.Data.Repositories;
 using Microsoft.AspNetCore.Identity;
 using MedicalOfficeManagement.ViewModels.Dashboard;
+using MedicalOfficeManagement.Services;
 using System.Threading;
 
 namespace MedicalOfficeManagement.Controllers

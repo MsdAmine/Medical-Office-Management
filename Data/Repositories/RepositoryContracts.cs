@@ -4,8 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MedicalOfficeManagement.Data.Entities;
-using MedicalOfficeManagement.ViewModels.Filters;
-using MedicalOfficeManagement.ViewModels.Heatmaps;
+using MedicalOfficeManagement.Domain.Filters;
 
 namespace MedicalOfficeManagement.Data.Repositories
 {
@@ -39,31 +38,12 @@ namespace MedicalOfficeManagement.Data.Repositories
     }
 
     /// <summary>
-    /// Future use: repository for saved filter presets with projection to ViewModels.
+    /// Future use: repository for saved filter presets stored in the domain layer.
     /// </summary>
     public interface IFilterPresetRepository
     {
-        Task<FilterPresetViewModel?> GetDefaultAsync(string scope, string userId, CancellationToken cancellationToken);
-        Task<IReadOnlyList<FilterPresetViewModel>> ListAsync(string scope, string userId, CancellationToken cancellationToken);
-    }
-
-    /// <summary>
-    /// Future use: domain service for workload aggregation and severity banding.
-    /// </summary>
-    public interface IWorkloadService
-    {
-        Task<HeatmapViewModel> GetClinicHeatmapAsync(
-            DateTime date,
-            int bucketMinutes,
-            int startHour,
-            int endHour,
-            CancellationToken cancellationToken);
-
-        Task<HeatmapViewModel> GetDoctorsHeatmapAsync(
-            DateTime date,
-            int bucketMinutes,
-            int startHour,
-            int endHour,
-            CancellationToken cancellationToken);
+        FilterPreset? GetDefault(string targetPage);
+        IReadOnlyList<FilterPreset> GetPresets(string targetPage);
+        FilterPreset Upsert(FilterPreset preset);
     }
 }

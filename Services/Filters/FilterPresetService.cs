@@ -2,99 +2,71 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MedicalOfficeManagement.Data.Repositories;
 using MedicalOfficeManagement.ViewModels.Filters;
+using DomainFilterPreset = MedicalOfficeManagement.Domain.Filters.FilterPreset;
+using UiFilterPreset = MedicalOfficeManagement.ViewModels.Filters.FilterPreset;
 
 namespace MedicalOfficeManagement.Services.Filters
 {
-    public interface IFilterPresetRepository
-    {
-        IReadOnlyList<FilterPreset> GetPresets(FilterTargetPage targetPage);
-
-        void Upsert(FilterPreset preset);
-    }
-
     public class InMemoryFilterPresetRepository : IFilterPresetRepository
     {
-        private static readonly Dictionary<FilterTargetPage, List<FilterPreset>> Presets = new()
+        private static readonly Dictionary<string, List<DomainFilterPreset>> Presets = new()
         {
             {
-                FilterTargetPage.Patients,
-                new List<FilterPreset>
+                FilterTargetPage.Patients.ToString(),
+                new List<DomainFilterPreset>
                 {
-                    new()
-                    {
-                        PresetId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
-                        Name = "All patients",
-                        TargetPage = FilterTargetPage.Patients,
-                        Criteria = new PatientsFilterCriteria(),
-                        IsDefault = true,
-                        CreatedAt = DateTime.UtcNow.AddDays(-10),
-                        CreatedByRole = "Admin"
-                    },
-                    new()
-                    {
-                        PresetId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
-                        Name = "Follow-ups due",
-                        TargetPage = FilterTargetPage.Patients,
-                        Criteria = new PatientsFilterCriteria { FollowUpDueOnly = true },
-                        CreatedAt = DateTime.UtcNow.AddDays(-5),
-                        CreatedByRole = "Clinician"
-                    }
+                    new() { Id = 1, Name = "All patients", TargetPage = FilterTargetPage.Patients.ToString(), IsDefault = true },
+                    new() { Id = 2, Name = "Follow-ups due", TargetPage = FilterTargetPage.Patients.ToString(), IsDefault = false }
                 }
             },
             {
-                FilterTargetPage.Appointments,
-                new List<FilterPreset>
+                FilterTargetPage.Appointments.ToString(),
+                new List<DomainFilterPreset>
                 {
-                    new()
-                    {
-                        PresetId = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc"),
-                        Name = "All appointments",
-                        TargetPage = FilterTargetPage.Appointments,
-                        Criteria = new AppointmentsFilterCriteria(),
-                        IsDefault = true,
-                        CreatedAt = DateTime.UtcNow.AddDays(-10),
-                        CreatedByRole = "Admin"
-                    },
-                    new()
-                    {
-                        PresetId = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd"),
-                        Name = "Today - confirmed",
-                        TargetPage = FilterTargetPage.Appointments,
-                        Criteria = new AppointmentsFilterCriteria
-                        {
-                            Status = "Confirmed",
-                            StartDate = DateTime.Today,
-                            EndDate = DateTime.Today.AddDays(1).AddTicks(-1)
-                        },
-                        CreatedAt = DateTime.UtcNow.AddDays(-2),
-                        CreatedByRole = "FrontDesk"
-                    }
+                    new() { Id = 3, Name = "All appointments", TargetPage = FilterTargetPage.Appointments.ToString(), IsDefault = true },
+                    new() { Id = 4, Name = "Today - confirmed", TargetPage = FilterTargetPage.Appointments.ToString(), IsDefault = false }
                 }
             }
         };
 
-        public IReadOnlyList<FilterPreset> GetPresets(FilterTargetPage targetPage) =>
+        private static int _nextId = 5;
+
+        public DomainFilterPreset? GetDefault(string targetPage) =>
+            Presets.TryGetValue(targetPage, out var list)
+                ? list.FirstOrDefault(p => p.IsDefault)
+                : null;
+
+        public IReadOnlyList<DomainFilterPreset> GetPresets(string targetPage) =>
             Presets.TryGetValue(targetPage, out var list)
                 ? list
-                : Array.Empty<FilterPreset>();
+                : Array.Empty<DomainFilterPreset>();
 
-        public void Upsert(FilterPreset preset)
+        public DomainFilterPreset Upsert(DomainFilterPreset preset)
         {
             if (!Presets.TryGetValue(preset.TargetPage, out var list))
             {
-                list = new List<FilterPreset>();
+                list = new List<DomainFilterPreset>();
                 Presets[preset.TargetPage] = list;
             }
 
-            var existingIndex = list.FindIndex(p => p.PresetId == preset.PresetId);
+            if (preset.Id == 0)
+            {
+                preset.Id = _nextId++;
+                list.Add(preset);
+                return preset;
+            }
+
+            var existingIndex = list.FindIndex(p => p.Id == preset.Id);
             if (existingIndex >= 0)
             {
                 list[existingIndex] = preset;
-                return;
+                return preset;
             }
 
             list.Add(preset);
+            return preset;
         }
     }
 
@@ -103,14 +75,14 @@ namespace MedicalOfficeManagement.Services.Filters
         FilterContextViewModel<TCriteria> BuildContext<TCriteria>(
             FilterTargetPage targetPage,
             TCriteria? inboundFilters,
-            Guid? presetId,
+            int? presetId,
             bool clearPreset,
             string? presetName = null,
             string? createdByRole = null,
             bool setAsDefault = false)
             where TCriteria : FilterCriteriaBase;
 
-        FilterPreset SavePreset<TCriteria>(
+        UiFilterPreset SavePreset<TCriteria>(
             FilterTargetPage targetPage,
             string name,
             string createdByRole,
@@ -122,6 +94,33 @@ namespace MedicalOfficeManagement.Services.Filters
     public class FilterPresetService : IFilterPresetService
     {
         private readonly IFilterPresetRepository _repository;
+        private static readonly Dictionary<int, PresetMetadata> PresetCriteria = new()
+        {
+            {
+                1,
+                new PresetMetadata(new PatientsFilterCriteria(), DateTime.UtcNow.AddDays(-10), "Admin")
+            },
+            {
+                2,
+                new PresetMetadata(new PatientsFilterCriteria { FollowUpDueOnly = true }, DateTime.UtcNow.AddDays(-5), "Clinician")
+            },
+            {
+                3,
+                new PresetMetadata(new AppointmentsFilterCriteria(), DateTime.UtcNow.AddDays(-10), "Admin")
+            },
+            {
+                4,
+                new PresetMetadata(
+                    new AppointmentsFilterCriteria
+                    {
+                        Status = "Confirmed",
+                        StartDate = DateTime.Today,
+                        EndDate = DateTime.Today.AddDays(1).AddTicks(-1)
+                    },
+                    DateTime.UtcNow.AddDays(-2),
+                    "FrontDesk")
+            }
+        };
 
         public FilterPresetService(IFilterPresetRepository repository)
         {
@@ -131,7 +130,7 @@ namespace MedicalOfficeManagement.Services.Filters
         public FilterContextViewModel<TCriteria> BuildContext<TCriteria>(
             FilterTargetPage targetPage,
             TCriteria? inboundFilters,
-            Guid? presetId,
+            int? presetId,
             bool clearPreset,
             string? presetName = null,
             string? createdByRole = null,
@@ -145,17 +144,21 @@ namespace MedicalOfficeManagement.Services.Filters
                 SavePreset(targetPage, presetName.Trim(), createdByRole ?? "Clinician", inboundFilters, setAsDefault);
             }
 
-            var presets = _repository.GetPresets(targetPage).ToList();
+            var presets = _repository
+                .GetPresets(targetPage.ToString())
+                .Select(p => MapToViewModel<TCriteria>(p, targetPage))
+                .ToList();
+
             var appliedFilters = (TCriteria)inboundFilters.Clone();
-            Guid? activePresetId = null;
+            int? activePresetId = null;
 
             if (!clearPreset && presetId.HasValue)
             {
-                var requestedPreset = presets.FirstOrDefault(p => p.PresetId == presetId.Value);
+                var requestedPreset = presets.FirstOrDefault(p => p.Id == presetId.Value);
                 if (requestedPreset?.Criteria is TCriteria typedCriteria)
                 {
                     appliedFilters = (TCriteria)typedCriteria.Clone();
-                    activePresetId = requestedPreset.PresetId;
+                    activePresetId = requestedPreset.Id;
                 }
             }
             else if (!clearPreset && !inboundFilters.HasValues())
@@ -164,7 +167,7 @@ namespace MedicalOfficeManagement.Services.Filters
                 if (defaultPreset?.Criteria is TCriteria defaultCriteria)
                 {
                     appliedFilters = (TCriteria)defaultCriteria.Clone();
-                    activePresetId = defaultPreset.PresetId;
+                    activePresetId = defaultPreset.Id;
                 }
             }
 
@@ -184,7 +187,7 @@ namespace MedicalOfficeManagement.Services.Filters
             };
         }
 
-        public FilterPreset SavePreset<TCriteria>(
+        public UiFilterPreset SavePreset<TCriteria>(
             FilterTargetPage targetPage,
             string name,
             string createdByRole,
@@ -192,18 +195,41 @@ namespace MedicalOfficeManagement.Services.Filters
             bool isDefault = false)
             where TCriteria : FilterCriteriaBase
         {
-            var preset = new FilterPreset
+            var domainPreset = new DomainFilterPreset
             {
                 Name = name,
-                TargetPage = targetPage,
-                Criteria = criteria.Clone(),
-                IsDefault = isDefault,
-                CreatedAt = DateTime.UtcNow,
-                CreatedByRole = createdByRole
+                TargetPage = targetPage.ToString(),
+                IsDefault = isDefault
             };
 
-            _repository.Upsert(preset);
-            return preset;
+            var savedPreset = _repository.Upsert(domainPreset);
+            PresetCriteria[savedPreset.Id] = new PresetMetadata(criteria.Clone(), DateTime.UtcNow, createdByRole);
+
+            return MapToViewModel<TCriteria>(savedPreset, targetPage);
         }
+
+        private static UiFilterPreset MapDomainPreset(DomainFilterPreset domainPreset, FilterTargetPage targetPage, FilterCriteriaBase criteria) =>
+            new UiFilterPreset
+            {
+                Id = domainPreset.Id,
+                Name = domainPreset.Name,
+                TargetPage = targetPage,
+                Criteria = criteria,
+                IsDefault = domainPreset.IsDefault,
+                CreatedAt = PresetCriteria.TryGetValue(domainPreset.Id, out var meta) ? meta.CreatedAt : DateTime.UtcNow,
+                CreatedByRole = meta?.CreatedByRole ?? "System"
+            };
+
+        private static UiFilterPreset MapToViewModel<TCriteria>(DomainFilterPreset domainPreset, FilterTargetPage targetPage)
+            where TCriteria : FilterCriteriaBase
+        {
+            var criteria = PresetCriteria.TryGetValue(domainPreset.Id, out var meta) && meta.Criteria is TCriteria storedCriteria
+                ? (TCriteria)storedCriteria.Clone()
+                : (TCriteria)Activator.CreateInstance(typeof(TCriteria))!;
+
+            return MapDomainPreset(domainPreset, targetPage, criteria);
+        }
+
+        private record PresetMetadata(FilterCriteriaBase Criteria, DateTime CreatedAt, string CreatedByRole);
     }
 }
