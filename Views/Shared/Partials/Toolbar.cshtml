@@ -1,0 +1,49 @@
+@model IEnumerable<MedicalOfficeManagement.ViewModels.UI.ToolbarAction>
+
+<div class="toolbar">
+    <div class="flex items-center gap-2 flex-wrap">
+        <span class="text-xs font-semibold tracking-wide uppercase text-slate-500">Quick actions</span>
+        <span class="h-1 w-1 rounded-full bg-slate-300"></span>
+        <span class="text-sm text-slate-600">Use these shortcuts to stay on track today.</span>
+    </div>
+    <div class="flex items-center gap-2 flex-wrap">
+        @foreach (var action in Model)
+        {
+            var styleClass = action.Style switch
+            {
+                "secondary" => "btn btn-secondary",
+                "ghost" => "btn btn-ghost",
+                "quiet" => "btn btn-quiet",
+                _ => "btn btn-primary"
+            };
+            var iconClass = action.Icon ?? string.Empty;
+            if (!string.IsNullOrEmpty(action.Href) && !action.IsButton)
+            {
+                <a href="@action.Href"
+                   class="@styleClass"
+                   title="@action.Tooltip"
+                   @(action.Disabled ? "aria-disabled=\"true\" tabindex=\"-1\"" : "")>
+                    @if (!string.IsNullOrEmpty(iconClass))
+                    {
+                        <span class="iconify w-4 h-4" data-icon="@iconClass"></span>
+                    }
+                    @action.Label
+                </a>
+            }
+            else
+            {
+                <button type="button"
+                        class="@styleClass"
+                        title="@action.Tooltip"
+                        @(action.Disabled ? "disabled aria-disabled=\"true\"" : "")
+                        @(string.IsNullOrEmpty(action.DataTarget) ? "" : $"data-target=\"{action.DataTarget}\"")>
+                    @if (!string.IsNullOrEmpty(iconClass))
+                    {
+                        <span class="iconify w-4 h-4" data-icon="@iconClass"></span>
+                    }
+                    @action.Label
+                </button>
+            }
+        }
+    </div>
+</div>

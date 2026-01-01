@@ -1,0 +1,44 @@
+@model MedicalOfficeManagement.ViewModels.UI.ActionMenuModel
+
+<details class="relative group inline-block">
+    <summary class="btn btn-secondary cursor-pointer select-none flex items-center gap-2 text-sm">
+        @Model.Label
+        <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+    </summary>
+    <div class="absolute right-0 mt-2 w-48 rounded-lg border border-slate-200 bg-white shadow-lg ring-1 ring-black/5 z-20">
+        <ul class="py-1 text-left text-sm text-slate-700">
+            @foreach (var item in Model.Items)
+            {
+                if (item.DividerBefore)
+                {
+                    <li class="border-t border-slate-100 my-1"></li>
+                }
+                var toneClass = item.Tone switch
+                {
+                    "danger" => "text-rose-600",
+                    "warning" => "text-amber-700",
+                    "success" => "text-emerald-600",
+                    _ => "text-slate-700"
+                };
+                if (!string.IsNullOrEmpty(item.Href) && !item.Disabled)
+                {
+                    <li>
+                        <a href="@item.Href" class="flex items-center gap-2 px-3 py-2 hover:bg-slate-50 focus:bg-slate-50 @toneClass">
+                            <span class="h-2 w-2 rounded-full bg-current/70"></span>
+                            @item.Label
+                        </a>
+                    </li>
+                }
+                else
+                {
+                    <li>
+                        <span class="flex items-center gap-2 px-3 py-2 text-slate-400 cursor-not-allowed">
+                            <span class="h-2 w-2 rounded-full bg-slate-300"></span>
+                            @item.Label
+                        </span>
+                    </li>
+                }
+            }
+        </ul>
+    </div>
+</details>
