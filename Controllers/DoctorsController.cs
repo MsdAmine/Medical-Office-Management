@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MedicalOfficeManagement.Data.Repositories;
 using MedicalOfficeManagement.ViewModels.Doctors;
+using MedicalOfficeManagement.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MedicalOfficeManagement.Controllers

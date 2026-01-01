@@ -1,5 +1,4 @@
 using MedicalOfficeManagement.Data;
-using MedicalOfficeManagement.Data.Repositories;
 using MedicalOfficeManagement.ViewModels.Heatmaps;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;

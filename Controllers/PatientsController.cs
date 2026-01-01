@@ -29,7 +29,7 @@ namespace MedicalOfficeManagement.Controllers
         // Affiche la liste complète des patients enregistrés
         public async Task<IActionResult> Index(
             [FromQuery] PatientsFilterCriteria? filters,
-            Guid? presetId,
+            int? presetId,
             bool clearPreset = false,
             string? presetName = null,
             string? createdByRole = null,
@@ -167,7 +167,7 @@ namespace MedicalOfficeManagement.Controllers
                 filters,
                 setAsDefault);
 
-            return RedirectToAction(nameof(Index), new { presetId = preset.PresetId });
+            return RedirectToAction(nameof(Index), new { presetId = preset.Id });
         }
 
         // POST: Patients/Create

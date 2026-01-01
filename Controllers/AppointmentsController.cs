@@ -28,7 +28,7 @@ namespace MedicalOfficeManagement.Controllers
 
         public async Task<ActionResult> Index(
             [FromQuery] AppointmentsFilterCriteria? filters,
-            Guid? presetId,
+            int? presetId,
             bool clearPreset = false,
             string? presetName = null,
             string? createdByRole = null,
@@ -42,7 +42,7 @@ namespace MedicalOfficeManagement.Controllers
         [HttpGet]
         public async Task<PartialViewResult> LiveTable(
             [FromQuery] AppointmentsFilterCriteria? filters,
-            Guid? presetId,
+            int? presetId,
             bool clearPreset = false,
             string? presetName = null,
             string? createdByRole = null,
@@ -55,7 +55,7 @@ namespace MedicalOfficeManagement.Controllers
 
         private async Task<AppointmentsIndexViewModel> BuildAppointmentsViewModel(
             AppointmentsFilterCriteria? filters,
-            Guid? presetId,
+            int? presetId,
             bool clearPreset,
             string? presetName,
             string? createdByRole,
@@ -213,7 +213,7 @@ namespace MedicalOfficeManagement.Controllers
                 filters,
                 setAsDefault);
 
-            return RedirectToAction(nameof(Index), new { presetId = preset.PresetId });
+            return RedirectToAction(nameof(Index), new { presetId = preset.Id });
         }
 
         private static string MapStatus(AppointmentStatus status) =>
