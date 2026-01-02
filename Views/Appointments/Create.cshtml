@@ -13,28 +13,32 @@
         asp-action="Create"
         method="post"
         class="space-y-8">
-        @Html.AntiForgeryToken()<!-- Validation Summary -->
-        <div asp-validation-summary="ModelOnly" class="bg-red-50 border border-red-200 rounded-xl p-5">
-            <div class="flex items-start">
-                <div class="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center mr-4 flex-shrink-0">
-                    <i class="fas fa-exclamation-circle text-red-600"></i>
-                </div>
-                <div>
-                    <h3 class="font-semibold text-red-900 mb-1">Please correct the following:</h3>
-                    <ul class="text-red-700 text-sm space-y-1">
-                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-                        {
-                            <li class="flex items-start">
-                                <i class="fas fa-circle text-xs mt-1 mr-2"></i>
-                                <span>
-                                @error.ErrorMessage
-                                </span>
-                            </li>
-                        }
-                    </ul>
+        @Html.AntiForgeryToken()
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <!-- Validation Summary -->
+            <div asp-validation-summary="ModelOnly" class="bg-red-50 border border-red-200 rounded-xl p-5">
+                <div class="flex items-start">
+                    <div class="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center mr-4 flex-shrink-0">
+                        <i class="fas fa-exclamation-circle text-red-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-red-900 mb-1">Please correct the following:</h3>
+                        <ul class="text-red-700 text-sm space-y-1">
+                            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                            {
+                                <li class="flex items-start">
+                                    <i class="fas fa-circle text-xs mt-1 mr-2"></i>
+                                    <span>
+                                        @error.ErrorMessage
+                                    </span>
+                                </li>
+                            }
+                        </ul>
+                    </div>
                 </div>
             </div>
-        </div>
+        }
         <!-- Patient & Provider Card -->
         <div class="bg-white rounded-2xl border border-slate-200 p-7 shadow-sm">
             <h2 class="text-lg font-semibold text-slate-900 mb-6 flex items-center">
@@ -55,17 +59,15 @@
                         <select
                             asp-for="Appointment.PatientId"
                             asp-items="Model.Patients"
-                            class="w-full pl-10 pr-4 py-3.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition appearance-none bg-white">
+                            class="w-full pl-10 pr-4 py-3.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition appearance-none bg-white"
+                            required>
                             <option value="">Select a patient...</option>
                         </select>
                         <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                             <i class="fas fa-chevron-down text-slate-400"></i>
                         </div>
                     </div>
-                    <div class="flex items-center text-red-600 text-sm mt-1">
-                        <i class="fas fa-exclamation-circle mr-1"></i>
-                        <span asp-validation-for="Appointment.PatientId" class="text-red-600 text-sm mt-1"></span>
-                    </div>
+                    <span asp-validation-for="Appointment.PatientId" class="text-red-600 text-sm mt-1 block"></span>
                 </div>
                 <!-- Provider Selection -->
                 <div class="space-y-2">
@@ -80,16 +82,15 @@
                         <select
                             asp-for="Appointment.MedecinId"
                             asp-items="Model.Medecins"
-                            class="w-full pl-10 pr-4 py-3.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition appearance-none bg-white">
+                            class="w-full pl-10 pr-4 py-3.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition appearance-none bg-white"
+                            required>
                             <option value="">Select a provider...</option>
                         </select>
                         <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                             <i class="fas fa-chevron-down text-slate-400"></i>
                         </div>
                     </div>
-                    <span asp-validation-for="Appointment.MedecinId" class="text-red-600 text-sm flex items-center mt-1">
-                        <i class="fas fa-exclamation-circle mr-1"></i>
-                    </span>
+                    <span asp-validation-for="Appointment.MedecinId" class="text-red-600 text-sm mt-1 block"></span>
                 </div>
             </div>
         </div>
@@ -110,14 +111,12 @@
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fas fa-play text-slate-400"></i>
                         </div>
-                        <
-                        input asp-for="Appointment.DateDebut"
+                        <input asp-for="Appointment.DateDebut"
                                type="datetime-local"
-                               class="w-full pl-10 pr-4 py-3.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                               class="w-full pl-10 pr-4 py-3.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                               required>
                     </div>
-                    <span asp-validation-for="Appointment.DateDebut" class="text-red-600 text-sm flex items-center mt-1">
-                        <i class="fas fa-exclamation-circle mr-1"></i>
-                    </span>
+                    <span asp-validation-for="Appointment.DateDebut" class="text-red-600 text-sm mt-1 block"></span>
                 </div>
                 <!-- End Date/Time -->
                 <div class="space-y-2">
@@ -129,14 +128,12 @@
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fas fa-stop text-slate-400"></i>
                         </div>
-                        <
-                        input asp-for="Appointment.DateFin"
+                        <input asp-for="Appointment.DateFin"
                                type="datetime-local"
-                               class="w-full pl-10 pr-4 py-3.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                               class="w-full pl-10 pr-4 py-3.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                               required>
                     </div>
-                    <span asp-validation-for="Appointment.DateFin" class="text-red-600 text-sm flex items-center mt-1">
-                        <i class="fas fa-exclamation-circle mr-1"></i>
-                    </span>
+                    <span asp-validation-for="Appointment.DateFin" class="text-red-600 text-sm mt-1 block"></span>
                 </div>
             </div>
         </div>
@@ -157,16 +154,13 @@
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fas fa-hashtag text-slate-400"></i>
                         </div>
-                        <
-                        input asp-for="Appointment.SalleId"
+                        <input asp-for="Appointment.SalleId"
                                type="number"
                                min="1"
                                class="w-full pl-10 pr-4 py-3.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
                                placeholder="e.g., 101">
                     </div>
-                    <span asp-validation-for="Appointment.SalleId" class="text-red-600 text-sm flex items-center mt-1">
-                        <i class="fas fa-exclamation-circle mr-1"></i>
-                    </span>
+                    <span asp-validation-for="Appointment.SalleId" class="text-red-600 text-sm mt-1 block"></span>
                 </div>
                 <!-- Status -->
                 <div class="space-y-2">
@@ -191,9 +185,7 @@
                             <i class="fas fa-chevron-down text-slate-400"></i>
                         </div>
                     </div>
-                    <span asp-validation-for="Appointment.Statut" class="text-red-600 text-sm flex items-center mt-1">
-                        <i class="fas fa-exclamation-circle mr-1"></i>
-                    </span>
+                    <span asp-validation-for="Appointment.Statut" class="text-red-600 text-sm mt-1 block"></span>
                 </div>
                 <!-- Reason -->
                 <div class="space-y-2">
@@ -205,14 +197,11 @@
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fas fa-file-medical text-slate-400"></i>
                         </div>
-                        <
-                        input asp-for="Appointment.Motif"
+                        <input asp-for="Appointment.Motif"
                                class="w-full pl-10 pr-4 py-3.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
                                placeholder="e.g., Annual check-up, Follow-up">
                     </div>
-                    <span asp-validation-for="Appointment.Motif" class="text-red-600 text-sm flex items-center mt-1">
-                        <i class="fas fa-exclamation-circle mr-1"></i>
-                    </span>
+                    <span asp-validation-for="Appointment.Motif" class="text-red-600 text-sm mt-1 block"></span>
                 </div>
             </div>
         </div>
