@@ -58,16 +58,16 @@
                 <thead>
                     <tr class="bg-slate-50 border-b border-slate-200">
                         <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">
-                            Full Name
+                            Nom complet
                         </th>
                         <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">
-                            Date of Birth
+                            Date de naissance
                         </th>
                         <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">
-                            Phone
+                            Téléphone
                         </th>
                         <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">
-                            Email
+                            Adresse
                         </th>
                         <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">
                             Actions
@@ -84,7 +84,7 @@
                             </td>
 
                             <td class="py-4 px-6 text-slate-700">
-                                @(patient.DateNaissance?.ToString("yyyy-MM-dd") ?? "-").ToString("yyyy-MM-dd")
+                                @(patient.DateNaissance?.ToString("yyyy-MM-dd") ?? "-")
                             </td>
 
                             <td class="py-4 px-6 text-slate-700">
@@ -92,7 +92,7 @@
                             </td>
 
                             <td class="py-4 px-6 text-slate-700">
-                                @patient.Email
+                                @patient.Adresse
                             </td>
 
                             <td class="py-4 px-6">
