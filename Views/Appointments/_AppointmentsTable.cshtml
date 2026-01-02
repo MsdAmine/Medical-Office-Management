@@ -13,12 +13,15 @@
     var isBilling = User.IsInRole(nameof(AppRole.Billing));
 }
 
+<div class="flex items-center justify-between gap-3 mb-2">
+    <p class="text-xs text-slate-500">KPIs: Aggregated metrics for operational awareness and staffing readiness.</p>
+</div>
 @await Html.PartialAsync("Partials/KpiGrid", new KpiGridModel { Items = kpis })
 
 @await Html.PartialAsync("Partials/TableShell", new TableShellModel
 {
     Title = "Appointment list",
-    Description = "Time, status, arrival indicators, and actions.",
+    Description = "Time, status, arrival indicators, and actions. Late = arrival > 10 minutes; High Risk = priority review.",
     TableContent = @<text>
         @if (!Model.Appointments.Any())
         {
@@ -55,13 +58,13 @@
                             "Cancelled" => "badge danger",
                             _ => "badge info"
                         };
-                        <tr class="text-sm align-top">
+                        <tr class="text-sm align-top hover:bg-slate-50/70 transition">
                             <td>
                                 <div class="flex items-center gap-2">
                                     <div class="text-sm font-semibold text-slate-900">@appointment.Time.ToString("h:mm tt")</div>
                                     @if (appointment.IsLate)
                                     {
-                                        <span class="chip high">Late</span>
+                                        <span class="chip high" title="Arrival over 10 minutes late">Late</span>
                                     }
                                     @if (appointment.HasOverlap)
                                     {
@@ -76,7 +79,7 @@
                                 <div class="flex flex-wrap gap-2 mt-1">
                                     @foreach (var flag in appointment.PatientRiskFlags)
                                     {
-                                        <span class="chip medium">
+                                        <span class="chip medium" title="High Risk = priority review before rooming">
                                             <span class="h-2 w-2 rounded-full bg-current/60"></span>
                                             @flag
                                         </span>

@@ -8,6 +8,11 @@
                       User.IsInRole(nameof(AppRole.Nurse)) ||
                       User.IsInRole(nameof(AppRole.Receptionist));
     var isBilling = User.IsInRole(nameof(AppRole.Billing));
+    var roleIntent = User.IsInRole(nameof(AppRole.Admin))
+        ? "Operational oversight and escalation control"
+        : canSchedule
+            ? "Arrivals, scheduling, and patient flow"
+            : "View-only monitoring for billing and reporting";
     var presetOptions = new List<PresetOption>
     {
         new PresetOption { Label = "Default", Url = Url.Action("Index", "Appointments", new { clearPreset = true }), Active = !Model.FilterContext.HasActivePreset, Description = "All appointments" }
@@ -35,6 +40,7 @@
 }
 
 <div class="space-y-6">
+    <p class="text-[13px] text-slate-500 font-medium">@roleIntent</p>
     @await Html.PartialAsync("Partials/PageHeader", new PageHeaderModel
     {
         Title = "Appointments",
@@ -52,6 +58,7 @@
     @await Html.PartialAsync("Partials/PresetsBar", new PresetsBarModel { Title = "Presets", Options = presetOptions })
 
     <div class="card p-5 space-y-4">
+        <p class="text-xs text-slate-500">Late = arrival > 10 minutes past slot. High Risk flags require priority review before rooming.</p>
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex gap-2">
                 <button class="btn btn-secondary">
@@ -117,7 +124,7 @@
                 <input type="hidden" name="StartDate" value="@(Model.FilterContext.CurrentFilters.StartDate?.ToString("o"))" />
                 <input type="hidden" name="EndDate" value="@(Model.FilterContext.CurrentFilters.EndDate?.ToString("o"))" />
             </div>
-            <button type="submit" class="btn btn-primary">Save preset</button>
+            <button type="submit" class="btn btn-secondary">Save preset</button>
         </form>
     </div>
 
