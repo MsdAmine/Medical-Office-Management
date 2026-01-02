@@ -1,0 +1,131 @@
+@model BillingSummaryViewModel
+
+@{
+    ViewData["Title"] = "Billing";
+    ViewData["Breadcrumb"] = "Billing";
+}
+
+<div class="space-y-6">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl lg:text-3xl font-bold text-slate-900">Billing</h1>
+            <p class="text-slate-600 mt-2">Review invoices, balances, and payment status</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <button class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 transition flex items-center">
+                <i class="fas fa-file-export mr-2"></i>
+                Export
+            </button>
+            <button class="gradient-primary text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-shadow flex items-center">
+                <i class="fas fa-plus mr-2"></i>
+                New Invoice
+            </button>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="glass-card p-4 rounded-xl">
+            <p class="text-sm text-slate-500 mb-1">Outstanding Balance</p>
+            <p class="text-3xl font-bold text-slate-900">@(Model.OutstandingBalance.ToString("C"))</p>
+            <p class="text-xs text-amber-600 mt-1">Pending or overdue invoices</p>
+        </div>
+        <div class="glass-card p-4 rounded-xl">
+            <p class="text-sm text-slate-500 mb-1">Paid This Month</p>
+            <p class="text-3xl font-bold text-slate-900">@(Model.PaidThisMonth.ToString("C"))</p>
+            <p class="text-xs text-emerald-600 mt-1">Cleared payments</p>
+        </div>
+        <div class="glass-card p-4 rounded-xl">
+            <p class="text-sm text-slate-500 mb-1">Draft Invoices</p>
+            <p class="text-3xl font-bold text-slate-900">@Model.DraftInvoices</p>
+            <p class="text-xs text-slate-600 mt-1">Awaiting review</p>
+        </div>
+    </div>
+
+    <div class="glass-card rounded-xl overflow-hidden">
+        <div class="p-6 border-b border-slate-200 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div>
+                <h2 class="text-lg font-semibold text-slate-900">Invoices</h2>
+                <p class="text-sm text-slate-600">Showing @Model.Invoices.Count() record(s)</p>
+            </div>
+            <div class="flex items-center gap-2 text-sm text-slate-600">
+                <span class="flex items-center gap-1"><span class="badge-dot bg-emerald-500"></span> Paid</span>
+                <span class="flex items-center gap-1"><span class="badge-dot bg-amber-500"></span> Pending</span>
+                <span class="flex items-center gap-1"><span class="badge-dot bg-red-500"></span> Overdue</span>
+                <span class="flex items-center gap-1"><span class="badge-dot bg-slate-400"></span> Draft</span>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200">
+                        <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">Invoice</th>
+                        <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">Patient</th>
+                        <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">Service</th>
+                        <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">Amount</th>
+                        <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">Due</th>
+                        <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">Status</th>
+                        <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                    @foreach (var invoice in Model.Invoices)
+                    {
+                        var statusBadge = invoice.Status switch
+                        {
+                            "Paid" => "bg-emerald-100 text-emerald-700",
+                            "Pending" => "bg-amber-100 text-amber-700",
+                            "Overdue" => "bg-red-100 text-red-700",
+                            "Draft" => "bg-slate-100 text-slate-700",
+                            _ => "bg-slate-100 text-slate-700"
+                        };
+
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="py-4 px-6">
+                                <div class="font-semibold text-slate-900">@invoice.InvoiceNumber</div>
+                                <div class="text-xs text-slate-500">Issued @invoice.IssuedOn.ToString("MMM dd, yyyy")</div>
+                            </td>
+                            <td class="py-4 px-6 text-slate-700">@invoice.PatientName</td>
+                            <td class="py-4 px-6 text-slate-700">@invoice.Service</td>
+                            <td class="py-4 px-6 font-semibold text-slate-900">@invoice.Amount.ToString("C")</td>
+                            <td class="py-4 px-6">
+                                <div class="text-slate-700">@invoice.DueDate.ToString("MMM dd, yyyy")</div>
+                                <div class="text-xs text-slate-500">@invoice.PaymentMethod</div>
+                            </td>
+                            <td class="py-4 px-6">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold @statusBadge">
+                                    @invoice.Status
+                                </span>
+                            </td>
+                            <td class="py-4 px-6">
+                                <div class="flex items-center space-x-2">
+                                    <button class="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="p-2 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg" title="Mark paid">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (!Model.Invoices.Any())
+        {
+            <div class="p-10 text-center">
+                <div class="inline-flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-500 mb-4">
+                    <i class="fas fa-file-invoice-dollar text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-slate-900 mb-2">No invoices found</h3>
+                <p class="text-slate-600 mb-4">Create your first invoice to get started.</p>
+                <button class="gradient-primary text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-shadow inline-flex items-center">
+                    <i class="fas fa-plus mr-2"></i>
+                    Create Invoice
+                </button>
+            </div>
+        }
+    </div>
+</div>
