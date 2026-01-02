@@ -23,30 +23,30 @@
         var headerActions = new List<ToolbarAction>
         {
             new ToolbarAction { Label = "New patient", Href = "/Patients/Create", Style = "primary", Disabled = !canRegisterPatients, Tooltip = "Create a record" },
-            new ToolbarAction { Label = "Schedule", Href = "/Appointments", Style = "secondary", Disabled = !canViewSchedule, Tooltip = "Open appointments" },
+            new ToolbarAction { Label = "Schedule", Href = "/Appointments", Style = "ghost", Disabled = !canViewSchedule, Tooltip = "Open appointments" },
             new ToolbarAction { Label = "Export", Href = "/Reports", Style = "ghost", Tooltip = "Jump to reporting" }
         };
         var headerModel = new PageHeaderModel
         {
             Title = $"Welcome back, {Model.UserDisplayName}",
             Subtitle = Model.Now.ToString("dddd, dd MMMM yyyy"),
-            ContextTag = "Dashboard",
-            RoleBadge = roleLabel,
-            RoleTone = isAdmin ? "success" : "info",
             Actions = headerActions
         };
     }
     @await Html.PartialAsync("Partials/PageHeader", headerModel)
 
-    @await Html.PartialAsync("Partials/Toolbar", new[]
-    {
-        new ToolbarAction { Label = "Triage queue", Href = "/Patients", Style = "secondary" },
-        new ToolbarAction { Label = "Today schedule", Href = "/Appointments", Style = "quiet" },
-        new ToolbarAction { Label = "Escalations", Href = "/Reports", Style = "ghost" }
-    })
-
     @{
         var kpis = new List<KpiCardModel>();
+        KpiCardModel inboxCard = null;
+        string NormalizeMetric(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value) || value.Contains("??"))
+            {
+                return "0";
+            }
+
+            return value;
+        }
         if (Model.Stats != null)
         {
             foreach (var stat in Model.Stats)
@@ -54,14 +54,43 @@
                 var tone = stat.ColorClass?.Contains("danger") == true ? "danger" :
                            stat.ColorClass?.Contains("success") == true ? "success" :
                            "neutral";
-                kpis.Add(new KpiCardModel { Label = stat.Label, Value = stat.Value, Helper = "Live metric", DeltaTone = tone });
+                var helper = stat.Label?.Equals("Active Doctors", StringComparison.OrdinalIgnoreCase) == true ? "On duty now" :
+                             stat.Label?.Contains("Appointment", StringComparison.OrdinalIgnoreCase) == true ? "Scheduled today" :
+                             (stat.Label?.Equals("Inbox", StringComparison.OrdinalIgnoreCase) == true || stat.Label?.Equals("Messages", StringComparison.OrdinalIgnoreCase) == true) ? "Unread / urgent" :
+                             string.Empty;
+                var safeValue = NormalizeMetric(stat.Value);
+
+                if (stat.Label?.Equals("Inbox", StringComparison.OrdinalIgnoreCase) == true || stat.Label?.Equals("Messages", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    if (inboxCard == null)
+                    {
+                        inboxCard = new KpiCardModel { Label = "Inbox", Value = safeValue, Helper = "Unread / urgent", DeltaTone = tone, Delta = stat.Delta };
+                    }
+                    else
+                    {
+                        if (string.IsNullOrWhiteSpace(inboxCard.Value))
+                        {
+                            inboxCard.Value = safeValue;
+                        }
+                        if (string.IsNullOrWhiteSpace(inboxCard.Delta) && !string.IsNullOrEmpty(stat.Delta))
+                        {
+                            inboxCard.Delta = stat.Delta;
+                        }
+                    }
+                    continue;
+                }
+
+                kpis.Add(new KpiCardModel { Label = stat.Label, Value = safeValue, Helper = helper, DeltaTone = tone, Delta = stat.Delta });
             }
+        }
+        if (inboxCard != null)
+        {
+            kpis.Add(inboxCard);
         }
         if (showFinanceWidget)
         {
             kpis.Add(new KpiCardModel { Label = "Finance", Value = "$42,300", Helper = "Pending reimbursement", Delta = "4 alerts", DeltaTone = "warning" });
         }
-        kpis.Add(new KpiCardModel { Label = "Inbox", Value = "14", Helper = "Unread clinical updates", DeltaTone = "neutral", Delta = "3 urgent" });
     }
     @await Html.PartialAsync("Partials/KpiGrid", new KpiGridModel { Items = kpis })
 
@@ -71,16 +100,16 @@
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                     <div>
                         <h2 class="section-heading">Clinic workload today</h2>
-                        <p class="section-caption">Density and room utilization for @Model.Now.ToString("dddd")</p>
+                        <p class="section-caption text-slate-700">Density and room utilization for @Model.Now.ToString("dddd")</p>
                     </div>
-                    <form method="get" class="flex flex-wrap items-center gap-2 text-sm text-slate-600">
-                        <label class="font-semibold text-slate-700">Bucket</label>
+                    <form method="get" class="flex flex-wrap items-center gap-2 text-sm text-slate-700">
+                        <label class="font-semibold text-slate-800">Bucket</label>
                         <select name="bucketMinutes" class="form-input w-28" onchange="this.form.submit()">
                             <option value="15" selected="@(Model.SelectedBucketMinutes == 15 ? "selected" : null)">15 minutes</option>
                             <option value="30" selected="@(Model.SelectedBucketMinutes == 30 ? "selected" : null)">30 minutes</option>
                             <option value="60" selected="@(Model.SelectedBucketMinutes == 60 ? "selected" : null)">60 minutes</option>
                         </select>
-                        <label class="font-semibold text-slate-700 ml-2">Hours</label>
+                        <label class="font-semibold text-slate-800 ml-2">Hours</label>
                         <input type="number" name="startHour" value="@Model.StartHour" class="form-input w-20" min="0" max="23" />
                         <span class="px-1 text-slate-500">to</span>
                         <input type="number" name="endHour" value="@Model.EndHour" class="form-input w-20" min="1" max="23" />
@@ -112,9 +141,9 @@
                         <div class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-500 shadow-[0_2px_4px_rgba(0,0,0,0.05)]">📅</div>
                         <div class="space-y-1">
                             <div class="text-sm font-semibold text-slate-800">No appointments scheduled for this range</div>
-                            <p class="text-sm text-slate-600">Reduce the time window or add a visit to keep workload monitoring useful.</p>
+                            <p class="text-sm text-slate-700">Reduce the time window or add a visit to keep workload monitoring useful.</p>
                         </div>
-                        <div class="flex items-center justify-center gap-2 text-sm text-slate-600">
+                        <div class="flex items-center justify-center gap-2 text-sm text-slate-700">
                             <span class="badge neutral">Lower table height</span>
                             <span>Empty states stay tidy until data returns.</span>
                         </div>
@@ -128,20 +157,20 @@
                     <span class="badge info">Live view</span>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div class="focus-panel p-4">
+                    <div class="focus-panel p-4 border border-slate-200 bg-white">
                         <div class="text-xs uppercase font-semibold text-slate-500">Check-ins</div>
                         <div class="text-2xl font-bold text-slate-900 mt-1">6 waiting</div>
-                        <p class="text-sm text-slate-600">Prioritize arrivals over 10 minutes.</p>
+                        <p class="text-sm text-slate-700">Prioritize arrivals over 10 minutes.</p>
                     </div>
-                    <div class="focus-panel p-4">
-                        <div class="text-xs uppercase font-semibold text-slate-500">Clinical flags</div>
-                        <div class="text-2xl font-bold text-amber-700 mt-1">3 high-risk</div>
-                        <p class="text-sm text-slate-600">Confirm vitals and meds before visit.</p>
+                    <div class="focus-panel p-4 border border-amber-200 bg-amber-50/40">
+                        <div class="text-xs uppercase font-semibold text-amber-700">Clinical flags</div>
+                        <div class="text-2xl font-bold text-amber-800 mt-1">3 high-risk</div>
+                        <p class="text-sm text-amber-800">Confirm vitals and meds before visit.</p>
                     </div>
-                    <div class="focus-panel p-4">
-                        <div class="text-xs uppercase font-semibold text-slate-500">Billing holds</div>
-                        <div class="text-2xl font-bold text-rose-700 mt-1">4 invoices</div>
-                        <p class="text-sm text-slate-600">Pending review to release claims.</p>
+                    <div class="focus-panel p-4 border border-rose-200 bg-rose-50/40">
+                        <div class="text-xs uppercase font-semibold text-rose-700">Billing holds</div>
+                        <div class="text-2xl font-bold text-rose-800 mt-1">4 invoices</div>
+                        <p class="text-sm text-rose-800">Pending review to release claims.</p>
                     </div>
                 </div>
             </div>
@@ -150,7 +179,7 @@
         <div class="space-y-4">
             <div class="card p-5 space-y-3">
                 <div class="flex items-center justify-between">
-                    <h3 class="text-sm font-semibold text-slate-900">Role views</h3>
+                    <h3 class="text-sm font-semibold text-slate-900">Admin actions today</h3>
                     <span class="badge neutral">@roleLabel mode</span>
                 </div>
                 @if (isAdmin)
@@ -160,15 +189,21 @@
                             <span class="badge info">Admin</span>
                             <div>
                                 <div class="font-semibold text-slate-900">Operational overview</div>
-                                <p class="text-sm text-slate-600">Monitor staffing, utilization, billing alerts. Jump to staffing or finance escalations.</p>
+                                <p class="text-sm text-slate-700">Monitor staffing, utilization, billing alerts. Jump to staffing or finance escalations.</p>
                             </div>
                         </div>
                         <div class="flex items-start gap-3">
                             <span class="badge success">Actions</span>
-                            <ul class="text-sm text-slate-700 space-y-1 list-disc pl-4">
-                                <li>Balance rooms and shifts</li>
-                                <li>Review overdue invoices and reimbursements</li>
-                                <li>Approve schedule exceptions</li>
+                            <ul class="text-sm text-slate-700 space-y-1 list-none pl-0">
+                                <li>
+                                    <a class="text-brand-700 font-semibold hover:underline" href="@Url.Action("Index", "Schedule")">Balance rooms and shifts</a>
+                                </li>
+                                <li>
+                                    <a class="text-brand-700 font-semibold hover:underline" href="@Url.Action("Index", "Billing")">Review overdue invoices</a>
+                                </li>
+                                <li>
+                                    <a class="text-brand-700 font-semibold hover:underline" href="@Url.Action("Index", "Planning")">Approve schedule exceptions</a>
+                                </li>
                             </ul>
                         </div>
                     </div>
@@ -180,7 +215,7 @@
                             <span class="badge info">Physician</span>
                             <div>
                                 <div class="font-semibold text-slate-900">Clinical day view</div>
-                                <p class="text-sm text-slate-600">Today’s schedule, patient alerts, follow-ups due, chart shortcuts.</p>
+                                <p class="text-sm text-slate-700">Today’s schedule, patient alerts, follow-ups due, chart shortcuts.</p>
                             </div>
                         </div>
                         <div class="flex items-start gap-3">
@@ -200,7 +235,7 @@
                             <span class="badge info">Front desk</span>
                             <div>
                                 <div class="font-semibold text-slate-900">Check-in queue</div>
-                                <p class="text-sm text-slate-600">Appointments today, cancellations, quick registration links.</p>
+                                <p class="text-sm text-slate-700">Appointments today, cancellations, quick registration links.</p>
                             </div>
                         </div>
                         <div class="flex items-start gap-3">
@@ -220,7 +255,7 @@
                             <span class="badge info">Billing</span>
                             <div>
                                 <div class="font-semibold text-slate-900">Finance dashboard</div>
-                                <p class="text-sm text-slate-600">AR aging, overdue invoices, payment activity, export actions.</p>
+                                <p class="text-sm text-slate-700">AR aging, overdue invoices, payment activity, export actions.</p>
                             </div>
                         </div>
                         <div class="flex items-start gap-3">
@@ -235,7 +270,7 @@
                 }
                 else
                 {
-                    <div class="text-sm text-slate-600">View limited to your role.</div>
+                    <div class="text-sm text-slate-700">View limited to your role.</div>
                 }
             </div>
 
@@ -258,7 +293,7 @@
                                     </span>
                                     <div>
                                         <div class="text-sm font-semibold text-slate-900">@action.Label</div>
-                                        <p class="text-xs text-slate-500">@action.Description</p>
+                                        <p class="text-xs text-slate-700">@action.Description</p>
                                     </div>
                                 </div>
                                 @if (!string.IsNullOrEmpty(action.Status))
