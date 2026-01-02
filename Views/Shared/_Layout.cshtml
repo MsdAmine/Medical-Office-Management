@@ -470,7 +470,7 @@
                                         <span class="ml-3">Help & Support</span>
                                     </a>
                                     <div class="border-t border-slate-200 my-2"></div>
-                                    <form id="logoutForm" class="px-4 py-2">
+                                    <form id="logoutForm" class="px-4 py-2" asp-controller="Account" asp-action="Logout" method="post">
                                         <button type="submit" class="flex items-center text-sm text-red-600 hover:text-red-800">
                                             <i class="fas fa-sign-out-alt w-5"></i>
                                             <span class="ml-3">Sign Out</span>
@@ -562,16 +562,6 @@
                 e.stopPropagation();
             });
             
-            // Logout form submission
-            const logoutForm = document.getElementById('logoutForm');
-            if (logoutForm) {
-                logoutForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    // In a real app, this would trigger your logout logic
-                    console.log('Logging out...');
-                    window.location.href = '/Account/Logout';
-                });
-            }
             
             // Set active sidebar link based on current page
             function setActiveSidebarLink() {
