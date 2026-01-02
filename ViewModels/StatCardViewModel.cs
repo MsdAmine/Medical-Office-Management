@@ -9,6 +9,7 @@ namespace MedicalOfficeManagement.ViewModels.Dashboard
         public string ColorClass { get; set; } = string.Empty;
         public string Url { get; set; } = string.Empty;
         public string Subtext { get; set; } = string.Empty;
+        public string Delta { get; set; } = string.Empty;
         public string TrendTone { get; set; } = "neutral";
         public bool IsEmptyState { get; set; }
     }
