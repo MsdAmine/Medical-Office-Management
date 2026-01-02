@@ -11,37 +11,40 @@
             _ => "text-slate-600"
         };
         var hasIcon = !string.IsNullOrEmpty(item.Icon);
-        <div class="kpi-card">
+        <div class="kpi-card space-y-3">
             <div class="flex items-center justify-between gap-3">
-                <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">@item.Label</div>
+                <div class="text-xs font-semibold uppercase tracking-wide text-slate-600">@item.Label</div>
                 @if (!string.IsNullOrEmpty(item.Pill))
                 {
                     <span class="badge neutral">@item.Pill</span>
                 }
             </div>
-            <div class="mt-2 flex items-center gap-3">
-                <span class="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-slate-50 ring-1 ring-slate-200 text-brand-700">
+            <div class="flex items-center gap-3">
+                <span class="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-slate-50 ring-1 ring-slate-200 text-brand-700">
                     @if (hasIcon)
                     {
-                        <span class="iconify w-5 h-5" data-icon="@item.Icon"></span>
+                        <span class="iconify w-6 h-6" data-icon="@item.Icon"></span>
                     }
                     else
                     {
                         <span aria-hidden="true">🏥</span>
                     }
                 </span>
-                <div class="kpi-value">@item.Value</div>
+                <div class="flex items-center gap-3">
+                    <div class="kpi-value leading-none">@item.Value</div>
+                    @if (!string.IsNullOrEmpty(item.Delta))
+                    {
+                        <span class="text-sm font-semibold @toneClass">@item.Delta</span>
+                    }
+                </div>
             </div>
-            <div class="mt-1 flex items-center gap-2">
-                @if (!string.IsNullOrEmpty(item.Delta))
-                {
-                    <span class="text-sm font-semibold @toneClass">@item.Delta</span>
-                }
-                @if (!string.IsNullOrEmpty(item.Helper))
-                {
-                    <span class="kpi-helper">@item.Helper</span>
-                }
-            </div>
+            @if (!string.IsNullOrEmpty(item.Helper))
+            {
+                <div class="flex items-center gap-2 text-sm text-slate-600">
+                    <span class="iconify w-4 h-4 text-slate-500" data-icon="solar:info-circle-bold-duotone"></span>
+                    <span class="kpi-helper text-slate-600">@item.Helper</span>
+                </div>
+            }
         </div>
     }
 </div>
