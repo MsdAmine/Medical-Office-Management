@@ -1,310 +1,716 @@
-﻿@using MedicalOfficeManagement.ViewModels.Dashboard
-@model DashboardViewModel
-
-@{
-    ViewData["Title"] = "Dashboard";
-    var isAdmin = User.IsInRole(nameof(AppRole.Admin));
-    var isPhysician = User.IsInRole(nameof(AppRole.Physician));
-    var isNurse = User.IsInRole(nameof(AppRole.Nurse));
-    var isReceptionist = User.IsInRole(nameof(AppRole.Receptionist));
-    var isBilling = User.IsInRole(nameof(AppRole.Billing));
-    var roleLabel = isAdmin ? "Admin"
-        : isPhysician ? "Physician"
-        : isReceptionist ? "Reception"
-        : isBilling ? "Billing"
-        : "User";
-    var canRegisterPatients = isAdmin || isPhysician || isNurse || isReceptionist;
-    var canViewSchedule = isAdmin || isPhysician || isNurse || isReceptionist;
-    var showFinanceWidget = isAdmin || isBilling;
-}
-
-<div class="space-y-6">
-    @{
-        var headerActions = new List<ToolbarAction>
-        {
-            new ToolbarAction { Label = "New patient", Href = "/Patients/Create", Style = "primary", Disabled = !canRegisterPatients, Tooltip = "Create a record" },
-            new ToolbarAction { Label = "Schedule", Href = "/Appointments", Style = "ghost", Disabled = !canViewSchedule, Tooltip = "Open appointments" },
-            new ToolbarAction { Label = "Export", Href = "/Reports", Style = "ghost", Tooltip = "Jump to reporting" }
-        };
-        var headerModel = new PageHeaderModel
-        {
-            Title = $"Welcome back, {Model.UserDisplayName}",
-            Subtitle = Model.Now.ToString("dddd, dd MMMM yyyy"),
-            Actions = headerActions
-        };
-    }
-    @await Html.PartialAsync("Partials/PageHeader", headerModel)
-
-    @{
-        var kpis = new List<KpiCardModel>();
-        KpiCardModel inboxCard = null;
-        string NormalizeMetric(string? value)
-        {
-            if (string.IsNullOrWhiteSpace(value) || value.Contains("??"))
-            {
-                return "0";
-            }
-
-            return value;
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Office Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
         }
-        if (Model.Stats != null)
-        {
-            foreach (var stat in Model.Stats)
-            {
-                var tone = stat.ColorClass?.Contains("danger") == true ? "danger" :
-                           stat.ColorClass?.Contains("success") == true ? "success" :
-                           "neutral";
-                var helper = stat.Label?.Equals("Active Doctors", StringComparison.OrdinalIgnoreCase) == true ? "On duty now" :
-                             stat.Label?.Contains("Appointment", StringComparison.OrdinalIgnoreCase) == true ? "Scheduled today" :
-                             (stat.Label?.Equals("Inbox", StringComparison.OrdinalIgnoreCase) == true || stat.Label?.Equals("Messages", StringComparison.OrdinalIgnoreCase) == true) ? "Unread / urgent" :
-                             string.Empty;
-                var safeValue = NormalizeMetric(stat.Value);
-
-                if (stat.Label?.Equals("Inbox", StringComparison.OrdinalIgnoreCase) == true || stat.Label?.Equals("Messages", StringComparison.OrdinalIgnoreCase) == true)
-                {
-                    if (inboxCard == null)
-                    {
-                        inboxCard = new KpiCardModel { Label = "Inbox", Value = safeValue, Helper = "Unread / urgent", DeltaTone = tone, Delta = stat.Delta };
-                    }
-                    else
-                    {
-                        if (string.IsNullOrWhiteSpace(inboxCard.Value))
-                        {
-                            inboxCard.Value = safeValue;
-                        }
-                        if (string.IsNullOrWhiteSpace(inboxCard.Delta) && !string.IsNullOrEmpty(stat.Delta))
-                        {
-                            inboxCard.Delta = stat.Delta;
-                        }
-                    }
-                    continue;
-                }
-
-                kpis.Add(new KpiCardModel { Label = stat.Label, Value = safeValue, Helper = helper, DeltaTone = tone, Delta = stat.Delta });
+        
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #06b6d4;
+            --surface: #ffffff;
+            --surface-alt: #f8fafc;
+            --border: #e2e8f0;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .gradient-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        }
+        
+        .gradient-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+        
+        .gradient-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        
+        .gradient-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .heatmap-cell {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .heatmap-cell:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .animate-pulse-subtle {
+            animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @@keyframes pulse-subtle {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.8;
             }
         }
-        if (inboxCard != null)
-        {
-            kpis.Add(inboxCard);
+        
+        .scrollbar-thin {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f1f5f9;
         }
-        if (showFinanceWidget)
-        {
-            kpis.Add(new KpiCardModel { Label = "Finance", Value = "$42,300", Helper = "Pending reimbursement", Delta = "4 alerts", DeltaTone = "warning" });
+        
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
         }
-    }
-    @await Html.PartialAsync("Partials/KpiGrid", new KpiGridModel { Items = kpis })
-
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        <div class="xl:col-span-2 space-y-4">
-            <div class="card p-5 space-y-3">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                    <div>
-                        <h2 class="section-heading">Clinic workload today</h2>
-                        <p class="section-caption text-slate-700">Density and room utilization for @Model.Now.ToString("dddd")</p>
-                    </div>
-                    <form method="get" class="flex flex-wrap items-center gap-2 text-sm text-slate-700">
-                        <label class="font-semibold text-slate-800">Bucket</label>
-                        <select name="bucketMinutes" class="form-input w-28" onchange="this.form.submit()">
-                            <option value="15" selected="@(Model.SelectedBucketMinutes == 15 ? "selected" : null)">15 minutes</option>
-                            <option value="30" selected="@(Model.SelectedBucketMinutes == 30 ? "selected" : null)">30 minutes</option>
-                            <option value="60" selected="@(Model.SelectedBucketMinutes == 60 ? "selected" : null)">60 minutes</option>
-                        </select>
-                        <label class="font-semibold text-slate-800 ml-2">Hours</label>
-                        <input type="number" name="startHour" value="@Model.StartHour" class="form-input w-20" min="0" max="23" />
-                        <span class="px-1 text-slate-500">to</span>
-                        <input type="number" name="endHour" value="@Model.EndHour" class="form-input w-20" min="1" max="23" />
-                        <button type="submit" class="btn btn-secondary ml-2">Apply</button>
-                    </form>
-                </div>
-                @if (Model.ClinicHeatmap != null)
-                {
-                    var clinicRow = Model.ClinicHeatmap.Rows.FirstOrDefault();
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
-                            <div class="text-slate-500">Total appointments</div>
-                            <div class="text-lg font-semibold text-slate-900">@clinicRow?.TotalAppointments ?? 0</div>
+        
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 3px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 3px;
+        }
+        
+        .badge-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+        
+        .role-badge {
+            position: relative;
+            padding-left: 24px;
+        }
+        
+        .role-badge:before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: currentColor;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+    <div class="min-h-screen">
+        <!-- Top Navigation -->
+        <div class="glass-card sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <div class="flex items-center">
+                        <div class="flex items-center space-x-2">
+                            <div class="h-8 w-8 rounded-lg gradient-primary flex items-center justify-center">
+                                <i class="fas fa-stethoscope text-white text-sm"></i>
+                            </div>
+                            <span class="font-bold text-lg text-slate-900">MedOffice<span class="text-blue-600">Pro</span></span>
                         </div>
-                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
-                            <div class="text-slate-500">Utilization</div>
-                            <div class="text-lg font-semibold text-slate-900">@((clinicRow?.UtilizationPercent ?? 0).ToString("0"))%</div>
-                        </div>
-                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
-                            <div class="text-slate-500">Peak</div>
-                            <div class="text-lg font-semibold text-slate-900">@clinicRow?.SummaryText</div>
-                        </div>
+                        <nav class="hidden md:ml-10 md:flex md:space-x-6">
+                            <a href="#" class="text-slate-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">Dashboard</a>
+                            <a href="#" class="text-slate-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">Schedule</a>
+                            <a href="#" class="text-slate-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">Patients</a>
+                            <a href="#" class="text-slate-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">Billing</a>
+                            <a href="#" class="text-slate-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">Reports</a>
+                        </nav>
                     </div>
-                    @await Html.PartialAsync("_Heatmap", Model.ClinicHeatmap)
-                }
-                else
-                {
-                    <div class="surface-muted rounded-xl border border-dashed border-slate-200 p-8 text-center space-y-3">
-                        <div class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-500 shadow-[0_2px_4px_rgba(0,0,0,0.05)]">📅</div>
-                        <div class="space-y-1">
-                            <div class="text-sm font-semibold text-slate-800">No appointments scheduled for this range</div>
-                            <p class="text-sm text-slate-700">Reduce the time window or add a visit to keep workload monitoring useful.</p>
+                    <div class="flex items-center space-x-4">
+                        <button class="relative p-1 text-slate-600 hover:text-slate-900">
+                            <i class="fas fa-bell text-lg"></i>
+                            <span class="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">3</span>
+                        </button>
+                        <div class="relative">
+                            <div class="flex items-center space-x-3 cursor-pointer">
+                                <div class="h-8 w-8 rounded-full gradient-primary flex items-center justify-center text-white text-sm font-semibold">JD</div>
+                                <div class="hidden md:block">
+                                    <div class="text-sm font-semibold text-slate-900">Dr. John Doe</div>
+                                    <div class="text-xs text-slate-600">Physician</div>
+                                </div>
+                                <i class="fas fa-chevron-down text-slate-500 text-xs"></i>
+                            </div>
                         </div>
-                        <div class="flex items-center justify-center gap-2 text-sm text-slate-700">
-                            <span class="badge neutral">Lower table height</span>
-                            <span>Empty states stay tidy until data returns.</span>
-                        </div>
-                    </div>
-                }
-            </div>
-
-            <div class="card p-5 space-y-4">
-                <div class="flex items-center justify-between">
-                    <h2 class="section-heading">Today focus</h2>
-                    <span class="badge info">Live view</span>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div class="focus-panel p-4 border border-slate-200 bg-white">
-                        <div class="text-xs uppercase font-semibold text-slate-500">Check-ins</div>
-                        <div class="text-2xl font-bold text-slate-900 mt-1">6 waiting</div>
-                        <p class="text-sm text-slate-700">Prioritize arrivals over 10 minutes.</p>
-                    </div>
-                    <div class="focus-panel p-4 border border-amber-200 bg-amber-50/40">
-                        <div class="text-xs uppercase font-semibold text-amber-700">Clinical flags</div>
-                        <div class="text-2xl font-bold text-amber-800 mt-1">3 high-risk</div>
-                        <p class="text-sm text-amber-800">Confirm vitals and meds before visit.</p>
-                    </div>
-                    <div class="focus-panel p-4 border border-rose-200 bg-rose-50/40">
-                        <div class="text-xs uppercase font-semibold text-rose-700">Billing holds</div>
-                        <div class="text-2xl font-bold text-rose-800 mt-1">4 invoices</div>
-                        <p class="text-sm text-rose-800">Pending review to release claims.</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="space-y-4">
-            <div class="card p-5 space-y-3">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-sm font-semibold text-slate-900">Admin actions today</h3>
-                    <span class="badge neutral">@roleLabel mode</span>
+        <!-- Main Dashboard Content -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <!-- Header Section -->
+            <div class="mb-8">
+                <div class="flex flex-col md:flex-row md:items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold text-slate-900">Welcome back, Dr. John Doe</h1>
+                        <p class="text-slate-600 mt-2"><i class="far fa-calendar-alt mr-2"></i>Friday, 17 May 2024 • 10:42 AM</p>
+                    </div>
+                    <div class="mt-4 md:mt-0 flex items-center space-x-3">
+                        <button class="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg font-medium hover:bg-blue-100 transition">
+                            <i class="fas fa-plus mr-2"></i>New Patient
+                        </button>
+                        <button class="px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition">
+                            <i class="far fa-calendar mr-2"></i>Schedule
+                        </button>
+                        <button class="px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition">
+                            <i class="fas fa-file-export mr-2"></i>Export
+                        </button>
+                    </div>
                 </div>
-                @if (isAdmin)
-                {
-                    <div class="space-y-3">
-                        <div class="flex items-start gap-3">
-                            <span class="badge info">Admin</span>
-                            <div>
-                                <div class="font-semibold text-slate-900">Operational overview</div>
-                                <p class="text-sm text-slate-700">Monitor staffing, utilization, billing alerts. Jump to staffing or finance escalations.</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start gap-3">
-                            <span class="badge success">Actions</span>
-                            <ul class="text-sm text-slate-700 space-y-1 list-none pl-0">
-                                <li>
-                                    <a class="text-brand-700 font-semibold hover:underline" href="@Url.Action("Index", "Schedule")">Balance rooms and shifts</a>
-                                </li>
-                                <li>
-                                    <a class="text-brand-700 font-semibold hover:underline" href="@Url.Action("Index", "Billing")">Review overdue invoices</a>
-                                </li>
-                                <li>
-                                    <a class="text-brand-700 font-semibold hover:underline" href="@Url.Action("Index", "Planning")">Approve schedule exceptions</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                }
-                else if (isPhysician)
-                {
-                    <div class="space-y-3">
-                        <div class="flex items-start gap-3">
-                            <span class="badge info">Physician</span>
-                            <div>
-                                <div class="font-semibold text-slate-900">Clinical day view</div>
-                                <p class="text-sm text-slate-700">Today’s schedule, patient alerts, follow-ups due, chart shortcuts.</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start gap-3">
-                            <span class="badge neutral">Shortcuts</span>
-                            <ul class="text-sm text-slate-700 space-y-1 list-disc pl-4">
-                                <li>Review high-risk follow-ups</li>
-                                <li>Mark visits completed with notes</li>
-                                <li>Message care team</li>
-                            </ul>
-                        </div>
-                    </div>
-                }
-                else if (isReceptionist)
-                {
-                    <div class="space-y-3">
-                        <div class="flex items-start gap-3">
-                            <span class="badge info">Front desk</span>
-                            <div>
-                                <div class="font-semibold text-slate-900">Check-in queue</div>
-                                <p class="text-sm text-slate-700">Appointments today, cancellations, quick registration links.</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start gap-3">
-                            <span class="badge neutral">Reminders</span>
-                            <ul class="text-sm text-slate-700 space-y-1 list-disc pl-4">
-                                <li>Confirm arrivals and room assignments</li>
-                                <li>Contact next scheduled patients</li>
-                                <li>Capture copay at desk</li>
-                            </ul>
-                        </div>
-                    </div>
-                }
-                else if (isBilling)
-                {
-                    <div class="space-y-3">
-                        <div class="flex items-start gap-3">
-                            <span class="badge info">Billing</span>
-                            <div>
-                                <div class="font-semibold text-slate-900">Finance dashboard</div>
-                                <p class="text-sm text-slate-700">AR aging, overdue invoices, payment activity, export actions.</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start gap-3">
-                            <span class="badge neutral">Focus</span>
-                            <ul class="text-sm text-slate-700 space-y-1 list-disc pl-4">
-                                <li>Review overdue claims</li>
-                                <li>Confirm payments received today</li>
-                                <li>Export daily reconciliation</li>
-                            </ul>
-                        </div>
-                    </div>
-                }
-                else
-                {
-                    <div class="text-sm text-slate-700">View limited to your role.</div>
-                }
             </div>
 
-            <div class="card p-5 space-y-3">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-sm font-semibold text-slate-900">Quick actions</h3>
-                    <span class="badge neutral">Shortcuts</span>
+            <!-- KPI Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <!-- Today's Appointments -->
+                <div class="glass-card rounded-xl p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wide">Today's Appointments</h3>
+                        <div class="badge-dot bg-blue-500 animate-pulse-subtle"></div>
+                    </div>
+                    <div class="text-3xl font-bold text-slate-900 mb-1">24</div>
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm text-slate-600">6 completed • 12 pending • 6 waiting</p>
+                        <span class="text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">+2 vs yesterday</span>
+                    </div>
                 </div>
-                <div class="space-y-2">
-                    @if (Model.QuickActions != null)
-                    {
-                        @foreach (var action in Model.QuickActions)
-                        {
-                            <a href="@action.Url" class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 transition">
-                                <div class="flex items-center gap-3">
-                                    <span class="h-10 w-10 rounded-lg @action.ColorClass flex items-center justify-center">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                                        </svg>
-                                    </span>
-                                    <div>
-                                        <div class="text-sm font-semibold text-slate-900">@action.Label</div>
-                                        <p class="text-xs text-slate-700">@action.Description</p>
+                
+                <!-- Active Patients -->
+                <div class="glass-card rounded-xl p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wide">Active Patients</h3>
+                        <i class="fas fa-user-injured text-slate-400"></i>
+                    </div>
+                    <div class="text-3xl font-bold text-slate-900 mb-1">1,247</div>
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm text-slate-600">42 new this week</p>
+                        <span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">+3.2%</span>
+                    </div>
+                </div>
+                
+                <!-- Pending Tasks -->
+                <div class="glass-card rounded-xl p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wide">Pending Tasks</h3>
+                        <i class="fas fa-tasks text-slate-400"></i>
+                    </div>
+                    <div class="text-3xl font-bold text-slate-900 mb-1">18</div>
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm text-slate-600">5 high priority</p>
+                        <span class="text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-1 rounded-full">4 overdue</span>
+                    </div>
+                </div>
+                
+                <!-- Inbox -->
+                <div class="glass-card rounded-xl p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wide">Inbox</h3>
+                        <div class="relative">
+                            <i class="fas fa-inbox text-slate-400"></i>
+                            <span class="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full"></span>
+                        </div>
+                    </div>
+                    <div class="text-3xl font-bold text-slate-900 mb-1">42</div>
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm text-slate-600">12 unread • 3 urgent</p>
+                        <span class="text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full">+5 new</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Dashboard Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <!-- Clinic Workload (2/3 width) -->
+                <div class="lg:col-span-2">
+                    <div class="glass-card rounded-xl p-6">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
+                            <div>
+                                <h2 class="text-xl font-bold text-slate-900">Clinic Workload Today</h2>
+                                <p class="text-slate-600 mt-1">Density and room utilization for Friday, May 17</p>
+                            </div>
+                            <div class="mt-4 md:mt-0 flex items-center space-x-3">
+                                <div class="flex items-center bg-slate-100 rounded-lg p-1">
+                                    <button class="px-3 py-1 text-sm font-medium rounded-md bg-white text-slate-900 shadow">15m</button>
+                                    <button class="px-3 py-1 text-sm font-medium text-slate-600 rounded-md hover:text-slate-900">30m</button>
+                                    <button class="px-3 py-1 text-sm font-medium text-slate-600 rounded-md hover:text-slate-900">60m</button>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <input type="number" class="w-16 px-3 py-1 border border-slate-300 rounded-lg text-sm" value="8" min="0" max="23">
+                                    <span class="text-slate-500">to</span>
+                                    <input type="number" class="w-16 px-3 py-1 border border-slate-300 rounded-lg text-sm" value="18" min="1" max="23">
+                                    <button class="px-4 py-1 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">Apply</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Summary Stats -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="bg-blue-50 rounded-xl p-4">
+                                <div class="text-sm text-blue-700 font-medium">Total Appointments</div>
+                                <div class="text-2xl font-bold text-blue-900 mt-1">84</div>
+                            </div>
+                            <div class="bg-emerald-50 rounded-xl p-4">
+                                <div class="text-sm text-emerald-700 font-medium">Utilization</div>
+                                <div class="text-2xl font-bold text-emerald-900 mt-1">78%</div>
+                            </div>
+                            <div class="bg-amber-50 rounded-xl p-4">
+                                <div class="text-sm text-amber-700 font-medium">Peak Hour</div>
+                                <div class="text-2xl font-bold text-amber-900 mt-1">10:00 AM</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Heatmap Visualization -->
+                        <div class="mb-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="font-medium text-slate-900">Room Utilization Heatmap</h3>
+                                <div class="flex items-center space-x-4 text-xs text-slate-600">
+                                    <div class="flex items-center">
+                                        <div class="w-4 h-4 rounded bg-slate-100 mr-1"></div>
+                                        <span>Low</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="w-4 h-4 rounded bg-blue-200 mr-1"></div>
+                                        <span>Medium</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="w-4 h-4 rounded bg-blue-500 mr-1"></div>
+                                        <span>High</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="w-4 h-4 rounded bg-blue-800 mr-1"></div>
+                                        <span>Very High</span>
                                     </div>
                                 </div>
-                                @if (!string.IsNullOrEmpty(action.Status))
-                                {
-                                    <span class="badge neutral">@action.Status</span>
-                                }
+                            </div>
+                            
+                            <!-- Heatmap Grid -->
+                            <div class="border border-slate-200 rounded-xl overflow-hidden">
+                                <div class="grid grid-cols-9 gap-px bg-slate-200">
+                                    <!-- Time labels -->
+                                    <div class="bg-slate-50 p-3 text-center text-sm font-medium text-slate-700">Room</div>
+                                    <div class="bg-slate-50 p-3 text-center text-sm font-medium text-slate-700">8:00</div>
+                                    <div class="bg-slate-50 p-3 text-center text-sm font-medium text-slate-700">9:00</div>
+                                    <div class="bg-slate-50 p-3 text-center text-sm font-medium text-slate-700">10:00</div>
+                                    <div class="bg-slate-50 p-3 text-center text-sm font-medium text-slate-700">11:00</div>
+                                    <div class="bg-slate-50 p-3 text-center text-sm font-medium text-slate-700">12:00</div>
+                                    <div class="bg-slate-50 p-3 text-center text-sm font-medium text-slate-700">13:00</div>
+                                    <div class="bg-slate-50 p-3 text-center text-sm font-medium text-slate-700">14:00</div>
+                                    <div class="bg-slate-50 p-3 text-center text-sm font-medium text-slate-700">15:00</div>
+                                    
+                                    <!-- Room rows -->
+                                    <div class="bg-slate-50 p-3 text-sm font-medium text-slate-700">Exam 1</div>
+                                    <div class="heatmap-cell bg-blue-100 p-3"></div>
+                                    <div class="heatmap-cell bg-blue-300 p-3"></div>
+                                    <div class="heatmap-cell bg-blue-600 p-3"></div>
+                                    <div class="heatmap-cell bg-blue-800 p-3"></div>
+                                    <div class="heatmap-cell bg-slate-100 p-3"></div>
+                                    <div class="heatmap-cell bg-blue-200 p-3"></div>
+                                    <div class="heatmap-cell bg-blue-400 p-3"></div>
+                                    <div class="heatmap-cell bg-blue-300 p-3"></div>
+                                    
+                                    <div class="bg-slate-50 p-3 text-sm font-medium text-slate-700">Exam 2</div>
+                                    <div class="heatmap-cell bg-blue-200 p-3"></div>
+                                    <div class="heatmap-cell bg-blue-500 p-3"></div>
+                                    <div class="heatmap-cell bg-blue-800 p-3"></div>
+                                    <div class="heatmap-cell bg-blue-700 p-3"></div>
+                                    <div class="heatmap-cell bg-slate-100 p-3"></div>
+                                    <div class="heatmap-cell bg-blue-300 p-3"></div>
+                                    <div class="heatmap-cell bg-blue-500 p-3"></div>
+                                    <div class="heatmap-cell bg-blue-400 p-3"></div>
+                                    
+                                    <div class="bg-slate-50 p-3 text-sm font-medium text-slate-700">Exam 3</div>
+                                    <div class="heatmap-cell bg-blue-100 p-3"></div>
+                                    <div class="heatmap-cell bg-blue-300 p-3"></div>
+                                    <div class="heatmap-cell bg-blue-700 p-3"></div>
+                                    <div class="heatmap-cell bg-blue-800 p-3"></div>
+                                    <div class="heatmap-cell bg-slate-100 p-3"></div>
+                                    <div class="heatmap-cell bg-blue-200 p-3"></div>
+                                    <div class="heatmap-cell bg-blue-400 p-3"></div>
+                                    <div class="heatmap-cell bg-blue-300 p-3"></div>
+                                    
+                                    <div class="bg-slate-50 p-3 text-sm font-medium text-slate-700">Procedure</div>
+                                    <div class="heatmap-cell bg-slate-100 p-3"></div>
+                                    <div class="heatmap-cell bg-slate-100 p-3"></div>
+                                    <div class="heatmap-cell bg-blue-500 p-3"></div>
+                                    <div class="heatmap-cell bg-blue-700 p-3"></div>
+                                    <div class="heatmap-cell bg-slate-100 p-3"></div>
+                                    <div class="heatmap-cell bg-blue-800 p-3"></div>
+                                    <div class="heatmap-cell bg-blue-600 p-3"></div>
+                                    <div class="heatmap-cell bg-blue-300 p-3"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Today's Focus Section -->
+                    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="glass-card rounded-xl p-5 border-l-4 border-blue-500">
+                            <div class="flex items-center mb-3">
+                                <div class="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center mr-3">
+                                    <i class="fas fa-user-clock text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-900">Check-ins</h3>
+                                    <p class="text-sm text-slate-600">Waiting patients</p>
+                                </div>
+                            </div>
+                            <div class="text-2xl font-bold text-slate-900 mb-2">6 waiting</div>
+                            <p class="text-sm text-slate-700">Prioritize arrivals over 10 minutes.</p>
+                        </div>
+                        
+                        <div class="glass-card rounded-xl p-5 border-l-4 border-amber-500">
+                            <div class="flex items-center mb-3">
+                                <div class="h-10 w-10 rounded-lg bg-amber-100 flex items-center justify-center mr-3">
+                                    <i class="fas fa-exclamation-triangle text-amber-600"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-900">Clinical Flags</h3>
+                                    <p class="text-sm text-slate-600">High-risk alerts</p>
+                                </div>
+                            </div>
+                            <div class="text-2xl font-bold text-slate-900 mb-2">3 high-risk</div>
+                            <p class="text-sm text-slate-700">Confirm vitals and meds before visit.</p>
+                        </div>
+                        
+                        <div class="glass-card rounded-xl p-5 border-l-4 border-red-500">
+                            <div class="flex items-center mb-3">
+                                <div class="h-10 w-10 rounded-lg bg-red-100 flex items-center justify-center mr-3">
+                                    <i class="fas fa-file-invoice-dollar text-red-600"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-900">Billing Holds</h3>
+                                    <p class="text-sm text-slate-600">Pending invoices</p>
+                                </div>
+                            </div>
+                            <div class="text-2xl font-bold text-slate-900 mb-2">4 invoices</div>
+                            <p class="text-sm text-slate-700">Pending review to release claims.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Sidebar (1/3 width) -->
+                <div class="space-y-6">
+                    <!-- Role-specific Actions -->
+                    <div class="glass-card rounded-xl p-6">
+                        <div class="flex items-center justify-between mb-5">
+                            <h3 class="text-lg font-bold text-slate-900">Physician Actions</h3>
+                            <span class="role-badge text-blue-600 bg-blue-50 px-3 py-1 rounded-full text-sm font-medium">Physician Mode</span>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-start space-x-3">
+                                <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-user-md text-blue-600 text-sm"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-slate-900">Clinical Day View</h4>
+                                    <p class="text-sm text-slate-600 mt-1">Today's schedule, patient alerts, follow-ups due, chart shortcuts.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="border-t border-slate-200 pt-4">
+                                <h4 class="font-semibold text-slate-900 mb-3 flex items-center">
+                                    <i class="fas fa-bolt text-amber-500 mr-2"></i>
+                                    Today's Shortcuts
+                                </h4>
+                                <div class="space-y-2">
+                                    <a href="#" class="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 transition">
+                                        <div class="flex items-center">
+                                            <div class="h-8 w-8 rounded-lg bg-red-100 flex items-center justify-center mr-3">
+                                                <i class="fas fa-heartbeat text-red-600 text-sm"></i>
+                                            </div>
+                                            <span class="font-medium text-slate-900">Review high-risk follow-ups</span>
+                                        </div>
+                                        <span class="text-xs bg-red-50 text-red-700 px-2 py-1 rounded-full">3 pending</span>
+                                    </a>
+                                    
+                                    <a href="#" class="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 transition">
+                                        <div class="flex items-center">
+                                            <div class="h-8 w-8 rounded-lg bg-green-100 flex items-center justify-center mr-3">
+                                                <i class="fas fa-check-circle text-green-600 text-sm"></i>
+                                            </div>
+                                            <span class="font-medium text-slate-900">Mark visits completed</span>
+                                        </div>
+                                        <span class="text-xs bg-green-50 text-green-700 px-2 py-1 rounded-full">6 ready</span>
+                                    </a>
+                                    
+                                    <a href="#" class="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 transition">
+                                        <div class="flex items-center">
+                                            <div class="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center mr-3">
+                                                <i class="fas fa-comment-medical text-blue-600 text-sm"></i>
+                                            </div>
+                                            <span class="font-medium text-slate-900">Message care team</span>
+                                        </div>
+                                        <i class="fas fa-chevron-right text-slate-400"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div class="glass-card rounded-xl p-6">
+                        <div class="flex items-center justify-between mb-5">
+                            <h3 class="text-lg font-bold text-slate-900">Quick Actions</h3>
+                            <span class="text-sm text-slate-600">Shortcuts</span>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <a href="#" class="flex items-center p-3 rounded-xl border border-slate-200 hover:border-blue-300 hover:bg-blue-50 transition group">
+                                <div class="h-10 w-10 rounded-lg gradient-primary flex items-center justify-center mr-3">
+                                    <i class="fas fa-plus text-white"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-slate-900 group-hover:text-blue-700">New Patient Registration</div>
+                                    <p class="text-xs text-slate-600">Add a new patient record</p>
+                                </div>
+                                <i class="fas fa-chevron-right text-slate-400 group-hover:text-blue-500"></i>
                             </a>
-                        }
-                    }
+                            
+                            <a href="#" class="flex items-center p-3 rounded-xl border border-slate-200 hover:border-green-300 hover:bg-green-50 transition group">
+                                <div class="h-10 w-10 rounded-lg gradient-success flex items-center justify-center mr-3">
+                                    <i class="fas fa-prescription text-white"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-slate-900 group-hover:text-green-700">Write Prescription</div>
+                                    <p class="text-xs text-slate-600">Electronic prescription entry</p>
+                                </div>
+                                <span class="text-xs font-medium text-green-700 bg-green-50 px-2 py-1 rounded-full">2 pending</span>
+                            </a>
+                            
+                            <a href="#" class="flex items-center p-3 rounded-xl border border-slate-200 hover:border-purple-300 hover:bg-purple-50 transition group">
+                                <div class="h-10 w-10 rounded-lg gradient-warning flex items-center justify-center mr-3">
+                                    <i class="fas fa-chart-line text-white"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-slate-900 group-hover:text-purple-700">Generate Report</div>
+                                    <p class="text-xs text-slate-600">Daily activity and metrics</p>
+                                </div>
+                                <i class="fas fa-chevron-right text-slate-400 group-hover:text-purple-500"></i>
+                            </a>
+                            
+                            <a href="#" class="flex items-center p-3 rounded-xl border border-slate-200 hover:border-red-300 hover:bg-red-50 transition group">
+                                <div class="h-10 w-10 rounded-lg gradient-danger flex items-center justify-center mr-3">
+                                    <i class="fas fa-notes-medical text-white"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-slate-900 group-hover:text-red-700">Chart Review</div>
+                                    <p class="text-xs text-slate-600">Patient history and notes</p>
+                                </div>
+                                <span class="text-xs font-medium text-red-700 bg-red-50 px-2 py-1 rounded-full">5 updates</span>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+            
+            <!-- Bottom Stats Row -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Active Staff -->
+                <div class="glass-card rounded-xl p-5">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-slate-900">Active Staff</h3>
+                        <span class="text-xs font-medium text-green-700 bg-green-50 px-2 py-1 rounded-full">8 on duty</span>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                                <span class="text-blue-700 font-bold text-xs">JD</span>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-medium text-slate-900">Dr. John Doe</div>
+                                <div class="text-xs text-slate-600">Physician • Room 2</div>
+                            </div>
+                            <div class="badge-dot bg-green-500"></div>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <div class="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center mr-3">
+                                <span class="text-purple-700 font-bold text-xs">MJ</span>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-medium text-slate-900">Dr. Mary Johnson</div>
+                                <div class="text-xs text-slate-600">Physician • Room 1</div>
+                            </div>
+                            <div class="badge-dot bg-green-500"></div>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <div class="h-8 w-8 rounded-full bg-amber-100 flex items-center justify-center mr-3">
+                                <span class="text-amber-700 font-bold text-xs">RS</span>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-medium text-slate-900">Robert Smith, RN</div>
+                                <div class="text-xs text-slate-600">Nurse • Triage</div>
+                            </div>
+                            <div class="badge-dot bg-green-500"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Upcoming Appointments -->
+                <div class="glass-card rounded-xl p-5">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-slate-900">Upcoming Appointments</h3>
+                        <span class="text-xs font-medium text-blue-700 bg-blue-50 px-2 py-1 rounded-full">Next 2 hours</span>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <div class="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center mr-3">
+                                <i class="fas fa-user text-blue-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-medium text-slate-900">Michael Chen</div>
+                                <div class="text-xs text-slate-600">10:30 AM • Follow-up • Room 2</div>
+                            </div>
+                            <span class="text-xs font-medium bg-amber-50 text-amber-700 px-2 py-1 rounded-full">Waiting</span>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <div class="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center mr-3">
+                                <i class="fas fa-user text-blue-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-medium text-slate-900">Sarah Williams</div>
+                                <div class="text-xs text-slate-600">11:00 AM • Annual Check • Room 1</div>
+                            </div>
+                            <span class="text-xs font-medium bg-blue-50 text-blue-700 px-2 py-1 rounded-full">Confirmed</span>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <div class="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center mr-3">
+                                <i class="fas fa-user text-blue-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-medium text-slate-900">James Wilson</div>
+                                <div class="text-xs text-slate-600">11:30 AM • Consultation • Room 3</div>
+                            </div>
+                            <span class="text-xs font-medium bg-green-50 text-green-700 px-2 py-1 rounded-full">Checked in</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- System Status -->
+                <div class="glass-card rounded-xl p-5">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-slate-900">System Status</h3>
+                        <span class="text-xs font-medium text-green-700 bg-green-50 px-2 py-1 rounded-full">All systems operational</span>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="h-8 w-8 rounded-lg bg-green-100 flex items-center justify-center mr-3">
+                                    <i class="fas fa-database text-green-600"></i>
+                                </div>
+                                <span class="font-medium text-slate-900">EMR Database</span>
+                            </div>
+                            <span class="badge-dot bg-green-500"></span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="h-8 w-8 rounded-lg bg-green-100 flex items-center justify-center mr-3">
+                                    <i class="fas fa-file-invoice text-green-600"></i>
+                                </div>
+                                <span class="font-medium text-slate-900">Billing System</span>
+                            </div>
+                            <span class="badge-dot bg-green-500"></span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="h-8 w-8 rounded-lg bg-amber-100 flex items-center justify-center mr-3">
+                                    <i class="fas fa-prescription-bottle-alt text-amber-600"></i>
+                                </div>
+                                <span class="font-medium text-slate-900">Pharmacy Interface</span>
+                            </div>
+                            <span class="text-xs font-medium bg-amber-50 text-amber-700 px-2 py-1 rounded-full">Syncing</span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="h-8 w-8 rounded-lg bg-green-100 flex items-center justify-center mr-3">
+                                    <i class="fas fa-shield-alt text-green-600"></i>
+                                </div>
+                                <span class="font-medium text-slate-900">Security & HIPAA</span>
+                            </div>
+                            <span class="badge-dot bg-green-500"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
-</div>
+    
+    <script>
+        // Simple interactivity for the dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            // Heatmap cell hover effect
+            const heatmapCells = document.querySelectorAll('.heatmap-cell');
+            heatmapCells.forEach(cell => {
+                cell.addEventListener('mouseenter', function() {
+                    const intensity = this.classList.contains('bg-blue-800') ? 'Very High' :
+                                    this.classList.contains('bg-blue-600') ? 'High' :
+                                    this.classList.contains('bg-blue-300') ? 'Medium' :
+                                    this.classList.contains('bg-blue-100') ? 'Low' : 'Empty';
+                    this.setAttribute('title', `Utilization: ${intensity}`);
+                });
+            });
+            
+            // Quick action card hover effects
+            const quickActions = document.querySelectorAll('a.group');
+            quickActions.forEach(action => {
+                action.addEventListener('mouseenter', function() {
+                    const icon = this.querySelector('.fa-chevron-right');
+                    if (icon) {
+                        icon.classList.add('transform', 'translate-x-1');
+                    }
+                });
+                
+                action.addEventListener('mouseleave', function() {
+                    const icon = this.querySelector('.fa-chevron-right');
+                    if (icon) {
+                        icon.classList.remove('transform', 'translate-x-1');
+                    }
+                });
+            });
+            
+            // Time window adjustment
+            const timeInputs = document.querySelectorAll('input[type="number"]');
+            timeInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    if (parseInt(this.value) < parseInt(this.min)) this.value = this.min;
+                    if (parseInt(this.value) > parseInt(this.max)) this.value = this.max;
+                });
+            });
+        });
+    </script>
+</body>
+</html>
