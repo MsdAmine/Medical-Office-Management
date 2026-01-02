@@ -5,38 +5,105 @@
     ViewData["Title"] = "Login";
 }
 
-<div class="min-h-[calc(100vh-200px)] flex items-center justify-center px-4 py-12">
-    <div class="w-full max-w-md">
-        <!-- Logo & Title -->
-        <div class="text-center mb-10">
-            <div class="inline-flex h-16 w-16 items-center justify-center rounded-xl bg-blue-600 mb-4">
-                <i class="fas fa-stethoscope text-white text-2xl"></i>
-            </div>
-            <h1 class="text-3xl font-bold text-slate-900">MedOffice Pro</h1>
-            <p class="text-slate-600 mt-2">Sign in to your account</p>
-        </div>
-
-        <!-- Login Card -->
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
-            <form asp-action="Login" method="post" class="space-y-6" asp-route-returnUrl="@Model.ReturnUrl">
-                @Html.AntiForgeryToken()
-
-                <div asp-validation-summary="ModelOnly" class="text-red-600 text-sm"></div>
-
-                <!-- Email/Username Field -->
-                <div>
-                    <label asp-for="UsernameOrEmail" class="block text-sm font-medium text-slate-900 mb-2">
-                        Email or Username
-                    </label>
-                    <input asp-for="UsernameOrEmail"
-                           class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                           placeholder="Enter your email or username">
-                    <span asp-validation-for="UsernameOrEmail" class="text-red-600 text-sm"></span>
+<div class="min-h-screen flex items-center justify-center p-4 bg-slate-50">
+    <div class="w-full max-w-6xl bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row">
+        <!-- Left Card: Medical Image/Info -->
+        <div class="md:w-1/2 bg-gradient-to-br from-blue-600 to-indigo-800 p-8 md:p-12 flex flex-col justify-between">
+            <!-- Logo & Title -->
+            <div>
+                <div class="flex items-center space-x-3 mb-8">
+                    <div class="h-12 w-12 rounded-xl bg-white/20 flex items-center justify-center">
+                        <i class="fas fa-stethoscope text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-white">MedOffice<span class="text-blue-200">Pro</span></h1>
+                        <p class="text-blue-100 text-sm">Medical Practice Management</p>
+                    </div>
                 </div>
 
-                <!-- Password Field -->
-                <div>
-                    <div class="flex items-center justify-between mb-2">
+                <!-- Medical Info -->
+                <div class="space-y-6">
+                    <div class="flex items-start space-x-3">
+                        <div class="h-10 w-10 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-shield-alt text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white">HIPAA Compliant</h3>
+                            <p class="text-blue-100 text-sm">Fully compliant with healthcare regulations</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start space-x-3">
+                        <div class="h-10 w-10 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-lock text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white">Secure & Encrypted</h3>
+                            <p class="text-blue-100 text-sm">End-to-end encrypted data protection</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start space-x-3">
+                        <div class="h-10 w-10 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-chart-line text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white">Practice Analytics</h3>
+                            <p class="text-blue-100 text-sm">Real-time insights and reporting</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Text -->
+            <div class="mt-8 pt-6 border-t border-white/20">
+                <p class="text-blue-100 text-sm">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    Trusted by 500+ medical practices nationwide
+                </p>
+            </div>
+        </div>
+
+        <!-- Right Card: Login Form -->
+        <div class="md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+            <!-- Form Header -->
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-slate-900">Welcome Back</h2>
+                <p class="text-slate-600 mt-1">Sign in to access your dashboard</p>
+            </div>
+
+            <!-- Login Form -->
+            <form asp-action="Login" method="post" class="space-y-5" asp-route-returnUrl="@Model.ReturnUrl">
+                @Html.AntiForgeryToken()
+
+                <!-- Validation Summary -->
+                <div asp-validation-summary="ModelOnly" 
+                     class="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm">
+                    <div class="flex items-start">
+                        <i class="fas fa-exclamation-circle mt-0.5 mr-2"></i>
+                        <span>Please correct the errors below</span>
+                    </div>
+                </div>
+
+                <!-- Username/Email -->
+                <div class="space-y-1">
+                    <label asp-for="UsernameOrEmail" class="block text-sm font-medium text-slate-900">
+                        Email or Username
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center">
+                            <i class="fas fa-user text-slate-400"></i>
+                        </div>
+                        <input asp-for="UsernameOrEmail"
+                               class="w-full pl-10 pr-3 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="Enter your email or username">
+                    </div>
+                    <span asp-validation-for="UsernameOrEmail" class="text-red-600 text-xs"></span>
+                </div>
+
+                <!-- Password -->
+                <div class="space-y-1">
+                    <div class="flex justify-between items-center">
                         <label asp-for="Password" class="block text-sm font-medium text-slate-900">
                             Password
                         </label>
@@ -44,54 +111,57 @@
                             Forgot password?
                         </a>
                     </div>
-                    <input asp-for="Password"
-                           class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                           placeholder="Enter your password">
-                    <span asp-validation-for="Password" class="text-red-600 text-sm"></span>
-                </div>
-
-                <!-- Remember Me & Submit -->
-                <div class="space-y-6">
-                    <div class="flex items-center">
-                        <input asp-for="RememberMe"
-                               class="h-4 w-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500">
-                        <label asp-for="RememberMe" class="ml-2 block text-sm text-slate-700">
-                            Remember me
-                        </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center">
+                            <i class="fas fa-lock text-slate-400"></i>
+                        </div>
+                        <input asp-for="Password"
+                               class="w-full pl-10 pr-10 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="Enter your password">
+                        <button type="button"
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                onclick="togglePassword()">
+                            <i class="fas fa-eye text-slate-400 hover:text-slate-600 cursor-pointer"></i>
+                        </button>
                     </div>
-
-                    <input type="hidden" asp-for="ReturnUrl" />
-
-                    <button type="submit"
-                            class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                        Sign In
-                    </button>
+                    <span asp-validation-for="Password" class="text-red-600 text-xs"></span>
                 </div>
+
+                <!-- Remember Me -->
+                <div class="flex items-center">
+                    <input asp-for="RememberMe"
+                           class="h-4 w-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500">
+                    <label asp-for="RememberMe" class="ml-2 text-sm text-slate-700">
+                        Remember me
+                    </label>
+                </div>
+
+                <!-- Hidden ReturnUrl -->
+                <input type="hidden" asp-for="ReturnUrl" />
+
+                <!-- Submit Button -->
+                <button type="submit"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition duration-200 shadow hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    Sign In to Dashboard
+                </button>
             </form>
-
-            <!-- Demo Note (Optional) -->
-            <div class="mt-8 pt-6 border-t border-slate-200">
-                <div class="bg-blue-50 rounded-lg p-4 text-center">
-                    <p class="text-sm text-blue-800">
-                        <i class="fas fa-info-circle mr-1"></i>
-                        Demo: Use your system credentials
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Footer Links -->
-        <div class="mt-8 text-center">
-            <p class="text-sm text-slate-600">
-                © @DateTime.Now.Year MedOffice Pro. Medical Office Management System.
-            </p>
-            <div class="mt-4 flex items-center justify-center space-x-6 text-sm text-slate-500">
-                <a href="#" class="hover:text-slate-900">Privacy Policy</a>
-                <span>•</span>
-                <a href="#" class="hover:text-slate-900">Terms of Service</a>
-                <span>•</span>
-                <a href="#" class="hover:text-slate-900">Support</a>
-            </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('Password');
+            const eyeIcon = document.querySelector('button[onclick="togglePassword()"] i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+    </script>
+}
