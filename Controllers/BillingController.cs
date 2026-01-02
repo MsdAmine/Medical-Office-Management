@@ -1,10 +1,11 @@
+using MedicalOfficeManagement.Models.Security;
 using MedicalOfficeManagement.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MedicalOfficeManagement.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = SystemRoles.Admin)]
     public class BillingController : Controller
     {
         [HttpGet]

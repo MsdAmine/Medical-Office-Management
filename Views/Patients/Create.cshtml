@@ -3,7 +3,7 @@
 @{
     ViewData["Title"] = "Create";
     ViewData["Breadcrumb"] = "Patients";
-    var canCreate = User.IsInRole("secretary");
+    var canCreate = User.IsInRole(SystemRoles.Secretaire);
 }
 
 <h1>New Patient</h1>

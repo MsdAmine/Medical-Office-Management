@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MedicalOfficeManagement.Models;
+using MedicalOfficeManagement.Models.Security;
 
 namespace MedicalOfficeManagement.Controllers
 {
@@ -16,7 +17,7 @@ namespace MedicalOfficeManagement.Controllers
         }
 
         // GET: /Patients
-        [Authorize(Roles = "admin,secretary")]
+        [Authorize(Roles = SystemRoles.AdminOrSecretaire)]
         public async Task<IActionResult> Index()
         {
             ViewData["Title"] = "Patients";
@@ -30,7 +31,7 @@ namespace MedicalOfficeManagement.Controllers
         }
 
         // GET: /Patients/Details/5
-        [Authorize(Roles = "admin,secretary")]
+        [Authorize(Roles = SystemRoles.AdminOrSecretaire)]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -49,7 +50,7 @@ namespace MedicalOfficeManagement.Controllers
         }
 
         // GET: /Patients/Create
-        [Authorize(Roles = "secretary")]
+        [Authorize(Roles = SystemRoles.Secretaire)]
         public IActionResult Create()
         {
             ViewData["Title"] = "New Patient";
@@ -61,7 +62,7 @@ namespace MedicalOfficeManagement.Controllers
         // POST: /Patients/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "secretary")]
+        [Authorize(Roles = SystemRoles.Secretaire)]
         public async Task<IActionResult> Create(Patient patient)
         {
             if (!ModelState.IsValid)
@@ -74,7 +75,7 @@ namespace MedicalOfficeManagement.Controllers
         }
 
         // GET: /Patients/Edit/5
-        [Authorize(Roles = "secretary")]
+        [Authorize(Roles = SystemRoles.Secretaire)]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -93,7 +94,7 @@ namespace MedicalOfficeManagement.Controllers
         // POST: /Patients/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "secretary")]
+        [Authorize(Roles = SystemRoles.Secretaire)]
         public async Task<IActionResult> Edit(int id, Patient patient)
         {
             if (id != patient.Id)
