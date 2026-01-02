@@ -70,28 +70,28 @@
                             var isActive = string.Equals(currentController, item.Controller, StringComparison.OrdinalIgnoreCase);
                             <a href="@Url.Action(item.Action, item.Controller)"
                                aria-current="@(isActive ? "page" : null)"
-                               class="nav-link @(isActive ? "nav-link-active" : "nav-link-idle")">
-                                <span class="h-9 w-9 rounded-lg flex items-center justify-center @(isActive ? "bg-white text-brand-700 shadow-sm" : "bg-slate-100 text-slate-600")">
+                               class="nav-link @(isActive ? "nav-link-active" : "nav-link-idle") group">
+                                <span class="h-10 w-10 rounded-lg flex items-center justify-center transition @((isActive ? "bg-white text-brand-700 shadow-sm" : "bg-slate-100 text-slate-600")) group-hover:bg-slate-100">
                                     @if (item.Icon == "home") {
-                                        <span class="iconify w-5 h-5" data-icon="solar:home-2-bold"></span>
+                                        <span class="iconify w-6 h-6" data-icon="solar:home-2-bold"></span>
                                     }
                                     else if (item.Icon == "users") {
-                                        <span class="iconify w-5 h-5" data-icon="solar:users-group-rounded-bold"></span>
+                                        <span class="iconify w-6 h-6" data-icon="solar:users-group-rounded-bold"></span>
                                     }
                                     else if (item.Icon == "calendar") {
-                                        <span class="iconify w-5 h-5" data-icon="solar:calendar-bold"></span>
+                                        <span class="iconify w-6 h-6" data-icon="solar:calendar-bold"></span>
                                     }
                                     else if (item.Icon == "briefcase") {
-                                        <span class="iconify w-5 h-5" data-icon="solar:case-bold"></span>
+                                        <span class="iconify w-6 h-6" data-icon="solar:case-bold"></span>
                                     }
                                     else if (item.Icon == "clock") {
-                                        <span class="iconify w-5 h-5" data-icon="solar:clock-circle-bold"></span>
+                                        <span class="iconify w-6 h-6" data-icon="solar:clock-circle-bold"></span>
                                     }
                                     else if (item.Icon == "user-md") {
-                                        <span class="iconify w-5 h-5" data-icon="solar:stethoscope-bold"></span>
+                                        <span class="iconify w-6 h-6" data-icon="solar:stethoscope-bold"></span>
                                     }
                                     else if (item.Icon == "cog") {
-                                        <span class="iconify w-5 h-5" data-icon="solar:settings-bold"></span>
+                                        <span class="iconify w-6 h-6" data-icon="solar:settings-bold"></span>
                                     }
                                 </span>
                                 <div class="flex-1">
@@ -116,28 +116,28 @@
                             var isActive = string.Equals(currentController, item.Controller, StringComparison.OrdinalIgnoreCase);
                             <a href="@Url.Action(item.Action, item.Controller)"
                                aria-current="@(isActive ? "page" : null)"
-                               class="nav-link @(isActive ? "nav-link-active" : "nav-link-idle")">
-                                <span class="h-9 w-9 rounded-lg flex items-center justify-center @(isActive ? "bg-white text-brand-700 shadow-sm" : "bg-slate-100 text-slate-600")">
+                               class="nav-link @(isActive ? "nav-link-active" : "nav-link-idle") group">
+                                <span class="h-10 w-10 rounded-lg flex items-center justify-center transition @((isActive ? "bg-white text-brand-700 shadow-sm" : "bg-slate-100 text-slate-600")) group-hover:bg-slate-100">
                                     @if (item.Icon == "home") {
-                                        <span class="iconify w-5 h-5" data-icon="solar:home-2-bold"></span>
+                                        <span class="iconify w-6 h-6" data-icon="solar:home-2-bold"></span>
                                     }
                                     else if (item.Icon == "users") {
-                                        <span class="iconify w-5 h-5" data-icon="solar:users-group-rounded-bold"></span>
+                                        <span class="iconify w-6 h-6" data-icon="solar:users-group-rounded-bold"></span>
                                     }
                                     else if (item.Icon == "calendar") {
-                                        <span class="iconify w-5 h-5" data-icon="solar:calendar-bold"></span>
+                                        <span class="iconify w-6 h-6" data-icon="solar:calendar-bold"></span>
                                     }
                                     else if (item.Icon == "briefcase") {
-                                        <span class="iconify w-5 h-5" data-icon="solar:case-bold"></span>
+                                        <span class="iconify w-6 h-6" data-icon="solar:case-bold"></span>
                                     }
                                     else if (item.Icon == "clock") {
-                                        <span class="iconify w-5 h-5" data-icon="solar:clock-circle-bold"></span>
+                                        <span class="iconify w-6 h-6" data-icon="solar:clock-circle-bold"></span>
                                     }
                                     else if (item.Icon == "user-md") {
-                                        <span class="iconify w-5 h-5" data-icon="solar:stethoscope-bold"></span>
+                                        <span class="iconify w-6 h-6" data-icon="solar:stethoscope-bold"></span>
                                     }
                                     else if (item.Icon == "cog") {
-                                        <span class="iconify w-5 h-5" data-icon="solar:settings-bold"></span>
+                                        <span class="iconify w-6 h-6" data-icon="solar:settings-bold"></span>
                                     }
                                 </span>
                                 <div class="flex-1">

@@ -16,15 +16,6 @@
             : isReceptionist
                 ? "Arrivals, scheduling, and patient flow"
                 : "Billing insight with clinical read-only context";
-    string GetFlagClass(string flag) => flag switch
-    {
-        "Chronic" => "chip medium",
-        "High Risk" => "chip high",
-        "Follow-up Due" => "chip active",
-        "High" => "chip high",
-        "Moderate" => "chip medium",
-        _ => "chip"
-    };
     var presetOptions = new List<PresetOption>
     {
         new PresetOption { Label = "Default", Url = Url.Action("Index", "Patients", new { clearPreset = true }), Active = !Model.FilterContext.HasActivePreset, Description = "All patients" }
@@ -68,7 +59,7 @@
             }
         };
     }
-    <p class="text-[13px] text-slate-500 font-medium">@roleIntent</p>
+    <p class="text-[13px] text-slate-600 font-medium">@roleIntent</p>
     @await Html.PartialAsync("Partials/PageHeader", header)
 
     @await Html.PartialAsync("Partials/PresetsBar", new PresetsBarModel
@@ -77,8 +68,8 @@
         Options = presetOptions
     })
 
-    <div class="card p-5 space-y-4">
-        <div class="text-xs text-slate-500 flex flex-wrap gap-4">
+    <div class="card p-5 space-y-5 shadow-[0_2px_4px_rgba(0,0,0,0.05)]">
+        <div class="text-xs text-slate-600 flex flex-wrap gap-4">
             <span>Clinical flags: High Risk = requires priority review; Chronic = sustained management plan.</span>
             <span>Late = arrival over 10 minutes past slot; highlight for front desk and clinicians.</span>
         </div>
@@ -93,10 +84,10 @@
             <div class="lg:col-span-2">
                 <label class="form-label">Search patients</label>
                 <div class="relative">
-                    <input type="text" name="Search" class="form-input pl-10" placeholder="Search by name, ID, or contact" />
-                    <span class="iconify w-5 h-5 absolute left-3 top-2.5 text-slate-400" data-icon="solar:magnifer-bold"></span>
+                    <input type="text" name="Search" class="form-input pl-10 placeholder:text-slate-500" placeholder="Search by name, ID, or contact" />
+                    <span class="iconify w-5 h-5 absolute left-3 top-2.5 text-slate-500" data-icon="solar:magnifer-bold"></span>
                 </div>
-                <p class="form-help">Reception: focus on contact. Physician: focus on clinical flags.</p>
+                <p class="form-help text-slate-600">Reception: focus on contact. Physician: focus on clinical flags.</p>
             </div>
             <div>
                 <label class="form-label">Primary doctor</label>
@@ -132,7 +123,7 @@
             @Html.AntiForgeryToken()
             <div class="md:col-span-2">
                 <label class="form-label">Save current filters</label>
-                <input type="text" name="presetName" class="form-input" placeholder="e.g., Follow-ups by Dr. Chen" required />
+                <input type="text" name="presetName" class="form-input placeholder:text-slate-500" placeholder="e.g., Follow-ups by Dr. Chen" required />
                 <div class="flex items-center gap-2 mt-2">
                     <input id="patients-default" type="checkbox" name="setAsDefault" class="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500" />
                     <label for="patients-default" class="text-sm text-slate-700">Set as default</label>
@@ -182,7 +173,7 @@
                             <tr class="align-top hover:bg-slate-50/70 transition">
                                 <td>
                                     <div class="font-semibold text-slate-900">@item.FullName</div>
-                                    <div class="text-xs text-slate-500">ID: #PT-@item.Id.ToString("D4")</div>
+                                    <div class="text-xs text-slate-600">ID: #PT-@item.Id.ToString("D4")</div>
                                 </td>
                                 <td>
                                     <div class="flex flex-wrap gap-2">
@@ -190,7 +181,16 @@
                                         <span class="chip">@((item.LastVisit?.ToString("MMM dd, yyyy")) ?? "No history")</span>
                                         @foreach (var flag in item.ClinicalFlags)
                                         {
-                                            <span class="@GetFlagClass(flag)">
+                                            var flagClass = flag switch
+                                            {
+                                                "High Risk" => "chip bg-rose-50 text-rose-700 border border-rose-200",
+                                                "High" => "chip bg-amber-50 text-amber-800 border border-amber-200",
+                                                "Chronic" => "chip medium",
+                                                "Follow-up Due" => "chip active",
+                                                "Moderate" => "chip medium",
+                                                _ => "chip"
+                                            };
+                                            <span class="@flagClass">
                                                 <span class="h-2 w-2 rounded-full bg-current/60"></span>
                                                 @flag
                                             </span>
@@ -198,16 +198,16 @@
                                     </div>
                                     @if (isPhysician)
                                     {
-                                        <p class="text-xs text-slate-500 mt-1">Clinical focus: last visit and upcoming follow-ups.</p>
+                                        <p class="text-xs text-slate-600 mt-1">Clinical focus: last visit and upcoming follow-ups.</p>
                                     }
                                 </td>
                                 <td>
                                     <div class="font-medium text-slate-900">@item.PrimaryDoctor</div>
-                                    <div class="text-xs text-slate-500">Care coordinator</div>
+                                    <div class="text-xs text-slate-600">Care coordinator</div>
                                 </td>
                                 <td>
                                     <div class="font-medium text-slate-900">@item.Phone</div>
-                                    <div class="text-xs text-slate-500">@item.Email</div>
+                                    <div class="text-xs text-slate-600">@item.Email</div>
                                     @if (isReceptionist)
                                     {
                                         <p class="text-xs text-emerald-600 mt-1">Ready for scheduling</p>

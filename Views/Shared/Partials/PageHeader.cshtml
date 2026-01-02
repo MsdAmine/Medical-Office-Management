@@ -27,7 +27,7 @@
                         }
                         if (i < breadcrumbs.Count - 1)
                         {
-                            <span aria-hidden="true" class="text-slate-400">/</span>
+                            <span aria-hidden="true" class="text-slate-500">/</span>
                         }
                     }
                 </nav>
@@ -37,7 +37,7 @@
             <h1>@Model.Title</h1>
             @if (!string.IsNullOrEmpty(Model.Subtitle))
             {
-                <p class="text-sm">@Model.Subtitle</p>
+                <p class="text-sm text-slate-600">@Model.Subtitle</p>
             }
             @if (!string.IsNullOrEmpty(Model.Meta))
             {
