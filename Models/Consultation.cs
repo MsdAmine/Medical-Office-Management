@@ -21,8 +21,6 @@ public partial class Consultation
 
     public virtual Medecin Medecin { get; set; } = null!;
 
-    public virtual Ordonnance? Ordonnance { get; set; }
-
     public virtual Patient Patient { get; set; } = null!;
 
     public virtual RendezVou? RendezVous { get; set; }

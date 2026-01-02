@@ -1,7 +1,6 @@
 using MedicalOfficeManagement.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using MedicalOfficeManagement.Data;
 using MedicalOfficeManagement.Data.Seeders;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,21 +12,6 @@ var connectionString = builder.Configuration.GetConnectionString("gestionCabinet
 builder.Services.AddDbContext<MedicalOfficeContext>(options =>
     options.UseSqlServer(connectionString));
 
-// Read-only operational data context
-var operationalProvider = builder.Configuration.GetValue<string>("DataProvider") ?? "Sqlite";
-var operationalConnection = builder.Configuration.GetConnectionString("MedicalOfficeDb") ?? "Data Source=medicaloffice.db";
-builder.Services.AddDbContext<MedicalOfficeDbContext>(options =>
-{
-    options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-    if (string.Equals(operationalProvider, "InMemory", StringComparison.OrdinalIgnoreCase))
-    {
-        options.UseInMemoryDatabase("MedicalOfficeDb");
-    }
-    else
-    {
-        options.UseSqlite(operationalConnection);
-    }
-});
 
 // 2. Configuration Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -91,26 +75,16 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-// Seed Data
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    try
-    {
-        await RoleSeeder.SeedAsync(services);
-        await UserSeeder.SeedAsync(services);
-    }
-    catch (Exception ex) { /* Log error */ }
 
-    try
-    {
-        var dataContext = services.GetRequiredService<MedicalOfficeDbContext>();
-        await SeedData.EnsureSeedDataAsync(dataContext);
-    }
-    catch (Exception ex)
-    {
-        /* Log error */
-    }
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+
+    await RoleSeeder.SeedAsync(roleManager);
+    await UserSeeder.SeedAsync(userManager, roleManager);
 }
+
 
 app.Run();

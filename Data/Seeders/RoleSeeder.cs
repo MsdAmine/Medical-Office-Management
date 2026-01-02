@@ -1,29 +1,18 @@
-using MedicalOfficeManagement.ViewModels.Security;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MedicalOfficeManagement.Data.Seeders
 {
     public static class RoleSeeder
     {
-        private static readonly string[] Roles =
+        public static async Task SeedAsync(RoleManager<IdentityRole> roleManager)
         {
-            nameof(AppRole.Admin),
-            nameof(AppRole.Physician),
-            nameof(AppRole.Nurse),
-            nameof(AppRole.Billing),
-            nameof(AppRole.Receptionist)
-        };
+            string[] roles = { "admin", "secretary", "patient" };
 
-        public static async Task SeedAsync(IServiceProvider serviceProvider)
-        {
-            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-
-            foreach (var roleName in Roles)
+            foreach (var role in roles)
             {
-                if (!await roleManager.RoleExistsAsync(roleName))
+                if (!await roleManager.RoleExistsAsync(role))
                 {
-                    await roleManager.CreateAsync(new IdentityRole(roleName));
+                    await roleManager.CreateAsync(new IdentityRole(role));
                 }
             }
         }

@@ -26,6 +26,4 @@ public partial class RendezVou
     public virtual Medecin Medecin { get; set; } = null!;
 
     public virtual Patient Patient { get; set; } = null!;
-
-    public virtual Salle? Salle { get; set; }
 }

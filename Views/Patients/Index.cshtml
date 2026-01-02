@@ -1,0 +1,189 @@
+@model IEnumerable<MedicalOfficeManagement.Models.Patient>
+
+@{
+    ViewData["Title"] = "Patients";
+    ViewData["Breadcrumb"] = "Patients";
+
+    bool canEdit = User.IsInRole("admin") || User.IsInRole("secretary");
+    bool canDelete = User.IsInRole("admin");
+}
+
+<div class="space-y-6">
+
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl lg:text-3xl font-bold text-slate-900">Patients</h1>
+            <p class="text-slate-600 mt-2">Manage registered patients</p>
+        </div>
+
+        <div class="flex items-center space-x-3">
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-slate-400"></i>
+                </div>
+                <input type="search"
+                       id="patientSearch"
+                       class="pl-10 pr-4 py-2 border border-slate-300 rounded-lg w-full md:w-64
+                              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                       placeholder="Search patients..." />
+            </div>
+
+            @if (canEdit)
+            {
+                <a asp-action="Create"
+                   class="gradient-primary text-white px-4 py-2 rounded-lg font-medium
+                          hover:shadow-lg transition-shadow flex items-center">
+                    <i class="fas fa-user-plus mr-2"></i>
+                    New Patient
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- Patients Table -->
+    <div class="glass-card rounded-xl overflow-hidden">
+
+        <!-- Table Header -->
+        <div class="p-6 border-b border-slate-200">
+            <h2 class="text-lg font-semibold text-slate-900">Patient List</h2>
+            <p class="text-sm text-slate-600">
+                Showing @Model.Count() patient(s)
+            </p>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200">
+                        <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">
+                            Full Name
+                        </th>
+                        <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">
+                            Date of Birth
+                        </th>
+                        <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">
+                            Phone
+                        </th>
+                        <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">
+                            Email
+                        </th>
+                        <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y divide-slate-200">
+                    @foreach (var patient in Model)
+                    {
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="py-4 px-6 font-medium text-slate-900">
+                                @patient.Nom @patient.Prenom
+                            </td>
+
+                            <td class="py-4 px-6 text-slate-700">
+                                @(patient.DateNaissance?.ToString("yyyy-MM-dd") ?? "-").ToString("yyyy-MM-dd")
+                            </td>
+
+                            <td class="py-4 px-6 text-slate-700">
+                                @patient.Telephone
+                            </td>
+
+                            <td class="py-4 px-6 text-slate-700">
+                                @patient.Email
+                            </td>
+
+                            <td class="py-4 px-6">
+                                <div class="flex items-center space-x-2">
+
+                                    <a asp-action="Details"
+                                       asp-route-id="@patient.Id"
+                                       class="p-2 text-slate-600 hover:text-blue-600
+                                              hover:bg-blue-50 rounded-lg"
+                                       title="View details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+
+                                    @if (canEdit)
+                                    {
+                                        <a asp-action="Edit"
+                                           asp-route-id="@patient.Id"
+                                           class="p-2 text-slate-600 hover:text-emerald-600
+                                                  hover:bg-emerald-50 rounded-lg"
+                                           title="Edit patient">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    }
+
+                                    @if (canDelete)
+                                    {
+                                        <a asp-action="Delete"
+                                           asp-route-id="@patient.Id"
+                                           class="p-2 text-slate-600 hover:text-red-600
+                                                  hover:bg-red-50 rounded-lg"
+                                           title="Delete patient">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Empty State -->
+        @if (!Model.Any())
+        {
+            <div class="p-12 text-center">
+                <div class="inline-flex h-16 w-16 items-center justify-center
+                            rounded-full bg-slate-100 text-slate-500 mb-4">
+                    <i class="fas fa-user-injured text-2xl"></i>
+                </div>
+
+                <h3 class="text-lg font-semibold text-slate-900 mb-2">
+                    No patients found
+                </h3>
+                <p class="text-slate-600 mb-6">
+                    Start by registering a new patient.
+                </p>
+
+                @if (canEdit)
+                {
+                    <a asp-action="Create"
+                       class="gradient-primary text-white px-6 py-3 rounded-lg
+                              font-medium hover:shadow-lg transition-shadow inline-flex items-center">
+                        <i class="fas fa-user-plus mr-2"></i>
+                        Add Patient
+                    </a>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Client-side search -->
+<script>
+    document.getElementById('patientSearch')?.addEventListener('input', function () {
+        const term = this.value.toLowerCase();
+        document.querySelectorAll('tbody tr').forEach(row => {
+            row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
+        });
+    });
+</script>
+
+<style>
+    .glass-card {
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .gradient-primary {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    }
+</style>
