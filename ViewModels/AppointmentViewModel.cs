@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using MedicalOfficeManagement.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace MedicalOfficeManagement.ViewModels
 {
@@ -21,5 +23,12 @@ namespace MedicalOfficeManagement.ViewModels
         public int InClinicToday { get; set; }
         public int CompletedThisWeek { get; set; }
         public IEnumerable<AppointmentViewModel> Appointments { get; set; } = Array.Empty<AppointmentViewModel>();
+    }
+
+    public class ScheduleFormViewModel
+    {
+        public RendezVou Appointment { get; set; } = new();
+        public IEnumerable<SelectListItem> Patients { get; set; } = Array.Empty<SelectListItem>();
+        public IEnumerable<SelectListItem> Medecins { get; set; } = Array.Empty<SelectListItem>();
     }
 }

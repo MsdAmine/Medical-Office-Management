@@ -22,10 +22,10 @@
                        class="pl-10 pr-4 py-2 border border-slate-300 rounded-lg w-full md:w-72
                               focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
             </div>
-            <button class="gradient-primary text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-shadow flex items-center">
+            <a asp-action="Create" class="gradient-primary text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-shadow flex items-center">
                 <i class="fas fa-calendar-plus mr-2"></i>
                 New Appointment
-            </button>
+            </a>
         </div>
     </div>
 
@@ -103,12 +103,15 @@
                             </td>
                             <td class="py-4 px-6">
                                 <div class="flex items-center space-x-2">
-                                    <button class="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg" title="Details">
+                                    <a asp-action="Details" asp-route-id="@appointment.Id" class="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg" title="Details">
                                         <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="p-2 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg" title="Check-in">
-                                        <i class="fas fa-user-check"></i>
-                                    </button>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@appointment.Id" class="p-2 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg" title="Edit">
+                                        <i class="fas fa-pen"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@appointment.Id" class="p-2 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
                                 </div>
                             </td>
                         </tr>
@@ -125,10 +128,10 @@
                 </div>
                 <h3 class="text-lg font-semibold text-slate-900 mb-2">No appointments scheduled</h3>
                 <p class="text-slate-600 mb-4">Add a new appointment to populate your schedule.</p>
-                <button class="gradient-primary text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-shadow inline-flex items-center">
+                <a asp-action="Create" class="gradient-primary text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-shadow inline-flex items-center">
                     <i class="fas fa-calendar-plus mr-2"></i>
                     Schedule Visit
-                </button>
+                </a>
             </div>
         }
     </div>
