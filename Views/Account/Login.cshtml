@@ -1,4 +1,4 @@
-@model dynamic
+@model LoginViewModel
 
 @{
     ViewData["Title"] = "Login";
@@ -17,51 +17,49 @@
 
         <!-- Login Card -->
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
-            <form method="post" class="space-y-6">
+            <form asp-action="Login" method="post" class="space-y-6" asp-route-returnUrl="@Model.ReturnUrl">
                 @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly" class="text-red-600 text-sm"></div>
 
                 <!-- Email/Username Field -->
                 <div>
-                    <label for="username" class="block text-sm font-medium text-slate-900 mb-2">
+                    <label asp-for="UsernameOrEmail" class="block text-sm font-medium text-slate-900 mb-2">
                         Email or Username
                     </label>
-                    <input type="text"
-                           id="username"
-                           name="username"
-                           required
+                    <input asp-for="UsernameOrEmail"
                            class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
                            placeholder="Enter your email or username">
+                    <span asp-validation-for="UsernameOrEmail" class="text-red-600 text-sm"></span>
                 </div>
 
                 <!-- Password Field -->
                 <div>
                     <div class="flex items-center justify-between mb-2">
-                        <label for="password" class="block text-sm font-medium text-slate-900">
+                        <label asp-for="Password" class="block text-sm font-medium text-slate-900">
                             Password
                         </label>
                         <a href="#" class="text-sm text-blue-600 hover:text-blue-800 font-medium">
                             Forgot password?
                         </a>
                     </div>
-                    <input type="password"
-                           id="password"
-                           name="password"
-                           required
+                    <input asp-for="Password"
                            class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
                            placeholder="Enter your password">
+                    <span asp-validation-for="Password" class="text-red-600 text-sm"></span>
                 </div>
 
                 <!-- Remember Me & Submit -->
                 <div class="space-y-6">
                     <div class="flex items-center">
-                        <input type="checkbox"
-                               id="rememberMe"
-                               name="rememberMe"
+                        <input asp-for="RememberMe"
                                class="h-4 w-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500">
-                        <label for="rememberMe" class="ml-2 block text-sm text-slate-700">
+                        <label asp-for="RememberMe" class="ml-2 block text-sm text-slate-700">
                             Remember me
                         </label>
                     </div>
+
+                    <input type="hidden" asp-for="ReturnUrl" />
 
                     <button type="submit"
                             class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">

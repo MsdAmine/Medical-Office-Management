@@ -30,7 +30,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Account/Login";
-    options.LogoutPath = "/Identity/Account/Logout"; 
+    options.LogoutPath = "/Account/Logout"; 
     options.AccessDeniedPath = "/Account/Login";
 });
 
@@ -63,7 +63,9 @@ app.MapGet("/", context =>
 {
     if (!context.User.Identity?.IsAuthenticated ?? true)
     {
-        context.Response.Redirect("/Identity/Account/Login");
+        var returnPath = context.Request.Path.HasValue && context.Request.Path != "/" ? context.Request.Path.Value : "/Home/Index";
+        var returnUrl = string.Concat(returnPath, context.Request.QueryString.HasValue ? context.Request.QueryString.Value : string.Empty);
+        context.Response.Redirect($"/Account/Login?returnUrl={Uri.EscapeDataString(returnUrl!)}");
     }
     else
     {
