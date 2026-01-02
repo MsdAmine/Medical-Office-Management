@@ -2,6 +2,16 @@
 
 @{
     var bucketLabels = Model.Rows.FirstOrDefault()?.Buckets ?? new List<MedicalOfficeManagement.ViewModels.Heatmaps.HeatmapBucketViewModel>();
+    var lowUtilization = Model.Rows.Any() && Model.Rows.All(r => r.UtilizationPercent >= 0 && r.UtilizationPercent <= 10);
+    var indexedBuckets = bucketLabels.Select((bucket, index) => new { bucket, index }).ToList();
+    if (lowUtilization)
+    {
+        var nonEmpty = indexedBuckets.Where(b => Model.Rows.Any(row => row.Buckets.Count > b.index && row.Buckets[b.index].LoadCount > 0)).ToList();
+        if (nonEmpty.Any())
+        {
+            indexedBuckets = nonEmpty;
+        }
+    }
     string IntensityClass(int intensity) => intensity switch
     {
         0 => "bg-slate-50 text-slate-700",
@@ -20,11 +30,11 @@ else
 {
     <div class="overflow-auto">
         <div class="min-w-full">
-            <div class="grid" style="grid-template-columns: 170px repeat(@bucketLabels.Count, minmax(52px, 1fr));">
+            <div class="grid" style="grid-template-columns: 170px repeat(@indexedBuckets.Count, minmax(52px, 1fr));">
                 <div class="sticky left-0 z-10 bg-white border border-slate-100 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Provider</div>
-                @foreach (var bucket in bucketLabels)
+                @foreach (var bucket in indexedBuckets)
                 {
-                    <div class="border border-slate-100 px-3 py-2 text-[11px] font-semibold text-slate-500 text-center">@bucket.Label</div>
+                    <div class="border border-slate-100 px-3 py-2 text-[11px] font-semibold text-slate-500 text-center">@bucket.bucket.Label</div>
                 }
 
                 @foreach (var row in Model.Rows)
@@ -36,16 +46,20 @@ else
                             <span class="text-[11px] text-slate-500">@row.SummaryText</span>
                         }
                     </div>
-                    @foreach (var bucket in row.Buckets)
+                    @foreach (var bucket in indexedBuckets)
                     {
-                        var tooltipId = $"tip-{row.RowLabel.GetHashCode()}-{bucket.StartTime:HHmm}";
-                        <div class="group relative flex h-12 items-center justify-center border border-slate-100 text-xs font-semibold rounded-none @IntensityClass(bucket.Intensity)"
-                             aria-label="@($"{row.RowLabel} {bucket.Label}: {bucket.Tooltip}")">
-                            <span>@bucket.LoadCount</span>
-                            <span class="sr-only">@bucket.Tooltip</span>
+                        var cell = row.Buckets.ElementAtOrDefault(bucket.index);
+                        var tooltipId = $"tip-{row.RowLabel.GetHashCode()}-{bucket.index}";
+                        var cellLabel = cell?.Label ?? bucket.bucket.Label;
+                        var cellTooltip = cell?.Tooltip ?? bucket.bucket.Label;
+                        var loadCount = cell?.LoadCount ?? 0;
+                        <div class="group relative flex h-12 items-center justify-center border border-slate-100 text-xs font-semibold rounded-none @IntensityClass(cell?.Intensity ?? 0)"
+                             aria-label="@($"{row.RowLabel} {cellLabel}: {cellTooltip}")">
+                            <span>@loadCount</span>
+                            <span class="sr-only">@cellTooltip</span>
                             <div id="@tooltipId" class="pointer-events-none absolute left-1/2 top-full z-20 hidden min-w-[160px] -translate-x-1/2 transform rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] font-medium text-slate-700 shadow-lg group-hover:block">
-                                <div class="text-[10px] uppercase tracking-wide text-slate-500">@bucket.Label</div>
-                                <div>@bucket.Tooltip</div>
+                                <div class="text-[10px] uppercase tracking-wide text-slate-500">@cellLabel</div>
+                                <div>@cellTooltip</div>
                             </div>
                         </div>
                     }
@@ -54,8 +68,8 @@ else
         </div>
     </div>
 
-    <div class="mt-3 flex flex-wrap items-center gap-3 text-xs text-slate-600">
-        <span class="font-semibold text-slate-700">Legend:</span>
+    <div class="mt-3 flex flex-wrap items-center gap-3 text-xs text-slate-700">
+        <span class="font-semibold text-slate-800">Legend:</span>
         @foreach (var legend in Model.Legend)
         {
             <div class="inline-flex items-center gap-2">
@@ -65,4 +79,8 @@ else
             </div>
         }
     </div>
+    @if (lowUtilization)
+    {
+        <p class="mt-2 text-xs text-slate-700">Low clinic load during selected hours</p>
+    }
 }
