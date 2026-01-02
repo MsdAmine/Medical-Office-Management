@@ -6,10 +6,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using MedicalOfficeManagement.Models.Security;
 
 namespace MedicalOfficeManagement.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = SystemRoles.SchedulingTeam)]
     public class AppointmentsController : Controller
     {
         private readonly MedicalOfficeContext _context;

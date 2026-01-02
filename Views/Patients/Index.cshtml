@@ -4,7 +4,7 @@
     ViewData["Title"] = "Patients";
     ViewData["Breadcrumb"] = "Patients";
 
-    bool canEdit = User.IsInRole("secretary");
+    bool canEdit = User.IsInRole(SystemRoles.Secretaire);
 }
 
 <div class="space-y-6">
