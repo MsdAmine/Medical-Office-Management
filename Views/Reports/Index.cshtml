@@ -32,7 +32,7 @@
     }
 
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        <div class="card p-5 space-y-4">
+        <div class="card p-5 space-y-4 shadow-[0_2px_4px_rgba(0,0,0,0.05)]">
             <h3 class="text-sm font-semibold text-slate-900">Report builder</h3>
             <div class="space-y-3">
                 <div>
@@ -47,11 +47,17 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="form-label">Start Date</label>
-                        <input type="date" value="@(DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd"))" class="form-input" @(canUseReports ? "" : "disabled")>
+                        <div class="relative">
+                            <input type="date" value="@(DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd"))" class="form-input pr-10 placeholder:text-slate-500" @(canUseReports ? "" : "disabled")>
+                            <span class="iconify w-4 h-4 text-slate-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" data-icon="solar:calendar-bold"></span>
+                        </div>
                     </div>
                     <div>
                         <label class="form-label">End Date</label>
-                        <input type="date" value="@(DateTime.Now.ToString("yyyy-MM-dd"))" class="form-input" @(canUseReports ? "" : "disabled")>
+                        <div class="relative">
+                            <input type="date" value="@(DateTime.Now.ToString("yyyy-MM-dd"))" class="form-input pr-10 placeholder:text-slate-500" @(canUseReports ? "" : "disabled")>
+                            <span class="iconify w-4 h-4 text-slate-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" data-icon="solar:calendar-bold"></span>
+                        </div>
                     </div>
                 </div>
                 <div>
@@ -65,11 +71,11 @@
                 <button class="btn btn-primary w-full justify-center @(canUseReports ? "" : "opacity-60 cursor-not-allowed")" @(canUseReports ? "" : "disabled title=\"Report generation is limited to authorized roles\"")>Generate</button>
             </div>
         </div>
-        <div class="xl:col-span-2 card p-5 space-y-4">
+        <div class="xl:col-span-2 card p-5 space-y-4 shadow-[0_2px_4px_rgba(0,0,0,0.05)]">
             <div class="flex items-center justify-between">
                 <div>
                     <div class="text-sm font-semibold text-slate-900">Summary</div>
-                    <p class="text-xs text-slate-500">KPIs, chart placeholder, and export actions.</p>
+                    <p class="text-xs text-slate-600">KPIs, chart placeholder, and export actions.</p>
                 </div>
                 <div class="flex gap-2">
                     <button class="btn btn-secondary @(canUseReports ? "" : "opacity-60 cursor-not-allowed")" @(canUseReports ? "" : "disabled")>Export CSV</button>
@@ -86,12 +92,17 @@
                 }
             })
             <div class="surface-muted p-8 rounded-2xl border border-dashed border-slate-200">
-                <div class="flex items-center justify-center h-60 text-center space-y-2 flex-col">
-                    <svg class="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                    </svg>
-                    <p class="text-sm text-slate-600">Report visualization placeholder</p>
-                    <p class="text-xs text-slate-500">Use exports to share with leadership</p>
+                <div class="flex items-center justify-center h-60 text-center space-y-3 flex-col">
+                    <div class="grid grid-cols-6 gap-2 w-full max-w-md opacity-70">
+                        <div class="h-14 rounded-lg bg-slate-200/80"></div>
+                        <div class="h-20 rounded-lg bg-slate-200/80"></div>
+                        <div class="h-12 rounded-lg bg-slate-200/80"></div>
+                        <div class="h-16 rounded-lg bg-slate-200/80"></div>
+                        <div class="h-10 rounded-lg bg-slate-200/80"></div>
+                        <div class="h-8 rounded-lg bg-slate-200/80"></div>
+                    </div>
+                    <p class="text-sm text-slate-700 font-semibold">No data available for selected dates</p>
+                    <p class="text-xs text-slate-600">Adjust filters or export a recent range to brief leadership.</p>
                 </div>
             </div>
         </div>
@@ -109,12 +120,15 @@
             }
         })
         <div class="surface-muted p-8 rounded-2xl border border-dashed border-slate-200">
-            <div class="flex items-center justify-center h-60 text-center space-y-2 flex-col">
-                <svg class="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
-                </svg>
-                <p class="text-sm text-slate-600">Revenue trend placeholder</p>
-                <p class="text-xs text-slate-500">Export for finance review</p>
+            <div class="flex items-center justify-center h-60 text-center space-y-3 flex-col">
+                <div class="grid grid-cols-4 gap-3 w-full max-w-md opacity-70">
+                    <div class="h-12 rounded-lg bg-emerald-100"></div>
+                    <div class="h-20 rounded-lg bg-emerald-100"></div>
+                    <div class="h-16 rounded-lg bg-emerald-100"></div>
+                    <div class="h-10 rounded-lg bg-emerald-100"></div>
+                </div>
+                <p class="text-sm text-slate-700 font-semibold">No data available for selected dates</p>
+                <p class="text-xs text-slate-600">Use a shorter range or export the last closed period.</p>
             </div>
         </div>
     }
@@ -135,21 +149,21 @@
             <div class="flex items-center justify-between p-4 surface-muted border border-slate-100">
                 <div>
                     <div class="text-sm font-semibold text-slate-800">Average Wait Time</div>
-                    <div class="text-xs text-slate-500 mt-1">Time between check-in and appointment</div>
+                    <div class="text-xs text-slate-600 mt-1">Time between check-in and appointment</div>
                 </div>
                 <div class="text-2xl font-semibold text-slate-900">@Model.AverageWaitTime</div>
             </div>
             <div class="flex items-center justify-between p-4 surface-muted border border-slate-100">
                 <div>
                     <div class="text-sm font-semibold text-slate-800">Appointment Completion Rate</div>
-                    <div class="text-xs text-slate-500 mt-1">Percentage of scheduled appointments completed</div>
+                    <div class="text-xs text-slate-600 mt-1">Percentage of scheduled appointments completed</div>
                 </div>
                 <div class="text-2xl font-semibold text-success">94%</div>
             </div>
             <div class="flex items-center justify-between p-4 surface-muted border border-slate-100">
                 <div>
                     <div class="text-sm font-semibold text-slate-800">Patient Satisfaction</div>
-                    <div class="text-xs text-slate-500 mt-1">Based on post-visit surveys</div>
+                    <div class="text-xs text-slate-600 mt-1">Based on post-visit surveys</div>
                 </div>
                 <div class="text-2xl font-semibold text-brand-700">4.7/5.0</div>
             </div>

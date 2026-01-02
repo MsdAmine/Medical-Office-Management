@@ -40,7 +40,7 @@
 }
 
 <div class="space-y-6">
-    <p class="text-[13px] text-slate-500 font-medium">@roleIntent</p>
+    <p class="text-[13px] text-slate-600 font-medium">@roleIntent</p>
     @await Html.PartialAsync("Partials/PageHeader", new PageHeaderModel
     {
         Title = "Appointments",
@@ -57,8 +57,8 @@
 
     @await Html.PartialAsync("Partials/PresetsBar", new PresetsBarModel { Title = "Presets", Options = presetOptions })
 
-    <div class="card p-5 space-y-4">
-        <p class="text-xs text-slate-500">Late = arrival > 10 minutes past slot. High Risk flags require priority review before rooming.</p>
+    <div class="card p-5 space-y-5 shadow-[0_2px_4px_rgba(0,0,0,0.05)]">
+        <p class="text-xs text-slate-600">Late = arrival > 10 minutes past slot. High Risk flags require priority review before rooming.</p>
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex gap-2">
                 <button class="btn btn-secondary">
@@ -78,8 +78,14 @@
             <div class="lg:col-span-2">
                 <label class="form-label">Date range</label>
                 <div class="flex gap-2">
-                    <input type="date" name="StartDate" value="@(Model.FilterContext.CurrentFilters.StartDate?.ToString("yyyy-MM-dd") ?? string.Empty)" class="form-input" />
-                    <input type="date" name="EndDate" value="@(Model.FilterContext.CurrentFilters.EndDate?.ToString("yyyy-MM-dd") ?? string.Empty)" class="form-input" />
+                    <div class="relative flex-1">
+                        <input type="date" name="StartDate" value="@(Model.FilterContext.CurrentFilters.StartDate?.ToString("yyyy-MM-dd") ?? string.Empty)" class="form-input pr-10 placeholder:text-slate-500" />
+                        <span class="iconify w-4 h-4 text-slate-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" data-icon="solar:calendar-bold"></span>
+                    </div>
+                    <div class="relative flex-1">
+                        <input type="date" name="EndDate" value="@(Model.FilterContext.CurrentFilters.EndDate?.ToString("yyyy-MM-dd") ?? string.Empty)" class="form-input pr-10 placeholder:text-slate-500" />
+                        <span class="iconify w-4 h-4 text-slate-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" data-icon="solar:calendar-bold"></span>
+                    </div>
                 </div>
             </div>
             <div>
@@ -112,7 +118,7 @@
             @Html.AntiForgeryToken()
             <div class="lg:col-span-2">
                 <label class="form-label">Save filters as preset</label>
-                <input type="text" name="presetName" class="form-input" placeholder="e.g., Today confirmed" required />
+                <input type="text" name="presetName" class="form-input placeholder:text-slate-500" placeholder="e.g., Today confirmed" required />
                 <div class="flex items-center gap-2 mt-2">
                     <input id="appointments-default" type="checkbox" name="setAsDefault" class="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500" />
                     <label for="appointments-default" class="text-sm text-slate-700">Set as default</label>
@@ -141,7 +147,7 @@
                 <h2 class="text-xl font-semibold text-slate-900">Schedule Appointment</h2>
                 <p class="text-sm text-slate-500">Create a new appointment without leaving the page.</p>
             </div>
-            <button type="button" class="text-slate-400 hover:text-slate-600" data-close-modal>
+            <button type="button" class="text-slate-500 hover:text-slate-700" data-close-modal>
                 <span class="sr-only">Close</span>
                 &times;
             </button>
