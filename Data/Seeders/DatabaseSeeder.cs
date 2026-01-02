@@ -13,8 +13,7 @@ namespace MedicalOfficeManagement.Data.Seeders
 
             var context = scopedProvider.GetRequiredService<MedicalOfficeContext>();
 
-            await context.Database.EnsureDeletedAsync();
-            await context.Database.EnsureCreatedAsync();
+            await context.Database.MigrateAsync();
 
             var roleManager = scopedProvider.GetRequiredService<RoleManager<IdentityRole>>();
             var userManager = scopedProvider.GetRequiredService<UserManager<ApplicationUser>>();
@@ -31,16 +30,31 @@ namespace MedicalOfficeManagement.Data.Seeders
 
             async Task CreateUserAsync(string email, string password, string role)
             {
-                var user = new ApplicationUser
+                var user = await userManager.FindByEmailAsync(email);
+
+                if (user == null)
                 {
-                    UserName = email,
-                    Email = email,
-                    EmailConfirmed = true
-                };
+                    user = new ApplicationUser
+                    {
+                        UserName = email,
+                        Email = email,
+                        EmailConfirmed = true
+                    };
 
-                var result = await userManager.CreateAsync(user, password);
+                    var result = await userManager.CreateAsync(user, password);
 
-                if (result.Succeeded)
+                    if (!result.Succeeded)
+                    {
+                        return;
+                    }
+                }
+                else if (!user.EmailConfirmed)
+                {
+                    user.EmailConfirmed = true;
+                    await userManager.UpdateAsync(user);
+                }
+
+                if (!await userManager.IsInRoleAsync(user, role))
                 {
                     await userManager.AddToRoleAsync(user, role);
                 }
