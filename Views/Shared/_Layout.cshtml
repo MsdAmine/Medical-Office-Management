@@ -1,68 +1,22 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Medical Office</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <title>@ViewData["Title"] - Medical Office Management</title>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/app.css" asp-append-version="true" />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'ui-sans-serif', 'Segoe UI', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            50: '#eef2ff',
-                            100: '#e0e7ff',
-                            500: '#4f46e5',
-                            600: '#4338ca',
-                            700: '#3730a3'
-                        },
-                        success: '#16a34a',
-                        warning: '#eab308',
-                        danger: '#dc2626',
-                        info: '#0284c7'
-                    },
-                    boxShadow: {
-                        soft: '0 10px 50px -25px rgba(15, 23, 42, 0.35)',
-                    }
-                }
-            }
-        }
-    </script>
-    <script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
 </head>
-<body class="app-shell" data-view="@ViewContext.RouteData.Values["controller"]" data-action="@ViewContext.RouteData.Values["action"]">
-    <div class="relative z-10 min-h-screen">
-        <partial name="_Header" />
+<body>
+    <header>
+        <h1>Medical Office Management</h1>
+        <partial name="_LoginPartial" />
+    </header>
 
-        <div class="flex pt-20">
-            <partial name="_Sidebar" />
+    <main role="main">
+        @RenderBody()
+    </main>
 
-            <main class="flex-1 ml-64 bg-white/40 min-h-screen">
-                <div class="max-w-[120rem] mx-auto px-6 py-6 lg:px-10 lg:py-8 space-y-6">
-                    @RenderBody()
-                </div>
-            </main>
-        </div>
-    </div>
-
-    <div id="realtime-toast" class="fixed bottom-4 right-4 z-50 hidden">
-        <div class="flex items-center gap-3 rounded-xl bg-slate-900/90 px-4 py-3 text-sm text-white shadow-lg ring-1 ring-white/10">
-            <span class="inline-flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span id="realtime-toast-message">Live updates ready</span>
-        </div>
-    </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="~/js/clinic-realtime.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @RenderSection("Scripts", required: false)
 </body>
 </html>

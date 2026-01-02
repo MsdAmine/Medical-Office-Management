@@ -1,9 +1,0 @@
-@* File: Views/Dashboard/_LiveTiles.cshtml *@
-@model MedicalOfficeManagement.ViewModels.Dashboard.DashboardViewModel
-
-<div class="stat-grid">
-    @foreach (var stat in Model.Stats)
-    {
-        <partial name="_StatCard" model="stat" />
-    }
-</div>
