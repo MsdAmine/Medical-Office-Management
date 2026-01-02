@@ -4,8 +4,7 @@
     ViewData["Title"] = "Patients";
     ViewData["Breadcrumb"] = "Patients";
 
-    bool canEdit = User.IsInRole("admin") || User.IsInRole("secretary");
-    bool canDelete = User.IsInRole("admin");
+    bool canEdit = User.IsInRole("secretary");
 }
 
 <div class="space-y-6">
@@ -117,16 +116,6 @@
                                         </a>
                                     }
 
-                                    @if (canDelete)
-                                    {
-                                        <a asp-action="Delete"
-                                           asp-route-id="@patient.Id"
-                                           class="p-2 text-slate-600 hover:text-red-600
-                                                  hover:bg-red-50 rounded-lg"
-                                           title="Delete patient">
-                                            <i class="fas fa-trash"></i>
-                                        </a>
-                                    }
                                 </div>
                             </td>
                         </tr>

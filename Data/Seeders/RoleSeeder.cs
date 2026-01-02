@@ -6,7 +6,7 @@ namespace MedicalOfficeManagement.Data.Seeders
     {
         public static async Task SeedAsync(RoleManager<IdentityRole> roleManager)
         {
-            string[] roles = { "admin", "secretary", "patient" };
+            string[] roles = { "admin", "secretary", "medecin", "patient" };
 
             foreach (var role in roles)
             {

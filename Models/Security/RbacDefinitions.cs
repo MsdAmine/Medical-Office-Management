@@ -9,9 +9,9 @@ namespace MedicalOfficeManagement.Models.Security
     public enum UserRole
     {
         Admin,
-        Physician,
-        Nurse,
-        Staff
+        Secretary,
+        Medecin,
+        Patient
     }
 
     /// <summary>
@@ -34,15 +34,15 @@ namespace MedicalOfficeManagement.Models.Security
     {
         public static readonly IReadOnlyCollection<RolePermission> Matrix = new List<RolePermission>
         {
-            new RolePermission { Role = UserRole.Admin, CanRead = true, CanCreate = true, CanUpdate = true, CanDelete = true },
-            new RolePermission { Role = UserRole.Physician, CanRead = true, CanCreate = true, CanUpdate = true, CanDelete = false },
-            new RolePermission { Role = UserRole.Nurse, CanRead = true, CanCreate = false, CanUpdate = true, CanDelete = false },
-            new RolePermission { Role = UserRole.Staff, CanRead = true, CanCreate = true, CanUpdate = false, CanDelete = false }
+            new RolePermission { Role = UserRole.Admin, CanRead = true, CanCreate = false, CanUpdate = false, CanDelete = false },
+            new RolePermission { Role = UserRole.Secretary, CanRead = true, CanCreate = true, CanUpdate = true, CanDelete = false },
+            new RolePermission { Role = UserRole.Medecin, CanRead = true, CanCreate = false, CanUpdate = false, CanDelete = false },
+            new RolePermission { Role = UserRole.Patient, CanRead = false, CanCreate = false, CanUpdate = false, CanDelete = false }
         };
 
         /*
          * Razor gating (future pattern, no enforcement yet):
-         * @if (User.IsInRole(UserRole.Admin.ToString()) || User.IsInRole(UserRole.Physician.ToString()))
+         * @if (User.IsInRole(UserRole.Secretary.ToString()))
          * {
          *     <!-- Render create button -->
          * }

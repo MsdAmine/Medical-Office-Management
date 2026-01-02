@@ -16,6 +16,7 @@ namespace MedicalOfficeManagement.Controllers
         }
 
         // GET: /Patients
+        [Authorize(Roles = "admin,secretary")]
         public async Task<IActionResult> Index()
         {
             ViewData["Title"] = "Patients";
@@ -29,6 +30,7 @@ namespace MedicalOfficeManagement.Controllers
         }
 
         // GET: /Patients/Details/5
+        [Authorize(Roles = "admin,secretary")]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -47,7 +49,7 @@ namespace MedicalOfficeManagement.Controllers
         }
 
         // GET: /Patients/Create
-        [Authorize(Roles = "admin,secretary")]
+        [Authorize(Roles = "secretary")]
         public IActionResult Create()
         {
             ViewData["Title"] = "New Patient";
@@ -59,7 +61,7 @@ namespace MedicalOfficeManagement.Controllers
         // POST: /Patients/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "admin,secretary")]
+        [Authorize(Roles = "secretary")]
         public async Task<IActionResult> Create(Patient patient)
         {
             if (!ModelState.IsValid)
@@ -72,7 +74,7 @@ namespace MedicalOfficeManagement.Controllers
         }
 
         // GET: /Patients/Edit/5
-        [Authorize(Roles = "admin,secretary")]
+        [Authorize(Roles = "secretary")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -91,7 +93,7 @@ namespace MedicalOfficeManagement.Controllers
         // POST: /Patients/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "admin,secretary")]
+        [Authorize(Roles = "secretary")]
         public async Task<IActionResult> Edit(int id, Patient patient)
         {
             if (id != patient.Id)
@@ -111,41 +113,6 @@ namespace MedicalOfficeManagement.Controllers
                     return NotFound();
 
                 throw;
-            }
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        // GET: /Patients/Delete/5
-        [Authorize(Roles = "admin")]
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-                return NotFound();
-
-            var patient = await _context.Patients
-                .FirstOrDefaultAsync(p => p.Id == id);
-
-            if (patient == null)
-                return NotFound();
-
-            ViewData["Title"] = "Delete Patient";
-            ViewData["Breadcrumb"] = "Patients";
-
-            return View(patient);
-        }
-
-        // POST: /Patients/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        [Authorize(Roles = "admin")]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var patient = await _context.Patients.FindAsync(id);
-            if (patient != null)
-            {
-                _context.Patients.Remove(patient);
-                await _context.SaveChangesAsync();
             }
 
             return RedirectToAction(nameof(Index));
