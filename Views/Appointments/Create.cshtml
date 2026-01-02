@@ -1,0 +1,82 @@
+@model ScheduleFormViewModel
+
+@{
+    ViewData["Title"] = ViewData["Title"] ?? "New Appointment";
+    ViewData["Breadcrumb"] = "Schedule";
+}
+
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900">Create appointment</h1>
+            <p class="text-slate-600">Add a new visit to the schedule.</p>
+        </div>
+        <a asp-action="Index" class="text-blue-600 hover:text-blue-700">Back to schedule</a>
+    </div>
+
+    <div class="glass-card rounded-xl p-6">
+        <form asp-action="Create" method="post" class="space-y-4">
+            <div asp-validation-summary="ModelOnly" class="text-rose-600"></div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label asp-for="Appointment.PatientId" class="block text-sm font-medium text-slate-700"></label>
+                    <select asp-for="Appointment.PatientId" asp-items="Model.Patients" class="mt-1 form-control">
+                        <option value="">-- Select patient --</option>
+                    </select>
+                    <span asp-validation-for="Appointment.PatientId" class="text-rose-600 text-sm"></span>
+                </div>
+
+                <div>
+                    <label asp-for="Appointment.MedecinId" class="block text-sm font-medium text-slate-700"></label>
+                    <select asp-for="Appointment.MedecinId" asp-items="Model.Medecins" class="mt-1 form-control">
+                        <option value="">-- Select provider --</option>
+                    </select>
+                    <span asp-validation-for="Appointment.MedecinId" class="text-rose-600 text-sm"></span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label asp-for="Appointment.DateDebut" class="block text-sm font-medium text-slate-700"></label>
+                    <input asp-for="Appointment.DateDebut" class="mt-1 form-control" type="datetime-local" />
+                    <span asp-validation-for="Appointment.DateDebut" class="text-rose-600 text-sm"></span>
+                </div>
+                <div>
+                    <label asp-for="Appointment.DateFin" class="block text-sm font-medium text-slate-700"></label>
+                    <input asp-for="Appointment.DateFin" class="mt-1 form-control" type="datetime-local" />
+                    <span asp-validation-for="Appointment.DateFin" class="text-rose-600 text-sm"></span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label asp-for="Appointment.SalleId" class="block text-sm font-medium text-slate-700"></label>
+                    <input asp-for="Appointment.SalleId" class="mt-1 form-control" type="number" min="0" />
+                    <span asp-validation-for="Appointment.SalleId" class="text-rose-600 text-sm"></span>
+                </div>
+                <div>
+                    <label asp-for="Appointment.Statut" class="block text-sm font-medium text-slate-700"></label>
+                    <input asp-for="Appointment.Statut" class="mt-1 form-control" />
+                    <span asp-validation-for="Appointment.Statut" class="text-rose-600 text-sm"></span>
+                </div>
+                <div>
+                    <label asp-for="Appointment.Motif" class="block text-sm font-medium text-slate-700"></label>
+                    <input asp-for="Appointment.Motif" class="mt-1 form-control" />
+                    <span asp-validation-for="Appointment.Motif" class="text-rose-600 text-sm"></span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 pt-2">
+                <button type="submit" class="gradient-primary text-white px-6 py-2 rounded-lg font-medium hover:shadow-lg transition-shadow">
+                    Save appointment
+                </button>
+                <a asp-action="Index" class="text-slate-600 hover:text-slate-800">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

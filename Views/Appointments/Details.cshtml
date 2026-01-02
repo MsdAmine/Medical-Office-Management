@@ -1,0 +1,68 @@
+@model MedicalOfficeManagement.Models.RendezVou
+
+@{
+    ViewData["Title"] = ViewData["Title"] ?? "Appointment Details";
+    ViewData["Breadcrumb"] = "Schedule";
+    string patientName = (Model.Patient != null && (!string.IsNullOrWhiteSpace(Model.Patient.Prenom) || !string.IsNullOrWhiteSpace(Model.Patient.Nom)))
+        ? $"{Model.Patient.Prenom} {Model.Patient.Nom}".Trim()
+        : "Unknown patient";
+    string medecinName = Model.Medecin != null && !string.IsNullOrWhiteSpace(Model.Medecin.NomPrenom)
+        ? Model.Medecin.NomPrenom
+        : "Unassigned";
+}
+
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900">Appointment details</h1>
+            <p class="text-slate-600">Review visit information.</p>
+        </div>
+        <a asp-action="Index" class="text-blue-600 hover:text-blue-700">Back to schedule</a>
+    </div>
+
+    <div class="glass-card rounded-xl p-6 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <p class="text-sm text-slate-500">Patient</p>
+                <p class="text-lg font-semibold text-slate-900">@patientName</p>
+            </div>
+            <div>
+                <p class="text-sm text-slate-500">Provider</p>
+                <p class="text-lg font-semibold text-slate-900">@medecinName</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <p class="text-sm text-slate-500">Start</p>
+                <p class="text-slate-900 font-medium">@Model.DateDebut.ToString("f")</p>
+            </div>
+            <div>
+                <p class="text-sm text-slate-500">End</p>
+                <p class="text-slate-900 font-medium">@Model.DateFin.ToString("f")</p>
+            </div>
+            <div>
+                <p class="text-sm text-slate-500">Status</p>
+                <p class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">@Model.Statut</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <p class="text-sm text-slate-500">Room</p>
+                <p class="text-slate-900">@((Model.SalleId.HasValue) ? $"Room {Model.SalleId}" : "Unassigned")</p>
+            </div>
+            <div>
+                <p class="text-sm text-slate-500">Reason</p>
+                <p class="text-slate-900">@(!string.IsNullOrWhiteSpace(Model.Motif) ? Model.Motif : "Not specified")</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3 pt-4">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="gradient-primary text-white px-5 py-2 rounded-lg font-medium hover:shadow-lg transition-shadow">
+                Edit appointment
+            </a>
+            <a asp-action="Delete" asp-route-id="@Model.Id" class="text-rose-600 hover:text-rose-700">Delete</a>
+        </div>
+    </div>
+</div>
