@@ -28,6 +28,13 @@
                             Secretary
                         </span>
                     }
+                    else if (User.IsInRole("medecin"))
+                    {
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-cyan-100 text-cyan-800">
+                            <i class="fas fa-stethoscope mr-2"></i>
+                            Médecin
+                        </span>
+                    }
                     else if (User.IsInRole("patient"))
                     {
                         <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
@@ -47,18 +54,10 @@
                             <i class="fas fa-user-plus mr-2"></i>
                             New Patient
                         </a>
-                    }
-                    <a asp-controller="Patients" asp-action="Index" 
-                       class="inline-flex items-center px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition">
-                        <i class="fas fa-users mr-2"></i>
-                        View Patients
-                    </a>
-                    @if (User.IsInRole("patient"))
-                    {
-                        <a asp-controller="Patients" asp-action="Details" 
-                           class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition">
-                            <i class="fas fa-file-medical mr-2"></i>
-                            My Records
+                        <a asp-controller="Patients" asp-action="Index" 
+                           class="inline-flex items-center px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition">
+                            <i class="fas fa-users mr-2"></i>
+                            View Patients
                         </a>
                     }
                 </div>
@@ -224,31 +223,14 @@
                                 <p class="text-slate-600">Access your medical information and records</p>
                             </div>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                            <a asp-controller="Patients" asp-action="Details"
-                               class="bg-white rounded-lg p-4 border border-slate-200 hover:border-purple-300 hover:shadow-sm transition">
-                                <div class="text-purple-600 mb-2">
-                                    <i class="fas fa-file-medical text-lg"></i>
-                                </div>
-                                <div class="font-medium text-slate-900">Medical Records</div>
-                                <p class="text-sm text-slate-600 mt-1">View your health information</p>
-                            </a>
-                            <a href="#"
-                               class="bg-white rounded-lg p-4 border border-slate-200 hover:border-purple-300 hover:shadow-sm transition">
-                                <div class="text-purple-600 mb-2">
-                                    <i class="fas fa-calendar-check text-lg"></i>
-                                </div>
-                                <div class="font-medium text-slate-900">Appointments</div>
-                                <p class="text-sm text-slate-600 mt-1">View and schedule appointments</p>
-                            </a>
-                            <a href="#"
-                               class="bg-white rounded-lg p-4 border border-slate-200 hover:border-purple-300 hover:shadow-sm transition">
-                                <div class="text-purple-600 mb-2">
-                                    <i class="fas fa-prescription text-lg"></i>
-                                </div>
-                                <div class="font-medium text-slate-900">Prescriptions</div>
-                                <p class="text-sm text-slate-600 mt-1">View current medications</p>
-                            </a>
+                        <div class="bg-white rounded-lg p-4 border border-slate-200">
+                            <div class="text-purple-600 mb-2">
+                                <i class="fas fa-info-circle text-lg"></i>
+                            </div>
+                            <div class="font-medium text-slate-900">Contact support</div>
+                            <p class="text-sm text-slate-600 mt-1">
+                                Please contact your secrétaire or médecin to review or update your records.
+                            </p>
                         </div>
                     </div>
                 }

@@ -1,18 +1,13 @@
 # Medical Office Management
 
 ## Project Overview
-- Internal web application for clinic staff, physicians, and administrators to manage day-to-day operations in a medical practice.
-- Centralizes patient, appointment, billing, and reporting workflows to reduce manual coordination and provide at-a-glance operational insight.
+- Internal web application for médecins, secrétaires, administrators, and patients to manage day-to-day operations in a medical practice.
+- Centralizes patient information with controlled access that follows defined actor roles.
 
 ## Core Features
 - **Dashboard & KPIs**: Operational cards and summary metrics for quick status checks.
 - **Patients**: Patient list views with filtering, detail pages, and action shortcuts for related tasks.
-- **Appointments**: Scheduling flows with availability management and status tracking.
-- **Doctors**: Provider roster with profile details, specialties, and scheduling context.
-- **Medical Records**: Access to visit summaries and medical records in a consistent, readable layout.
-- **Billing & Invoicing**: Billing overview, invoice visibility, and payment status monitoring.
-- **Reports & Analytics**: Data-driven reports with configurable filters for operational insights.
-- **Settings**: Administrative preferences for clinic configuration and user-facing defaults.
+- **Role-Based Access**: Authorization aligned to Admin, Secrétaire, Médecin, and Patient roles for all patient workflows.
 
 ## Technical Stack
 - **Backend**: ASP.NET Core MVC.
@@ -25,11 +20,9 @@
 - Calm, medical-oriented styling without marketing embellishment; focuses on clarity and readability.
 
 ## Current State
-- Fully implemented UI for dashboard, patients, appointments, doctors, medical records, billing, reports, and settings.
-- Mock and static data used where appropriate; ready to attach to live data sources.
+- Implemented UI for dashboard and patient management with role-based protections.
+- Mock and static data used where appropriate; ready to attach to live data sources focused on patient workflows.
 
 ## Future Improvements
 - Integrate Entity Framework Core for persistent storage.
-- Add role-based access controls and full CRUD workflows.
-- Enable real-time updates for schedules, billing changes, and alerts.
-- Expand reporting depth and export options.
+- Expand patient workflow depth while maintaining strict role controls.
