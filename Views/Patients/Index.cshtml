@@ -9,6 +9,13 @@
     var isReceptionist = User.IsInRole(nameof(AppRole.Receptionist));
     var isBilling = User.IsInRole(nameof(AppRole.Billing));
     var canEdit = isAdmin || isReceptionist || isPhysician;
+    var roleIntent = isAdmin
+        ? "Operational oversight and escalation control"
+        : isPhysician
+            ? "Patient care and clinical priorities"
+            : isReceptionist
+                ? "Arrivals, scheduling, and patient flow"
+                : "Billing insight with clinical read-only context";
     string GetFlagClass(string flag) => flag switch
     {
         "Chronic" => "chip medium",
@@ -61,6 +68,7 @@
             }
         };
     }
+    <p class="text-[13px] text-slate-500 font-medium">@roleIntent</p>
     @await Html.PartialAsync("Partials/PageHeader", header)
 
     @await Html.PartialAsync("Partials/PresetsBar", new PresetsBarModel
@@ -70,6 +78,10 @@
     })
 
     <div class="card p-5 space-y-4">
+        <div class="text-xs text-slate-500 flex flex-wrap gap-4">
+            <span>Clinical flags: High Risk = requires priority review; Chronic = sustained management plan.</span>
+            <span>Late = arrival over 10 minutes past slot; highlight for front desk and clinicians.</span>
+        </div>
         @await Html.PartialAsync("Partials/FilterChips", new FilterChipsModel
         {
             Title = "Active filters",
@@ -131,7 +143,7 @@
                 <input type="hidden" name="RiskLevel" value="@Model.FilterContext.CurrentFilters.RiskLevel" />
                 <input type="hidden" name="FollowUpDueOnly" value="@Model.FilterContext.CurrentFilters.FollowUpDueOnly" />
             </div>
-            <button type="submit" class="@primaryCta">Save preset</button>
+            <button type="submit" class="@secondaryCta">Save preset</button>
         </form>
     </div>
 
@@ -167,7 +179,7 @@
                     <tbody>
                         @foreach (var item in Model.Patients)
                         {
-                            <tr class="align-top">
+                            <tr class="align-top hover:bg-slate-50/70 transition">
                                 <td>
                                     <div class="font-semibold text-slate-900">@item.FullName</div>
                                     <div class="text-xs text-slate-500">ID: #PT-@item.Id.ToString("D4")</div>
