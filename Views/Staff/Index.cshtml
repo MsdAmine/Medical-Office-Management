@@ -1,0 +1,296 @@
+@model MedicalOfficeManagement.ViewModels.Staff.StaffIndexViewModel
+@using System.Linq
+@{
+    ViewData["Title"] = "Staff Management";
+    ViewData["Breadcrumb"] = "Administration";
+    var isMedecin = Model?.StaffForm?.Role == SystemRoles.Medecin;
+}
+
+<div class="space-y-8">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <p class="text-sm font-semibold text-blue-600 uppercase tracking-wide">Team</p>
+                <h1 class="text-2xl lg:text-3xl font-bold text-slate-900">Staff Management</h1>
+                <p class="text-slate-600 mt-2">Add secrétaires and médecins to grant them access to the platform.</p>
+            </div>
+            <div class="flex items-center space-x-3 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+                <div class="h-10 w-10 rounded-lg bg-blue-600 flex items-center justify-center text-white">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <div>
+                    <div class="text-sm font-semibold text-blue-900">Administrators only</div>
+                    <div class="text-xs text-blue-700">Create staff accounts and assign their role</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model?.StatusMessage))
+    {
+        <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl px-4 py-3 flex items-start">
+            <i class="fas fa-check-circle mt-1 mr-3"></i>
+            <div>
+                <div class="font-semibold">Success</div>
+                <p class="text-sm">@Model.StatusMessage</p>
+            </div>
+        </div>
+    }
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 class="text-xl font-semibold text-slate-900">Add Staff Member</h2>
+                    <p class="text-slate-600 text-sm">Create an account and assign the correct permissions.</p>
+                </div>
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
+                    <i class="fas fa-lock mr-2"></i>
+                    Admin only
+                </span>
+            </div>
+
+            <form asp-action="Index" method="post" class="space-y-6">
+                @Html.AntiForgeryToken()
+
+                @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
+                {
+                    <div asp-validation-summary="ModelOnly" class="bg-rose-50 border border-rose-200 rounded-lg p-4 text-rose-700"></div>
+                }
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label asp-for="StaffForm.Role" class="block text-sm font-medium text-slate-900 mb-2">Role</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-id-badge text-slate-400"></i>
+                            </div>
+                            <select asp-for="StaffForm.Role" class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition appearance-none bg-white">
+                                <option value="@SystemRoles.Secretaire">Secrétaire</option>
+                                <option value="@SystemRoles.Medecin">Médecin</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <i class="fas fa-chevron-down text-slate-400"></i>
+                            </div>
+                        </div>
+                        <span asp-validation-for="StaffForm.Role" class="text-rose-600 text-sm mt-1 block"></span>
+                    </div>
+
+                    <div>
+                        <label asp-for="StaffForm.Email" class="block text-sm font-medium text-slate-900 mb-2">Email</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-envelope text-slate-400"></i>
+                            </div>
+                            <input asp-for="StaffForm.Email" type="email" class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="name@example.com" />
+                        </div>
+                        <span asp-validation-for="StaffForm.Email" class="text-rose-600 text-sm mt-1 block"></span>
+                    </div>
+
+                    <div>
+                        <label asp-for="StaffForm.FirstName" class="block text-sm font-medium text-slate-900 mb-2">First name</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-user text-slate-400"></i>
+                            </div>
+                            <input asp-for="StaffForm.FirstName" class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="First name" />
+                        </div>
+                        <span asp-validation-for="StaffForm.FirstName" class="text-rose-600 text-sm mt-1 block"></span>
+                    </div>
+
+                    <div>
+                        <label asp-for="StaffForm.LastName" class="block text-sm font-medium text-slate-900 mb-2">Last name</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-user text-slate-400"></i>
+                            </div>
+                            <input asp-for="StaffForm.LastName" class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="Last name" />
+                        </div>
+                        <span asp-validation-for="StaffForm.LastName" class="text-rose-600 text-sm mt-1 block"></span>
+                    </div>
+
+                    <div>
+                        <label asp-for="StaffForm.Password" class="block text-sm font-medium text-slate-900 mb-2">Password</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-lock text-slate-400"></i>
+                            </div>
+                            <input asp-for="StaffForm.Password" type="password" class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="Temporary password" />
+                        </div>
+                        <span asp-validation-for="StaffForm.Password" class="text-rose-600 text-sm mt-1 block"></span>
+                    </div>
+
+                    <div>
+                        <label asp-for="StaffForm.ConfirmPassword" class="block text-sm font-medium text-slate-900 mb-2">Confirm password</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-lock text-slate-400"></i>
+                            </div>
+                            <input asp-for="StaffForm.ConfirmPassword" type="password" class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="Confirm password" />
+                        </div>
+                        <span asp-validation-for="StaffForm.ConfirmPassword" class="text-rose-600 text-sm mt-1 block"></span>
+                    </div>
+
+                    <div>
+                        <label asp-for="StaffForm.PhoneNumber" class="block text-sm font-medium text-slate-900 mb-2">Phone number</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-phone text-slate-400"></i>
+                            </div>
+                            <input asp-for="StaffForm.PhoneNumber" class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="Optional" />
+                        </div>
+                        <span asp-validation-for="StaffForm.PhoneNumber" class="text-rose-600 text-sm mt-1 block"></span>
+                    </div>
+
+                    <div>
+                        <label asp-for="StaffForm.Address" class="block text-sm font-medium text-slate-900 mb-2">Mailing address</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-map-marker-alt text-slate-400"></i>
+                            </div>
+                            <input asp-for="StaffForm.Address" class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="Optional" />
+                        </div>
+                        <span asp-validation-for="StaffForm.Address" class="text-rose-600 text-sm mt-1 block"></span>
+                    </div>
+                </div>
+
+                <div id="medecinFields" class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4" @(isMedecin ? "" : "style=\"display:none;\"")>
+                    <div class="flex items-center space-x-3">
+                        <div class="h-10 w-10 rounded-lg bg-cyan-100 flex items-center justify-center text-cyan-700">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">Médecin details</div>
+                            <p class="text-xs text-slate-600">These fields are required when creating a médecin.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label asp-for="StaffForm.Specialite" class="block text-sm font-medium text-slate-900 mb-2">Specialty</label>
+                            <input asp-for="StaffForm.Specialite" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="Cardiology, pediatrics, ..." />
+                            <span asp-validation-for="StaffForm.Specialite" class="text-rose-600 text-sm mt-1 block"></span>
+                        </div>
+                        <div>
+                            <label asp-for="StaffForm.MedecinTelephone" class="block text-sm font-medium text-slate-900 mb-2">Office phone</label>
+                            <input asp-for="StaffForm.MedecinTelephone" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="Direct line" />
+                            <span asp-validation-for="StaffForm.MedecinTelephone" class="text-rose-600 text-sm mt-1 block"></span>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label asp-for="StaffForm.MedecinAdresse" class="block text-sm font-medium text-slate-900 mb-2">Office address</label>
+                            <input asp-for="StaffForm.MedecinAdresse" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="Clinic or office location" />
+                            <span asp-validation-for="StaffForm.MedecinAdresse" class="text-rose-600 text-sm mt-1 block"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end space-x-3">
+                    <a asp-controller="Home" asp-action="Index" class="inline-flex items-center px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Cancel
+                    </a>
+                    <button type="submit" class="inline-flex items-center px-5 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition">
+                        <i class="fas fa-save mr-2"></i>
+                        Create account
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="space-y-6">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-slate-900">Médecins</h3>
+                    <span class="text-xs px-2 py-1 rounded-full bg-cyan-100 text-cyan-800 font-semibold">@Model.Medecins.Count()</span>
+                </div>
+                @if (Model.Medecins.Any())
+                {
+                    <div class="space-y-3">
+                        @foreach (var medecin in Model.Medecins)
+                        {
+                            <div class="flex items-start space-x-3 p-3 rounded-lg border border-slate-200">
+                                <div class="h-10 w-10 rounded-full bg-cyan-100 text-cyan-700 flex items-center justify-center font-semibold">
+                                    <i class="fas fa-user-md"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <div class="font-semibold text-slate-900">@medecin.FullName</div>
+                                            <div class="text-sm text-slate-600">@medecin.Email</div>
+                                        </div>
+                                        <span class="text-xs font-semibold text-cyan-800 bg-cyan-100 px-2 py-1 rounded-full">@medecin.RoleLabel</span>
+                                    </div>
+                                    @if (!string.IsNullOrWhiteSpace(medecin.Detail))
+                                    {
+                                        <div class="text-sm text-slate-700 mt-1">@medecin.Detail</div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-sm text-slate-600">No médecins have been added yet.</div>
+                }
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-slate-900">Secrétaires</h3>
+                    <span class="text-xs px-2 py-1 rounded-full bg-emerald-100 text-emerald-800 font-semibold">@Model.Secretaires.Count()</span>
+                </div>
+                @if (Model.Secretaires.Any())
+                {
+                    <div class="space-y-3">
+                        @foreach (var secretaire in Model.Secretaires)
+                        {
+                            <div class="flex items-start space-x-3 p-3 rounded-lg border border-slate-200">
+                                <div class="h-10 w-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-semibold">
+                                    <i class="fas fa-user-tie"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <div class="font-semibold text-slate-900">@secretaire.FullName</div>
+                                            <div class="text-sm text-slate-600">@secretaire.Email</div>
+                                        </div>
+                                        <span class="text-xs font-semibold text-emerald-800 bg-emerald-100 px-2 py-1 rounded-full">@secretaire.RoleLabel</span>
+                                    </div>
+                                    @if (!string.IsNullOrWhiteSpace(secretaire.Detail))
+                                    {
+                                        <div class="text-sm text-slate-700 mt-1">@secretaire.Detail</div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-sm text-slate-600">No secrétaires have been added yet.</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const roleSelect = document.getElementById('StaffForm_Role');
+            const medecinFields = document.getElementById('medecinFields');
+
+            function toggleMedecinFields() {
+                if (roleSelect && medecinFields) {
+                    const isMedecin = roleSelect.value === '@SystemRoles.Medecin';
+                    medecinFields.style.display = isMedecin ? 'block' : 'none';
+                }
+            }
+
+            roleSelect?.addEventListener('change', toggleMedecinFields);
+            toggleMedecinFields();
+        });
+    </script>
+}
