@@ -64,6 +64,107 @@ namespace MedicalOfficeManagement.Data.Seeders
             await CreateUserAsync("secretaire@medoffice.local", "Secretaire123!", "Secretaire");
             await CreateUserAsync("medecin@medoffice.local", "Medecin123!", "Medecin");
             await CreateUserAsync("patient@medoffice.local", "Patient123!", "Patient");
+
+            if (!await context.BillingInvoices.AnyAsync())
+            {
+                context.BillingInvoices.AddRange(
+                    new BillingInvoice
+                    {
+                        InvoiceNumber = "INV-1024",
+                        PatientName = "Alice Martin",
+                        Service = "Annual Checkup",
+                        Amount = 180.00m,
+                        Status = "Paid",
+                        IssuedOn = DateTime.Today.AddDays(-10),
+                        DueDate = DateTime.Today.AddDays(-2),
+                        PaymentMethod = "Visa"
+                    },
+                    new BillingInvoice
+                    {
+                        InvoiceNumber = "INV-1025",
+                        PatientName = "Marc Dupont",
+                        Service = "Laboratory Tests",
+                        Amount = 240.00m,
+                        Status = "Pending",
+                        IssuedOn = DateTime.Today.AddDays(-3),
+                        DueDate = DateTime.Today.AddDays(12),
+                        PaymentMethod = "Insurance"
+                    },
+                    new BillingInvoice
+                    {
+                        InvoiceNumber = "INV-1026",
+                        PatientName = "Fatima Zahra",
+                        Service = "Orthopedic Consultation",
+                        Amount = 320.00m,
+                        Status = "Overdue",
+                        IssuedOn = DateTime.Today.AddDays(-20),
+                        DueDate = DateTime.Today.AddDays(-5),
+                        PaymentMethod = "Bank Transfer"
+                    }
+                );
+            }
+
+            if (!await context.InventoryItems.AnyAsync())
+            {
+                context.InventoryItems.AddRange(
+                    new InventoryItem
+                    {
+                        ItemName = "Surgical Masks",
+                        Category = "PPE",
+                        Quantity = 450,
+                        ReorderLevel = 300,
+                        Status = "In Stock"
+                    },
+                    new InventoryItem
+                    {
+                        ItemName = "Nitrile Gloves",
+                        Category = "PPE",
+                        Quantity = 180,
+                        ReorderLevel = 250,
+                        Status = "Low Stock"
+                    },
+                    new InventoryItem
+                    {
+                        ItemName = "IV Catheters",
+                        Category = "Supplies",
+                        Quantity = 75,
+                        ReorderLevel = 100,
+                        Status = "Reorder"
+                    }
+                );
+            }
+
+            if (!await context.ReportArtifacts.AnyAsync())
+            {
+                context.ReportArtifacts.AddRange(
+                    new ReportArtifact
+                    {
+                        Title = "Monthly Revenue",
+                        Period = "Last 30 days",
+                        Owner = "Finance",
+                        Status = "Scheduled",
+                        GeneratedOn = DateTime.Today.AddDays(-1)
+                    },
+                    new ReportArtifact
+                    {
+                        Title = "Patient Throughput",
+                        Period = "This Week",
+                        Owner = "Operations",
+                        Status = "Ready",
+                        GeneratedOn = DateTime.Today
+                    },
+                    new ReportArtifact
+                    {
+                        Title = "Medication Usage",
+                        Period = "Quarter to Date",
+                        Owner = "Pharmacy",
+                        Status = "In Progress",
+                        GeneratedOn = DateTime.Today.AddDays(-3)
+                    }
+                );
+            }
+
+            await context.SaveChangesAsync();
         }
     }
 }

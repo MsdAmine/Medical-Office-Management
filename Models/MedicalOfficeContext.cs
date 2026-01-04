@@ -29,6 +29,11 @@ public partial class MedicalOfficeContext : IdentityDbContext<ApplicationUser>
 
     public virtual DbSet<RendezVou> RendezVous { get; set; } = null!;
 
+    public virtual DbSet<BillingInvoice> BillingInvoices { get; set; } = null!;
+
+    public virtual DbSet<InventoryItem> InventoryItems { get; set; } = null!;
+
+    public virtual DbSet<ReportArtifact> ReportArtifacts { get; set; } = null!;
 
 
     // public virtual DbSet<Utilisateur> Utilisateurs { get; set; } // Ligne retirée

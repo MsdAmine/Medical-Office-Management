@@ -1,0 +1,47 @@
+@model MedicalOfficeManagement.Models.InventoryItem
+@{
+    ViewData["Title"] = "Delete Inventory Item";
+}
+
+<div class="max-w-3xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <p class="text-sm text-red-600 font-semibold uppercase tracking-wide">Inventory</p>
+            <h1 class="text-2xl font-bold text-slate-900">Delete Item</h1>
+            <p class="text-slate-600 mt-1">Confirm removal of this supply item.</p>
+        </div>
+        <a asp-action="Index" class="inline-flex items-center px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">
+            Cancel
+        </a>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <p class="text-sm text-slate-500">Item Name</p>
+                <p class="text-lg font-semibold text-slate-900">@Model.ItemName</p>
+            </div>
+            <div>
+                <p class="text-sm text-slate-500">Category</p>
+                <p class="text-lg font-semibold text-slate-900">@Model.Category</p>
+            </div>
+            <div>
+                <p class="text-sm text-slate-500">Quantity</p>
+                <p class="text-lg font-semibold text-slate-900">@Model.Quantity</p>
+            </div>
+            <div>
+                <p class="text-sm text-slate-500">Status</p>
+                <p class="text-lg font-semibold text-slate-900">@Model.Status</p>
+            </div>
+        </div>
+
+        <form asp-action="Delete" method="post" class="flex items-center justify-end gap-3">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <button type="submit" class="inline-flex items-center px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700">
+                <i class="fas fa-trash-alt mr-2"></i>
+                Confirm delete
+            </button>
+        </form>
+    </div>
+</div>

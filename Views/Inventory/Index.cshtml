@@ -12,14 +12,14 @@
                 <p class="text-slate-600 mt-1">Monitor supply levels and reorder risks in real time.</p>
             </div>
             <div class="flex items-center gap-3">
-                <button class="inline-flex items-center px-4 py-2 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition">
+                <a asp-action="Index" class="inline-flex items-center px-4 py-2 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition">
                     <i class="fas fa-file-export mr-2 text-indigo-500"></i>
                     Export list
-                </button>
-                <button class="inline-flex items-center px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition">
+                </a>
+                <a asp-action="Create" class="inline-flex items-center px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition">
                     <i class="fas fa-plus mr-2"></i>
                     Add item
-                </button>
+                </a>
             </div>
         </div>
     </div>
@@ -106,15 +106,32 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
-                                <button class="inline-flex items-center px-3 py-2 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-50">
-                                    Adjust
-                                </button>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
+                <a asp-action="Edit" asp-route-id="@item.Id" class="inline-flex items-center px-3 py-2 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                    Adjust
+                </a>
+            </td>
+        </tr>
+    }
+</tbody>
             </table>
         </div>
+
+        @if (!Model.Items.Any())
+        {
+            <div class="p-8 text-center text-slate-600">
+                <div class="inline-flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-slate-500 mb-3">
+                    <i class="fas fa-box-open"></i>
+                </div>
+                <p class="text-lg font-semibold text-slate-900">No items found</p>
+                <p class="text-sm text-slate-600">Add your first supply item to start tracking inventory.</p>
+                <div class="mt-4">
+                    <a asp-action="Create" class="inline-flex items-center px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700">
+                        <i class="fas fa-plus mr-2"></i>
+                        Add item
+                    </a>
+                </div>
+            </div>
+        }
     </div>
 </div>
 
