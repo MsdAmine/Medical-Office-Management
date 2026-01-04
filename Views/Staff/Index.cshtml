@@ -185,9 +185,8 @@
                         <span asp-validation-for="StaffForm.Address" class="text-rose-600 text-sm mt-1 block"></span>
                     </div>
                 </div>
-                <div id="medecinFields" 
-     class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4"
-     style="display: @(isMedecin ? "block" : "none")">
+                <div id="medecinFields"
+                     class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4 @(isMedecin ? "" : "hidden")">
                     <div class="flex items-center space-x-3">
                         <div class="h-10 w-10 rounded-lg bg-cyan-100 flex items-center justify-center text-cyan-700">
                             <i class="fas fa-user-md"></i>
@@ -207,14 +206,13 @@
                                 <option value="">-- Select a specialty --</option>
                                 <option value="Generaliste">Generaliste</option>
                                 <option value="Cardiologie">Cardiologie</option>
-                                <option value="Pediatrie">PPediatrie</option>
+                                <option value="Pediatrie">Pediatrie</option>
                                 <option value="Dermatologie">Dermatologie</option>
                                 <option value="Gynecologie">Gynecologie</option>
                                 <option value="Ophtalmologie">Ophtalmologie</option>
                                 <option value="ORL">ORL</option>
                                 <option value="Radiologie">Radiologie</option>
                             </select>
-                            <span asp-validation-for="StaffForm.Specialite" class="text-rose-600 text-sm mt-1 block"></span>
                             <span asp-validation-for="StaffForm.Specialite" class="text-rose-600 text-sm mt-1 block"></span>
                         </div>
                         <div>
@@ -354,18 +352,21 @@
 <partial name="_ValidationScriptsPartial" />
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-            const roleSelect = document.getElementById('StaffForm_Role');
-            const medecinFields = document.getElementById('medecinFields');
+        const roleSelect = document.getElementById('StaffForm_Role');
+        const medecinFields = document.getElementById('medecinFields');
+        const medecinRoleValue = '@SystemRoles.Medecin';
 
-            function toggleMedecinFields() {
-                if (roleSelect && medecinFields) {
-                    const isMedecin = roleSelect.value === '@SystemRoles.Medecin ';
-                    medecinFields.style.display = isMedecin ? 'block' : 'none';
-                }
+        function toggleMedecinFields() {
+            if (!roleSelect || !medecinFields) {
+                return;
             }
 
-            roleSelect?.addEventListener('change', toggleMedecinFields);
-            toggleMedecinFields();
-        });
+            const isMedecin = roleSelect.value === medecinRoleValue;
+            medecinFields.classList.toggle('hidden', !isMedecin);
+        }
+
+        roleSelect?.addEventListener('change', toggleMedecinFields);
+        toggleMedecinFields();
+    });
 </script>
 }
