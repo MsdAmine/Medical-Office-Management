@@ -39,11 +39,26 @@ builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<MedicalOfficeContext>();
+    var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
+
+    if (pendingMigrations.Any())
+    {
+        await context.Database.MigrateAsync();
+    }
+
+    if (app.Environment.IsDevelopment())
+    {
+        await DatabaseSeeder.SeedAsync(services, context);
+    }
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
-
-    await DatabaseSeeder.SeedAsync(app.Services);
 }
 else
 {

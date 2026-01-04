@@ -1,6 +1,8 @@
 ﻿using MedicalOfficeManagement.Models;
+using MedicalOfficeManagement.Models.Security;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 
 public static class DbInitializer
@@ -10,8 +12,13 @@ public static class DbInitializer
         var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
+        if (await roleManager.Roles.AnyAsync() || await userManager.Users.AnyAsync())
+        {
+            return;
+        }
+
         // 1. Création des Rôles
-        string[] roleNames = { "Admin", "Medecin", "Personnel" };
+        string[] roleNames = { SystemRoles.Admin, SystemRoles.Medecin, SystemRoles.Secretaire, SystemRoles.Patient };
         foreach (var roleName in roleNames)
         {
             if (!await roleManager.RoleExistsAsync(roleName))
@@ -23,7 +30,7 @@ public static class DbInitializer
         // 2. Paramètres de l'Admin
         string adminEmail = "admin@email.com";
         string adminPassword = "TestPassword1!";
-        string adminRole = "Admin";
+        string adminRole = SystemRoles.Admin;
 
         var adminUser = await userManager.FindByEmailAsync(adminEmail);
 
@@ -39,24 +46,6 @@ public static class DbInitializer
 
             var result = await userManager.CreateAsync(adminUser, adminPassword);
             if (result.Succeeded)
-            {
-                await userManager.AddToRoleAsync(adminUser, adminRole);
-            }
-        }
-        else
-        {
-            // FORCE LA MISE À JOUR (Si l'utilisateur existe déjà)
-
-            // On s'assure que l'email est confirmé
-            adminUser.EmailConfirmed = true;
-            await userManager.UpdateAsync(adminUser);
-
-            // On réinitialise le mot de passe de force
-            var token = await userManager.GeneratePasswordResetTokenAsync(adminUser);
-            await userManager.ResetPasswordAsync(adminUser, token, adminPassword);
-
-            // On s'assure qu'il a le rôle Admin
-            if (!await userManager.IsInRoleAsync(adminUser, adminRole))
             {
                 await userManager.AddToRoleAsync(adminUser, adminRole);
             }
