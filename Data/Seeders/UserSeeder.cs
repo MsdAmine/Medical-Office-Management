@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using MedicalOfficeManagement.Models;
+using MedicalOfficeManagement.Models.Security;
+using Microsoft.EntityFrameworkCore;
 
 namespace MedicalOfficeManagement.Data.Seeders
 {
@@ -9,6 +11,11 @@ namespace MedicalOfficeManagement.Data.Seeders
             UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager)
         {
+            if (await userManager.Users.AnyAsync() || await roleManager.Roles.AnyAsync())
+            {
+                return;
+            }
+
             var adminEmail = "admin@clinic.local";
 
             var admin = await userManager.FindByEmailAsync(adminEmail);
@@ -22,7 +29,7 @@ namespace MedicalOfficeManagement.Data.Seeders
                 };
 
                 await userManager.CreateAsync(admin, "Admin123!");
-                await userManager.AddToRoleAsync(admin, "admin");
+                await userManager.AddToRoleAsync(admin, SystemRoles.Admin);
             }
         }
     }
