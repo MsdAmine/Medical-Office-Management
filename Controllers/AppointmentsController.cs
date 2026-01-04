@@ -93,7 +93,7 @@ namespace MedicalOfficeManagement.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ScheduleFormViewModel viewModel)
         {
-            ValidateAppointmentTimes(viewModel.Appointment);
+            await ValidateAppointmentAsync(viewModel.Appointment);
 
             if (!ModelState.IsValid)
             {
@@ -136,7 +136,7 @@ namespace MedicalOfficeManagement.Controllers
             if (id != viewModel.Appointment.Id)
                 return NotFound();
 
-            ValidateAppointmentTimes(viewModel.Appointment);
+            await ValidateAppointmentAsync(viewModel.Appointment);
 
             if (!ModelState.IsValid)
             {
@@ -261,21 +261,26 @@ namespace MedicalOfficeManagement.Controllers
             viewModel.Medecins = await GetMedecinsSelectListAsync(viewModel.Appointment.MedecinId);
         }
 
-        private void ValidateAppointmentTimes(RendezVou appointment)
+        private async Task ValidateAppointmentAsync(RendezVou appointment)
         {
-            if (appointment.PatientId <= 0)
+            if (appointment.PatientId <= 0 || !await _context.Patients.AnyAsync(p => p.Id == appointment.PatientId))
             {
-                ModelState.AddModelError("Appointment.PatientId", "Patient selection is required.");
+                ModelState.AddModelError("Appointment.PatientId", "Please select an existing patient.");
             }
 
-            if (appointment.MedecinId <= 0)
+            if (appointment.MedecinId <= 0 || !await _context.Medecins.AnyAsync(m => m.Id == appointment.MedecinId))
             {
-                ModelState.AddModelError("Appointment.MedecinId", "Provider selection is required.");
+                ModelState.AddModelError("Appointment.MedecinId", "Please select an existing provider.");
             }
 
             if (appointment.DateFin <= appointment.DateDebut)
             {
                 ModelState.AddModelError("Appointment.DateFin", "End time must be after the start time.");
+            }
+
+            if (string.IsNullOrWhiteSpace(appointment.Statut))
+            {
+                appointment.Statut = "Scheduled";
             }
         }
 
