@@ -46,6 +46,8 @@ public partial class MedicalOfficeContext : IdentityDbContext<ApplicationUser>
         base.OnModelCreating(modelBuilder);
 
         // ... (Toutes les autres configurations de mappage de vos tables)
+        modelBuilder.Entity<Patient>()
+            .HasQueryFilter(p => !p.IsDeleted);
 
         // IMPORTANT : Vous devez avoir retiré le mappage de la table Utilisateur.
 
