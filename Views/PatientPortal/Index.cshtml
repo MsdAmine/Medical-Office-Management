@@ -1,0 +1,239 @@
+@model PatientPortalViewModel
+@{
+    ViewData["Title"] = "Mon espace patient";
+}
+
+<div class="space-y-8">
+    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-8 border border-blue-100">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+                <p class="text-sm font-semibold text-blue-700 uppercase tracking-wide">Espace patient</p>
+                <h1 class="text-3xl md:text-4xl font-bold text-slate-900 mt-1">
+                    Bonjour, @Model.PatientDisplayName
+                </h1>
+                <p class="text-slate-600 mt-2">
+                    Consultez vos rendez-vous, traitements, résultats et demandez un nouveau créneau en ligne.
+                </p>
+            </div>
+            <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200 w-full md:w-72">
+                <div class="text-sm text-slate-500 mb-1">Résumé rapide</div>
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="text-center">
+                        <div class="text-lg font-bold text-blue-700">@Model.UpcomingAppointments.Count()</div>
+                        <div class="text-xs text-slate-500">À venir</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-lg font-bold text-emerald-700">@Model.Treatments.Count()</div>
+                        <div class="text-xs text-slate-500">Traitements</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-lg font-bold text-purple-700">@Model.LabResults.Count()</div>
+                        <div class="text-xs text-slate-500">Résultats</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+    {
+        <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-lg flex items-center space-x-3">
+            <i class="fas fa-check-circle"></i>
+            <span>@Model.StatusMessage</span>
+        </div>
+    }
+
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <div class="xl:col-span-2 space-y-8">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+                <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900">Rendez-vous à venir</h2>
+                        <p class="text-sm text-slate-500">Vos créneaux prévus et leur statut</p>
+                    </div>
+                </div>
+                <div class="p-6 space-y-4">
+                    @if (!Model.UpcomingAppointments.Any())
+                    {
+                        <div class="text-slate-500 text-sm">Aucun rendez-vous planifié.</div>
+                    }
+                    else
+                    {
+                        <div class="space-y-3">
+                            @foreach (var appt in Model.UpcomingAppointments)
+                            {
+                                <div class="border border-slate-200 rounded-xl p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3 hover:border-blue-200">
+                                    <div>
+                                        <div class="text-sm text-slate-500">Avec</div>
+                                        <div class="font-semibold text-slate-900">@appt.MedecinName</div>
+                                        <div class="text-sm text-slate-600 mt-1">@appt.Reason</div>
+                                    </div>
+                                    <div class="flex items-center space-x-4 text-sm text-slate-600">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="far fa-calendar-alt text-blue-600"></i>
+                                            <span>@appt.ScheduledFor.ToString("dd MMM yyyy")</span>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <i class="far fa-clock text-blue-600"></i>
+                                            <span>@appt.ScheduledFor.ToString("HH:mm") - @appt.EndsAt.ToString("HH:mm")</span>
+                                        </div>
+                                    </div>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold @GetStatusBadgeClass(appt.Status)">
+                                        @appt.Status
+                                    </span>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+                <div class="p-6 border-b border-slate-100">
+                    <h2 class="text-xl font-bold text-slate-900">Historique des rendez-vous</h2>
+                    <p class="text-sm text-slate-500">Vos visites précédentes</p>
+                </div>
+                <div class="p-6">
+                    @if (!Model.PastAppointments.Any())
+                    {
+                        <div class="text-slate-500 text-sm">Aucun rendez-vous passé.</div>
+                    }
+                    else
+                    {
+                        <div class="space-y-3">
+                            @foreach (var appt in Model.PastAppointments)
+                            {
+                                <div class="border border-slate-200 rounded-xl p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                                    <div>
+                                        <div class="font-semibold text-slate-900">@appt.MedecinName</div>
+                                        <div class="text-sm text-slate-600">@appt.Reason</div>
+                                    </div>
+                                    <div class="text-sm text-slate-500">@appt.ScheduledFor.ToString("dd MMM yyyy - HH:mm")</div>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
+                                        @appt.Status
+                                    </span>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+                <div class="p-6 border-b border-slate-100">
+                    <h2 class="text-xl font-bold text-slate-900">Demander un rendez-vous</h2>
+                    <p class="text-sm text-slate-500">Soumettez un créneau qui sera validé par la secrétaire.</p>
+                </div>
+                <div class="p-6 space-y-4">
+                    <form asp-action="RequestAppointment" method="post" class="space-y-4">
+                        <div>
+                            <label asp-for="Request.MedecinId" class="block text-sm font-medium text-slate-700"></label>
+                            <select asp-for="Request.MedecinId" asp-items="Model.MedecinOptions"
+                                    class="mt-1 w-full rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                                <option value="">Choisissez un médecin</option>
+                            </select>
+                            <span asp-validation-for="Request.MedecinId" class="text-sm text-red-600"></span>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label asp-for="Request.PreferredStart" class="block text-sm font-medium text-slate-700"></label>
+                                <input asp-for="Request.PreferredStart" type="datetime-local" class="mt-1 w-full rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500" />
+                                <span asp-validation-for="Request.PreferredStart" class="text-sm text-red-600"></span>
+                            </div>
+                            <div>
+                                <label asp-for="Request.PreferredEnd" class="block text-sm font-medium text-slate-700"></label>
+                                <input asp-for="Request.PreferredEnd" type="datetime-local" class="mt-1 w-full rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500" />
+                                <span asp-validation-for="Request.PreferredEnd" class="text-sm text-red-600"></span>
+                            </div>
+                        </div>
+                        <div>
+                            <label asp-for="Request.Reason" class="block text-sm font-medium text-slate-700"></label>
+                            <textarea asp-for="Request.Reason" rows="3" class="mt-1 w-full rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500"></textarea>
+                            <span asp-validation-for="Request.Reason" class="text-sm text-red-600"></span>
+                        </div>
+                        <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition">
+                            <i class="fas fa-paper-plane mr-2"></i>
+                            Envoyer la demande
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+                <div class="p-6 border-b border-slate-100">
+                    <h2 class="text-xl font-bold text-slate-900">Traitements</h2>
+                    <p class="text-sm text-slate-500">Prescriptions et instructions</p>
+                </div>
+                <div class="p-6 space-y-4">
+                    @if (!Model.Treatments.Any())
+                    {
+                        <div class="text-slate-500 text-sm">Aucun traitement enregistré.</div>
+                    }
+                    else
+                    {
+                        @foreach (var treatment in Model.Treatments)
+                        {
+                            <div class="border border-slate-200 rounded-xl p-4 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <div class="font-semibold text-slate-900">@treatment.Title</div>
+                                    <span class="text-xs font-semibold bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full">@treatment.Status</span>
+                                </div>
+                                <div class="text-xs text-slate-500">Prescrit par @treatment.PrescribedBy le @treatment.Date.ToString("dd MMM yyyy")</div>
+                                <p class="text-sm text-slate-600">@treatment.Notes</p>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+                <div class="p-6 border-b border-slate-100">
+                    <h2 class="text-xl font-bold text-slate-900">Résultats / Analyses</h2>
+                    <p class="text-sm text-slate-500">Tests et comptes rendus médicaux</p>
+                </div>
+                <div class="p-6 space-y-4">
+                    @if (!Model.LabResults.Any())
+                    {
+                        <div class="text-slate-500 text-sm">Aucun résultat disponible.</div>
+                    }
+                    else
+                    {
+                        @foreach (var result in Model.LabResults)
+                        {
+                            <div class="border border-slate-200 rounded-xl p-4 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <div class="font-semibold text-slate-900">@result.Title</div>
+                                    <span class="text-xs font-semibold bg-purple-100 text-purple-700 px-2 py-1 rounded-full">@result.Status</span>
+                                </div>
+                                <div class="text-xs text-slate-500">Demandé par @result.OrderedBy le @result.Date.ToString("dd MMM yyyy")</div>
+                                <p class="text-sm text-slate-600">@result.Notes</p>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
+@functions {
+    private string GetStatusBadgeClass(string status)
+    {
+        if (string.IsNullOrWhiteSpace(status))
+            return "bg-slate-100 text-slate-700";
+
+        return status.ToLowerInvariant() switch
+        {
+            "pending approval" => "bg-amber-100 text-amber-700",
+            "completed" => "bg-emerald-100 text-emerald-700",
+            "cancelled" => "bg-red-100 text-red-700",
+            _ => "bg-blue-100 text-blue-700"
+        };
+    }
+}
