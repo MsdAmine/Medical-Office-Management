@@ -1,9 +1,8 @@
-@model
-MedicalOfficeManagement.ViewModels.Staff.StaffIndexViewModel
+@model MedicalOfficeManagement.ViewModels.Staff.StaffIndexViewModel
 @using System.Linq
 @{
-    ViewData["Title"]
-    ViewData["Breadcrumb"]
+    ViewData["Title"] = "Staff Management";
+    ViewData["Breadcrumb"] = "Staff Management";
     var isMedecin = Model?.StaffForm?.Role == SystemRoles.Medecin;
 }
 <div class="space-y-8">
@@ -12,7 +11,7 @@ MedicalOfficeManagement.ViewModels.Staff.StaffIndexViewModel
             <div>
                 <p class="text-sm font-semibold text-blue-600 uppercase tracking-wide">Team</p>
                 <h1 class="text-2xl lg:text-3xl font-bold text-slate-900">Staff Management</h1>
-                <p class="text-slate-600 mt-2">Add secr�taires and m�decins to grant them access to the platform.</p>
+                <p class="text-slate-600 mt-2">Add secretaires and medecins to grant them access to the platform.</p>
             </div>
             <div class="flex items-center space-x-3 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
                 <div class="h-10 w-10 rounded-lg bg-blue-600 flex items-center justify-center text-white">
@@ -53,7 +52,8 @@ MedicalOfficeManagement.ViewModels.Staff.StaffIndexViewModel
                 asp-action="Index"
                 method="post"
                 class="space-y-6">
-                @Html.AntiForgeryToken()@if (!ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
+                @Html.AntiForgeryToken() 
+                @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
                 {
                     <div asp-validation-summary="ModelOnly" class="bg-rose-50 border border-rose-200 rounded-lg p-4 text-rose-700"></div>
                 }
@@ -67,8 +67,8 @@ MedicalOfficeManagement.ViewModels.Staff.StaffIndexViewModel
                                 <i class="fas fa-id-badge text-slate-400"></i>
                             </div>
                             <select asp-for="StaffForm.Role" class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition appearance-none bg-white">
-                                <option value="@SystemRoles.Secretaire">Secr�taire</option>
-                                <option value="@SystemRoles.Medecin">M�decin</option>
+                                <option value="@SystemRoles.Secretaire">Secretaire</option>
+                                <option value="@SystemRoles.Medecin">Medecin</option>
                             </select>
                             <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                                 <i class="fas fa-chevron-down text-slate-400"></i>
@@ -185,20 +185,16 @@ MedicalOfficeManagement.ViewModels.Staff.StaffIndexViewModel
                         <span asp-validation-for="StaffForm.Address" class="text-rose-600 text-sm mt-1 block"></span>
                     </div>
                 </div>
-                <div
-                    id="medecinFields"
-                    class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4"
-                    @
-                    isMedecin
-                    :
-                    display:none>
+                <div id="medecinFields" 
+     class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4"
+     style="display: @(isMedecin ? "block" : "none")">
                     <div class="flex items-center space-x-3">
                         <div class="h-10 w-10 rounded-lg bg-cyan-100 flex items-center justify-center text-cyan-700">
                             <i class="fas fa-user-md"></i>
                         </div>
                         <div>
-                            <div class="text-sm font-semibold text-slate-900">M�decin details</div>
-                            <p class="text-xs text-slate-600">These fields are required when creating a m�decin.</p>
+                            <div class="text-sm font-semibold text-slate-900">Medecin details</div>
+                            <p class="text-xs text-slate-600">These fields are required when creating a medecin.</p>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -261,7 +257,7 @@ MedicalOfficeManagement.ViewModels.Staff.StaffIndexViewModel
         <div class="space-y-6">
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-slate-900">M�decins</h3>
+                    <h3 class="text-lg font-semibold text-slate-900">Medecins</h3>
                     <span class="text-xs px-2 py-1 rounded-full bg-cyan-100 text-cyan-800 font-semibold">
                     @Model.Medecins.Count()
                     </span>
@@ -302,12 +298,12 @@ MedicalOfficeManagement.ViewModels.Staff.StaffIndexViewModel
                 }
                 else
                 {
-                    <div class="text-sm text-slate-600">No m�decins have been added yet.</div>
+                    <div class="text-sm text-slate-600">No medecins have been added yet.</div>
                 }
             </div>
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-slate-900">Secr�taires</h3>
+                    <h3 class="text-lg font-semibold text-slate-900">Secretaires</h3>
                     <span class="text-xs px-2 py-1 rounded-full bg-emerald-100 text-emerald-800 font-semibold">
                     @Model.Secretaires.Count()
                     </span>
@@ -348,14 +344,13 @@ MedicalOfficeManagement.ViewModels.Staff.StaffIndexViewModel
                 }
                 else
                 {
-                    <div class="text-sm text-slate-600">No secr�taires have been added yet.</div>
+                    <div class="text-sm text-slate-600">No secretaires have been added yet.</div>
                 }
             </div>
         </div>
     </div>
 </div>
-@section
-Scripts {
+@section Scripts {
 <partial name="_ValidationScriptsPartial" />
 <script>
     document.addEventListener('DOMContentLoaded', function () {
