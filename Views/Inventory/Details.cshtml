@@ -1,0 +1,48 @@
+@model MedicalOfficeManagement.Models.InventoryItem
+@{
+    ViewData["Title"] = "Inventory Item Details";
+}
+
+<div class="max-w-3xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <p class="text-sm text-indigo-600 font-semibold uppercase tracking-wide">Inventory</p>
+            <h1 class="text-2xl font-bold text-slate-900">Item Details</h1>
+            <p class="text-slate-600 mt-1">Review supply counts and reorder thresholds.</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="inline-flex items-center px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700">
+                <i class="fas fa-edit mr-2"></i>
+                Edit
+            </a>
+            <a asp-action="Index" class="inline-flex items-center px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">
+                Back to list
+            </a>
+        </div>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <p class="text-sm text-slate-500">Item Name</p>
+                <p class="text-lg font-semibold text-slate-900">@Model.ItemName</p>
+            </div>
+            <div>
+                <p class="text-sm text-slate-500">Category</p>
+                <p class="text-lg font-semibold text-slate-900">@Model.Category</p>
+            </div>
+            <div>
+                <p class="text-sm text-slate-500">Quantity</p>
+                <p class="text-lg font-semibold text-slate-900">@Model.Quantity</p>
+            </div>
+            <div>
+                <p class="text-sm text-slate-500">Reorder Level</p>
+                <p class="text-lg font-semibold text-slate-900">@Model.ReorderLevel</p>
+            </div>
+            <div>
+                <p class="text-sm text-slate-500">Status</p>
+                <p class="text-lg font-semibold text-slate-900">@Model.Status</p>
+            </div>
+        </div>
+    </div>
+</div>

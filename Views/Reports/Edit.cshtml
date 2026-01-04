@@ -1,0 +1,75 @@
+@model MedicalOfficeManagement.Models.ReportArtifact
+@{
+    ViewData["Title"] = "Edit Report";
+}
+
+<div class="max-w-4xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <p class="text-sm text-sky-600 font-semibold uppercase tracking-wide">Reports</p>
+            <h1 class="text-2xl font-bold text-slate-900">Edit Report</h1>
+            <p class="text-slate-600 mt-1">Update report metadata and schedule.</p>
+        </div>
+        <a asp-action="Index" class="inline-flex items-center px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Back to list
+        </a>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
+        <form asp-action="Edit" method="post" class="space-y-6">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <div asp-validation-summary="ModelOnly" class="text-red-600 text-sm"></div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label asp-for="Title" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                    <input asp-for="Title" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
+                    <span asp-validation-for="Title" class="text-red-600 text-sm"></span>
+                </div>
+                <div>
+                    <label asp-for="Owner" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                    <input asp-for="Owner" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
+                    <span asp-validation-for="Owner" class="text-red-600 text-sm"></span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label asp-for="Period" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                    <input asp-for="Period" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
+                    <span asp-validation-for="Period" class="text-red-600 text-sm"></span>
+                </div>
+                <div>
+                    <label asp-for="Status" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                    <select asp-for="Status" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-sky-500 focus:border-sky-500">
+                        <option value="Draft">Draft</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Scheduled">Scheduled</option>
+                        <option value="Ready">Ready</option>
+                    </select>
+                    <span asp-validation-for="Status" class="text-red-600 text-sm"></span>
+                </div>
+            </div>
+
+            <div>
+                <label asp-for="GeneratedOn" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                <input asp-for="GeneratedOn" type="date" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
+                <span asp-validation-for="GeneratedOn" class="text-red-600 text-sm"></span>
+            </div>
+
+            <div class="flex items-center justify-end gap-3">
+                <a asp-action="Index" class="inline-flex items-center px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">Cancel</a>
+                <button type="submit" class="inline-flex items-center px-4 py-2 rounded-lg bg-sky-600 text-white font-medium hover:bg-sky-700">
+                    <i class="fas fa-save mr-2"></i>
+                    Update report
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

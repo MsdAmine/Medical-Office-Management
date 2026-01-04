@@ -1,0 +1,61 @@
+@model MedicalOfficeManagement.Models.BillingInvoice
+@{
+    ViewData["Title"] = "Invoice Details";
+    ViewData["Breadcrumb"] = "Billing";
+}
+
+<div class="max-w-3xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <p class="text-sm text-indigo-600 font-semibold uppercase tracking-wide">Billing</p>
+            <h1 class="text-2xl font-bold text-slate-900">Invoice Details</h1>
+            <p class="text-slate-600 mt-1">Review billing information for this invoice.</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="inline-flex items-center px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700">
+                <i class="fas fa-edit mr-2"></i>
+                Edit
+            </a>
+            <a asp-action="Index" class="inline-flex items-center px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">
+                Back to list
+            </a>
+        </div>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <p class="text-sm text-slate-500">Invoice Number</p>
+                <p class="text-lg font-semibold text-slate-900">@Model.InvoiceNumber</p>
+            </div>
+            <div>
+                <p class="text-sm text-slate-500">Patient</p>
+                <p class="text-lg font-semibold text-slate-900">@Model.PatientName</p>
+            </div>
+            <div>
+                <p class="text-sm text-slate-500">Service</p>
+                <p class="text-lg font-semibold text-slate-900">@Model.Service</p>
+            </div>
+            <div>
+                <p class="text-sm text-slate-500">Amount</p>
+                <p class="text-lg font-semibold text-slate-900">@Model.Amount.ToString(\"C\")</p>
+            </div>
+            <div>
+                <p class="text-sm text-slate-500">Issued On</p>
+                <p class="text-lg font-semibold text-slate-900">@Model.IssuedOn.ToString(\"MMM dd, yyyy\")</p>
+            </div>
+            <div>
+                <p class="text-sm text-slate-500">Due Date</p>
+                <p class="text-lg font-semibold text-slate-900">@Model.DueDate.ToString(\"MMM dd, yyyy\")</p>
+            </div>
+            <div>
+                <p class="text-sm text-slate-500">Status</p>
+                <p class="text-lg font-semibold text-slate-900">@Model.Status</p>
+            </div>
+            <div>
+                <p class="text-sm text-slate-500">Payment Method</p>
+                <p class="text-lg font-semibold text-slate-900">@Model.PaymentMethod</p>
+            </div>
+        </div>
+    </div>
+</div>

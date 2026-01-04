@@ -1,0 +1,73 @@
+@model MedicalOfficeManagement.Models.InventoryItem
+@{
+    ViewData["Title"] = "Edit Inventory Item";
+}
+
+<div class="max-w-4xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <p class="text-sm text-indigo-600 font-semibold uppercase tracking-wide">Inventory</p>
+            <h1 class="text-2xl font-bold text-slate-900">Edit Item</h1>
+            <p class="text-slate-600 mt-1">Update supply details and thresholds.</p>
+        </div>
+        <a asp-action="Index" class="inline-flex items-center px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Back to list
+        </a>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
+        <form asp-action="Edit" method="post" class="space-y-6">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <div asp-validation-summary="ModelOnly" class="text-red-600 text-sm"></div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label asp-for="ItemName" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                    <input asp-for="ItemName" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                    <span asp-validation-for="ItemName" class="text-red-600 text-sm"></span>
+                </div>
+                <div>
+                    <label asp-for="Category" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                    <input asp-for="Category" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                    <span asp-validation-for="Category" class="text-red-600 text-sm"></span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label asp-for="Quantity" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                    <input asp-for="Quantity" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                    <span asp-validation-for="Quantity" class="text-red-600 text-sm"></span>
+                </div>
+                <div>
+                    <label asp-for="ReorderLevel" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                    <input asp-for="ReorderLevel" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                    <span asp-validation-for="ReorderLevel" class="text-red-600 text-sm"></span>
+                </div>
+                <div>
+                    <label asp-for="Status" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                    <select asp-for="Status" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="In Stock">In Stock</option>
+                        <option value="Low Stock">Low Stock</option>
+                        <option value="Reorder">Reorder</option>
+                    </select>
+                    <span asp-validation-for="Status" class="text-red-600 text-sm"></span>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3">
+                <a asp-action="Index" class="inline-flex items-center px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">Cancel</a>
+                <button type="submit" class="inline-flex items-center px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700">
+                    <i class="fas fa-save mr-2"></i>
+                    Update item
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

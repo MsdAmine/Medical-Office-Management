@@ -1,22 +1,36 @@
+using MedicalOfficeManagement.Models;
 using MedicalOfficeManagement.Models.Security;
 using MedicalOfficeManagement.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace MedicalOfficeManagement.Controllers
 {
     [Authorize(Roles = SystemRoles.Admin)]
     public class BillingController : Controller
     {
-        [HttpGet]
-        public IActionResult Index()
+        private readonly MedicalOfficeContext _context;
+
+        public BillingController(MedicalOfficeContext context)
         {
-            var invoices = GetSampleInvoices();
+            _context = context;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            var invoices = await _context.BillingInvoices
+                .AsNoTracking()
+                .OrderByDescending(i => i.IssuedOn)
+                .ToListAsync();
+
+            var today = DateTime.Today;
 
             var viewModel = new BillingSummaryViewModel
             {
                 OutstandingBalance = invoices.Where(i => i.Status == "Pending" || i.Status == "Overdue").Sum(i => i.Amount),
-                PaidThisMonth = invoices.Where(i => i.Status == "Paid" && i.IssuedOn.Month == DateTime.Today.Month).Sum(i => i.Amount),
+                PaidThisMonth = invoices.Where(i => i.Status == "Paid" && i.IssuedOn.Month == today.Month && i.IssuedOn.Year == today.Year).Sum(i => i.Amount),
                 DraftInvoices = invoices.Count(i => i.Status == "Draft"),
                 Invoices = invoices
             };
@@ -27,57 +41,138 @@ namespace MedicalOfficeManagement.Controllers
             return View(viewModel);
         }
 
-        private static List<BillingInvoiceViewModel> GetSampleInvoices()
+        [HttpGet]
+        public IActionResult Create()
         {
-            var today = DateTime.Today;
-
-            return new List<BillingInvoiceViewModel>
+            var invoice = new BillingInvoice
             {
-                new()
-                {
-                    InvoiceNumber = "INV-1024",
-                    PatientName = "Alice Martin",
-                    Service = "Annual Checkup",
-                    Amount = 180.00m,
-                    Status = "Paid",
-                    IssuedOn = today.AddDays(-10),
-                    DueDate = today.AddDays(-2),
-                    PaymentMethod = "Visa"
-                },
-                new()
-                {
-                    InvoiceNumber = "INV-1025",
-                    PatientName = "Marc Dupont",
-                    Service = "Laboratory Tests",
-                    Amount = 240.00m,
-                    Status = "Pending",
-                    IssuedOn = today.AddDays(-3),
-                    DueDate = today.AddDays(12),
-                    PaymentMethod = "Insurance"
-                },
-                new()
-                {
-                    InvoiceNumber = "INV-1026",
-                    PatientName = "Fatima Zahra",
-                    Service = "Orthopedic Consultation",
-                    Amount = 320.00m,
-                    Status = "Overdue",
-                    IssuedOn = today.AddDays(-20),
-                    DueDate = today.AddDays(-5),
-                    PaymentMethod = "Bank Transfer"
-                },
-                new()
-                {
-                    InvoiceNumber = "INV-1027",
-                    PatientName = "Julien Bernard",
-                    Service = "Diabetes Follow-up",
-                    Amount = 210.00m,
-                    Status = "Draft",
-                    IssuedOn = today,
-                    DueDate = today.AddDays(14),
-                    PaymentMethod = "Pending"
-                }
+                IssuedOn = DateTime.Today,
+                DueDate = DateTime.Today.AddDays(14)
             };
+
+            return View(invoice);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(BillingInvoice invoice)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(invoice);
+            }
+
+            _context.BillingInvoices.Add(invoice);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var invoice = await _context.BillingInvoices
+                .AsNoTracking()
+                .FirstOrDefaultAsync(i => i.Id == id);
+
+            if (invoice == null)
+            {
+                return NotFound();
+            }
+
+            return View(invoice);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var invoice = await _context.BillingInvoices.FindAsync(id);
+            if (invoice == null)
+            {
+                return NotFound();
+            }
+
+            return View(invoice);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, BillingInvoice invoice)
+        {
+            if (id != invoice.Id)
+            {
+                return NotFound();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(invoice);
+            }
+
+            try
+            {
+                _context.Update(invoice);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!InvoiceExists(invoice.Id))
+                {
+                    return NotFound();
+                }
+
+                throw;
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var invoice = await _context.BillingInvoices
+                .AsNoTracking()
+                .FirstOrDefaultAsync(i => i.Id == id);
+
+            if (invoice == null)
+            {
+                return NotFound();
+            }
+
+            return View(invoice);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var invoice = await _context.BillingInvoices.FindAsync(id);
+            if (invoice != null)
+            {
+                _context.BillingInvoices.Remove(invoice);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        private bool InvoiceExists(int id)
+        {
+            return _context.BillingInvoices.Any(e => e.Id == id);
         }
     }
 }

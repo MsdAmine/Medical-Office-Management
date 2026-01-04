@@ -12,14 +12,14 @@
             <p class="text-slate-600 mt-2">Review invoices, balances, and payment status</p>
         </div>
         <div class="flex items-center gap-3">
-            <button class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 transition flex items-center">
+            <a asp-action="Index" class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 transition flex items-center">
                 <i class="fas fa-file-export mr-2"></i>
                 Export
-            </button>
-            <button class="gradient-primary text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-shadow flex items-center">
+            </a>
+            <a asp-action="Create" class="gradient-primary text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-shadow flex items-center">
                 <i class="fas fa-plus mr-2"></i>
                 New Invoice
-            </button>
+            </a>
         </div>
     </div>
 
@@ -99,12 +99,15 @@
                             </td>
                             <td class="py-4 px-6">
                                 <div class="flex items-center space-x-2">
-                                    <button class="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg" title="View">
+                                    <a asp-action="Details" asp-route-id="@invoice.Id" class="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg" title="View">
                                         <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="p-2 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg" title="Mark paid">
-                                        <i class="fas fa-check"></i>
-                                    </button>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@invoice.Id" class="p-2 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@invoice.Id" class="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg" title="Delete">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
                                 </div>
                             </td>
                         </tr>
@@ -121,10 +124,10 @@
                 </div>
                 <h3 class="text-lg font-semibold text-slate-900 mb-2">No invoices found</h3>
                 <p class="text-slate-600 mb-4">Create your first invoice to get started.</p>
-                <button class="gradient-primary text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-shadow inline-flex items-center">
+                <a asp-action="Create" class="gradient-primary text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-shadow inline-flex items-center">
                     <i class="fas fa-plus mr-2"></i>
                     Create Invoice
-                </button>
+                </a>
             </div>
         }
     </div>
