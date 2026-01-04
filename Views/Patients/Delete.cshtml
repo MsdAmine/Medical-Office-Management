@@ -1,0 +1,72 @@
+@model Patient
+
+@{
+    ViewData["Title"] = "Delete Patient";
+    ViewData["Breadcrumb"] = "Patients";
+}
+
+<div class="max-w-3xl mx-auto space-y-6">
+    <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+        <div class="flex items-center space-x-3 mb-4">
+            <div class="h-10 w-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center">
+                <i class="fas fa-user-slash"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-semibold text-slate-900">Delete Patient</h1>
+                <p class="text-slate-600">Soft delete the patient record. This action keeps historical data for reporting.</p>
+            </div>
+        </div>
+
+        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                <dt class="text-sm text-slate-500">Name</dt>
+                <dd class="text-lg font-semibold text-slate-900">@Model.Nom @Model.Prenom</dd>
+            </div>
+
+            <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                <dt class="text-sm text-slate-500">Email</dt>
+                <dd class="text-lg font-semibold text-slate-900">@Model.Email</dd>
+            </div>
+
+            <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                <dt class="text-sm text-slate-500">Phone</dt>
+                <dd class="text-lg font-semibold text-slate-900">@Model.Telephone</dd>
+            </div>
+
+            <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                <dt class="text-sm text-slate-500">Created</dt>
+                <dd class="text-lg font-semibold text-slate-900">
+                    @(Model.CreatedAt == default ? "-" : Model.CreatedAt.ToLocalTime().ToString("g"))
+                </dd>
+                <dd class="text-sm text-slate-600">By @(!string.IsNullOrWhiteSpace(Model.CreatedBy) ? Model.CreatedBy : "Unknown")</dd>
+            </div>
+        </dl>
+
+        <div class="mt-6 bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm">
+            <div class="flex items-start">
+                <i class="fas fa-exclamation-triangle mt-0.5 mr-3"></i>
+                <div>
+                    <p class="font-semibold">This is a soft delete.</p>
+                    <p>The patient will be excluded from listings but data will be retained for records.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form asp-action="Delete" method="post" class="flex items-center justify-between">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+
+        <a asp-action="Index"
+           class="inline-flex items-center px-4 py-2 border border-slate-300 rounded-lg font-medium text-slate-700 hover:bg-slate-50 transition">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Back to list
+        </a>
+
+        <button type="submit"
+                class="inline-flex items-center px-5 py-2.5 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+            <i class="fas fa-trash mr-2"></i>
+            Confirm Delete
+        </button>
+    </form>
+</div>

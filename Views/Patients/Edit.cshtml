@@ -107,6 +107,42 @@
             </div>
         </div>
 
+        <div class="bg-white rounded-lg border border-slate-200 p-6">
+            <h2 class="text-lg font-semibold text-slate-900 mb-6">Audit</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                <div class="p-4 border border-slate-200 rounded-lg bg-slate-50">
+                    <div class="text-slate-500 uppercase tracking-wide text-xs font-semibold mb-1">Created</div>
+                    <div class="font-medium text-slate-900">
+                        @(Model.CreatedAt == default ? "-" : Model.CreatedAt.ToLocalTime().ToString("f"))
+                    </div>
+                    <div class="text-slate-600 mt-1">
+                        By @(!string.IsNullOrWhiteSpace(Model.CreatedBy) ? Model.CreatedBy : "Unknown")
+                    </div>
+                </div>
+
+                <div class="p-4 border border-slate-200 rounded-lg bg-slate-50">
+                    <div class="text-slate-500 uppercase tracking-wide text-xs font-semibold mb-1">Last Updated</div>
+                    <div class="font-medium text-slate-900">
+                        @(Model.UpdatedAt?.ToLocalTime().ToString("f") ?? "-")
+                    </div>
+                    <div class="text-slate-600 mt-1">
+                        By @(!string.IsNullOrWhiteSpace(Model.UpdatedBy) ? Model.UpdatedBy : "Unknown")
+                    </div>
+                </div>
+
+                @if (Model.IsDeleted)
+                {
+                    <div class="p-4 border border-red-200 rounded-lg bg-red-50 md:col-span-2">
+                        <div class="text-red-600 font-semibold">Deleted</div>
+                        <div class="text-red-700 text-sm">
+                            @(Model.DeletedAt?.ToLocalTime().ToString("f") ?? "-") by @(!string.IsNullOrWhiteSpace(Model.DeletedBy) ? Model.DeletedBy : "Unknown")
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
         <div class="flex flex-col sm:flex-row sm:items-center justify-between pt-6 border-t border-slate-200">
             <div>
                 <a asp-action="Details" asp-route-id="@Model.Id" 
@@ -127,4 +163,3 @@
         </div>
     </form>
 </div>
-
