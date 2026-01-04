@@ -250,6 +250,13 @@
                     <i class="fas fa-home text-slate-500 w-5 text-center"></i>
                     <span class="font-medium">Dashboard</span>
                 </a>
+                @if (User.IsInRole(SystemRoles.Patient))
+                {
+                    <a href="/PatientPortal" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
+                        <i class="fas fa-user-injured text-slate-500 w-5 text-center"></i>
+                        <span class="font-medium">Mon Espace</span>
+                    </a>
+                }
                 @if (User.IsInRole(SystemRoles.Admin) || User.IsInRole(SystemRoles.Secretaire) || User.IsInRole(SystemRoles.Medecin))
                 {
                     <a href="/Appointments" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
