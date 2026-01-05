@@ -252,9 +252,9 @@
                 </a>
                 @if (User.IsInRole(SystemRoles.Patient))
                 {
-                    <a href="/PatientPortal" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
+                    <a href="/PatientPortal/Upcoming" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
                         <i class="fas fa-user-injured text-slate-500 w-5 text-center"></i>
-                        <span class="font-medium">Mon Espace</span>
+                        <span class="font-medium">Espace Patient</span>
                     </a>
                 }
                 @if (User.IsInRole(SystemRoles.Admin) || User.IsInRole(SystemRoles.Secretaire) || User.IsInRole(SystemRoles.Medecin))

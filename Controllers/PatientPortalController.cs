@@ -23,8 +23,50 @@ namespace MedicalOfficeManagement.Controllers
         [HttpGet]
         public async Task<IActionResult> Index(string? statusMessage = null)
         {
+            return RedirectToAction(nameof(Upcoming), new { statusMessage });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Upcoming(string? statusMessage = null)
+        {
             var patient = await GetCurrentPatientAsync();
             var viewModel = await BuildPortalViewModelAsync(patient, null, statusMessage);
+
+            return View(viewModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> History()
+        {
+            var patient = await GetCurrentPatientAsync();
+            var viewModel = await BuildPortalViewModelAsync(patient);
+
+            return View(viewModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Request()
+        {
+            var patient = await GetCurrentPatientAsync();
+            var viewModel = await BuildPortalViewModelAsync(patient);
+
+            return View(viewModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Treatments()
+        {
+            var patient = await GetCurrentPatientAsync();
+            var viewModel = await BuildPortalViewModelAsync(patient);
+
+            return View(viewModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Results()
+        {
+            var patient = await GetCurrentPatientAsync();
+            var viewModel = await BuildPortalViewModelAsync(patient);
 
             return View(viewModel);
         }
@@ -45,7 +87,7 @@ namespace MedicalOfficeManagement.Controllers
             if (!ModelState.IsValid)
             {
                 var invalidViewModel = await BuildPortalViewModelAsync(patient, request);
-                return View("Index", invalidViewModel);
+                return View("Request", invalidViewModel);
             }
 
             var rendezVous = new RendezVou
@@ -61,7 +103,7 @@ namespace MedicalOfficeManagement.Controllers
             _context.RendezVous.Add(rendezVous);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Index), new { statusMessage = "Votre demande de rendez-vous a été envoyée." });
+            return RedirectToAction(nameof(Request), new { statusMessage = "Votre demande de rendez-vous a été envoyée." });
         }
 
         private async Task<Patient?> GetCurrentPatientAsync()
