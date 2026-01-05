@@ -1,223 +1,238 @@
 @model LoginViewModel
 
 @{
-    Layout = "_AuthLayout";
+    Layout = null;
     ViewData["Title"] = "Login";
 }
 
-<div class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-    <div class="w-full max-w-6xl bg-slate-900 rounded-3xl shadow-2xl overflow-hidden flex relative">
-        <!-- Left Panel: Visual Section -->
-        <div class="w-1/2 relative overflow-hidden bg-gradient-to-br from-slate-900 to-black">
-            <!-- Background Image -->
-            <div class="absolute inset-0 bg-cover bg-center opacity-80" 
-                 style="background-image: url('https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=2000'); filter: brightness(0.6) saturate(1.3);">
-            </div>
-            
-            <!-- Gradient Overlay -->
-            <div class="absolute inset-0 bg-gradient-to-br from-indigo-900/50 via-purple-900/40 to-blue-900/50"></div>
-            
-            <!-- Content -->
-            <div class="relative z-10 h-full min-h-[700px] p-12 flex flex-col justify-between">
-                <!-- Top Section -->
-                <div>
-                    <!-- Logo -->
-                    <div class="inline-block mb-16">
-                        <div class="flex items-center space-x-3 px-5 py-3 bg-white/10 backdrop-blur-lg rounded-full border border-white/20 shadow-xl">
-                            <div class="h-9 w-9 rounded-full bg-gradient-to-br from-blue-400 via-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
-                                <i class="fas fa-stethoscope text-white text-base"></i>
-                            </div>
-                            <span class="text-white font-bold text-xl tracking-tight">MedOffice</span>
-                        </div>
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - MedOffice Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="min-h-screen bg-slate-50" style="font-family: 'Inter', sans-serif;">
+    <main class="flex min-h-screen items-center justify-center">
+        <div class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 w-full">
+            <div class="w-full max-w-none bg-slate-900 rounded-3xl shadow-2xl overflow-hidden flex relative">
+                <!-- Left Panel: Visual Section -->
+                <div class="w-1/2 relative overflow-hidden bg-gradient-to-br from-slate-900 to-black">
+                    <!-- Background Image -->
+                    <div class="absolute inset-0 bg-cover bg-center opacity-80" 
+                         style="background-image: url('https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=2000'); filter: brightness(0.6) saturate(1.3);">
                     </div>
-
-                    <!-- Main Title -->
-                    <div class="space-y-6 max-w-lg">
-                        <h1 class="text-5xl font-bold text-white leading-tight tracking-tight">
-                            Healthcare Management
-                            <span class="block text-blue-300 mt-2">Reimagined</span>
-                        </h1>
-                        <p class="text-blue-100 text-lg leading-relaxed opacity-90">
-                            Streamline your medical practice with our comprehensive, secure platform designed for modern healthcare professionals.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Bottom Section -->
-                <div class="space-y-8">
-                    <!-- Feature Highlights -->
-                    <div class="grid grid-cols-2 gap-4 max-w-lg">
-                        <div class="bg-white/5 backdrop-blur-md rounded-xl p-4 border border-white/10">
-                            <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-400 to-cyan-500 flex items-center justify-center mb-3">
-                                <i class="fas fa-lock text-white text-sm"></i>
-                            </div>
-                            <p class="text-white font-semibold text-sm">HIPAA Compliant</p>
-                            <p class="text-blue-200 text-xs mt-1">Bank-level security</p>
-                        </div>
-                        <div class="bg-white/5 backdrop-blur-md rounded-xl p-4 border border-white/10">
-                            <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center mb-3">
-                                <i class="fas fa-chart-line text-white text-sm"></i>
-                            </div>
-                            <p class="text-white font-semibold text-sm">Real-time Analytics</p>
-                            <p class="text-blue-200 text-xs mt-1">Instant insights</p>
-                        </div>
-                    </div>
-
-                    <!-- User Info Card -->
-                    <div class="inline-flex items-center space-x-4 bg-white/10 backdrop-blur-lg rounded-2xl px-6 py-4 border border-white/20 shadow-xl">
-                        <div class="h-14 w-14 rounded-full bg-gradient-to-br from-blue-400 via-cyan-400 to-teal-500 flex items-center justify-center flex-shrink-0 ring-4 ring-white/20 shadow-lg">
-                            <i class="fas fa-user-md text-white text-lg"></i>
-                        </div>
+                    
+                    <!-- Gradient Overlay -->
+                    <div class="absolute inset-0 bg-gradient-to-br from-indigo-900/50 via-purple-900/40 to-blue-900/50"></div>
+                    
+                    <!-- Content -->
+                    <div class="relative z-10 h-full min-h-[700px] p-12 flex flex-col justify-between">
+                        <!-- Top Section -->
                         <div>
-                            <p class="text-white font-semibold text-base">Healthcare Provider</p>
-                            <p class="text-blue-200 text-sm">Secure Portal Access</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                            <!-- Logo -->
+                            <div class="inline-block mb-16">
+                                <div class="flex items-center space-x-3 px-5 py-3 bg-white/10 backdrop-blur-lg rounded-full border border-white/20 shadow-xl">
+                                    <div class="h-9 w-9 rounded-full bg-gradient-to-br from-blue-400 via-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+                                        <i class="fas fa-stethoscope text-white text-base"></i>
+                                    </div>
+                                    <span class="text-white font-bold text-xl tracking-tight">MedOffice</span>
+                                </div>
+                            </div>
 
-            <!-- Decorative Orbs -->
-            <div class="absolute top-32 right-24 h-48 w-48 bg-blue-500/30 rounded-full blur-3xl animate-pulse-slow"></div>
-            <div class="absolute bottom-40 left-24 h-56 w-56 bg-purple-500/30 rounded-full blur-3xl animate-pulse-slow" style="animation-delay: 1s;"></div>
-            <div class="absolute top-1/2 right-12 h-32 w-32 bg-indigo-500/20 rounded-full blur-2xl animate-pulse-slow" style="animation-delay: 0.5s;"></div>
-        </div>
-
-        <!-- Right Panel: Login Form -->
-        <div class="w-1/2 bg-white flex flex-col justify-center relative">
-            <div class="px-16 py-12">
-                <!-- Form Header -->
-                <div class="mb-10">
-                    <div class="inline-flex items-center space-x-2 mb-6">
-                        <div class="h-2 w-2 rounded-full bg-indigo-600"></div>
-                        <span class="text-indigo-600 font-semibold text-sm uppercase tracking-wider">Secure Login</span>
-                    </div>
-                    <h2 class="text-4xl font-bold text-slate-900 mb-3 tracking-tight">Welcome Back</h2>
-                    <p class="text-slate-500 text-base">Sign in to access your dashboard</p>
-                </div>
-
-                <!-- Login Form -->
-                <form asp-action="Login" method="post" class="space-y-6" asp-route-returnUrl="@Model.ReturnUrl">
-                    @Html.AntiForgeryToken()
-
-                    <!-- Validation Summary -->
-                    <div asp-validation-summary="ModelOnly" 
-                         class="bg-red-50 border-l-4 border-red-500 rounded-lg p-4 text-red-700 text-sm shadow-sm">
-                        <div class="flex items-start">
-                            <i class="fas fa-exclamation-circle mt-0.5 mr-3 text-base"></i>
-                            <span class="font-medium">Please correct the errors below</span>
-                        </div>
-                    </div>
-
-                    <!-- Email -->
-                    <div class="space-y-2">
-                        <label asp-for="UsernameOrEmail" class="block text-sm font-semibold text-slate-700">
-                            Email Address
-                        </label>
-                        <div class="relative">
-                            <input asp-for="UsernameOrEmail"
-                                   type="text"
-                                   class="w-full px-4 py-3.5 border-2 border-slate-200 rounded-xl focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all"
-                                   placeholder="you@example.com">
-                            <div class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300">
-                                <i class="fas fa-envelope text-sm"></i>
+                            <!-- Main Title -->
+                            <div class="space-y-6 max-w-lg">
+                                <h1 class="text-5xl font-bold text-white leading-tight tracking-tight">
+                                    Healthcare Management
+                                    <span class="block text-blue-300 mt-2">Reimagined</span>
+                                </h1>
+                                <p class="text-blue-100 text-lg leading-relaxed opacity-90">
+                                    Streamline your medical practice with our comprehensive, secure platform designed for modern healthcare professionals.
+                                </p>
                             </div>
                         </div>
-                        <span asp-validation-for="UsernameOrEmail" class="text-red-600 text-xs font-medium"></span>
+
+                        <!-- Bottom Section -->
+                        <div class="space-y-8">
+                            <!-- Feature Highlights -->
+                            <div class="grid grid-cols-2 gap-4 max-w-lg">
+                                <div class="bg-white/5 backdrop-blur-md rounded-xl p-4 border border-white/10">
+                                    <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-400 to-cyan-500 flex items-center justify-center mb-3">
+                                        <i class="fas fa-lock text-white text-sm"></i>
+                                    </div>
+                                    <p class="text-white font-semibold text-sm">HIPAA Compliant</p>
+                                    <p class="text-blue-200 text-xs mt-1">Bank-level security</p>
+                                </div>
+                                <div class="bg-white/5 backdrop-blur-md rounded-xl p-4 border border-white/10">
+                                    <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center mb-3">
+                                        <i class="fas fa-chart-line text-white text-sm"></i>
+                                    </div>
+                                    <p class="text-white font-semibold text-sm">Real-time Analytics</p>
+                                    <p class="text-blue-200 text-xs mt-1">Instant insights</p>
+                                </div>
+                            </div>
+
+                            <!-- User Info Card -->
+                            <div class="inline-flex items-center space-x-4 bg-white/10 backdrop-blur-lg rounded-2xl px-6 py-4 border border-white/20 shadow-xl">
+                                <div class="h-14 w-14 rounded-full bg-gradient-to-br from-blue-400 via-cyan-400 to-teal-500 flex items-center justify-center flex-shrink-0 ring-4 ring-white/20 shadow-lg">
+                                    <i class="fas fa-user-md text-white text-lg"></i>
+                                </div>
+                                <div>
+                                    <p class="text-white font-semibold text-base">Healthcare Provider</p>
+                                    <p class="text-blue-200 text-sm">Secure Portal Access</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Password -->
-                    <div class="space-y-2">
-                        <div class="flex justify-between items-center">
-                            <label asp-for="Password" class="block text-sm font-semibold text-slate-700">
-                                Password
-                            </label>
-                            <a href="#" class="text-sm text-indigo-600 hover:text-indigo-700 font-semibold transition-colors">
-                                Forgot password?
-                            </a>
+                    <!-- Decorative Orbs -->
+                    <div class="absolute top-32 right-24 h-48 w-48 bg-blue-500/30 rounded-full blur-3xl animate-pulse-slow"></div>
+                    <div class="absolute bottom-40 left-24 h-56 w-56 bg-purple-500/30 rounded-full blur-3xl animate-pulse-slow" style="animation-delay: 1s;"></div>
+                    <div class="absolute top-1/2 right-12 h-32 w-32 bg-indigo-500/20 rounded-full blur-2xl animate-pulse-slow" style="animation-delay: 0.5s;"></div>
+                </div>
+
+                <!-- Right Panel: Login Form -->
+                <div class="w-1/2 bg-white flex flex-col justify-center relative">
+                    <div class="px-16 py-12">
+                        <!-- Form Header -->
+                        <div class="mb-10">
+                            <div class="inline-flex items-center space-x-2 mb-6">
+                                <div class="h-2 w-2 rounded-full bg-indigo-600"></div>
+                                <span class="text-indigo-600 font-semibold text-sm uppercase tracking-wider">Secure Login</span>
+                            </div>
+                            <h2 class="text-4xl font-bold text-slate-900 mb-3 tracking-tight">Welcome Back</h2>
+                            <p class="text-slate-500 text-base">Sign in to access your dashboard</p>
                         </div>
-                        <div class="relative">
-                            <input asp-for="Password"
-                                   type="password"
-                                   id="Password"
-                                   class="w-full px-4 py-3.5 border-2 border-slate-200 rounded-xl focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all pr-12"
-                                   placeholder="••••••••">
-                            <button type="button"
-                                    class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
-                                    onclick="togglePassword()">
-                                <i class="fas fa-eye text-base"></i>
+
+                        <!-- Login Form -->
+                        <form asp-action="Login" method="post" class="space-y-6" asp-route-returnUrl="@Model.ReturnUrl">
+                            @Html.AntiForgeryToken()
+
+                            <!-- Validation Summary -->
+                            <div asp-validation-summary="ModelOnly" 
+                                 class="bg-red-50 border-l-4 border-red-500 rounded-lg p-4 text-red-700 text-sm shadow-sm">
+                                <div class="flex items-start">
+                                    <i class="fas fa-exclamation-circle mt-0.5 mr-3 text-base"></i>
+                                    <span class="font-medium">Please correct the errors below</span>
+                                </div>
+                            </div>
+
+                            <!-- Email -->
+                            <div class="space-y-2">
+                                <label asp-for="UsernameOrEmail" class="block text-sm font-semibold text-slate-700">
+                                    Email Address
+                                </label>
+                                <div class="relative">
+                                    <input asp-for="UsernameOrEmail"
+                                           type="text"
+                                           class="w-full px-4 py-3.5 border-2 border-slate-200 rounded-xl focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all"
+                                           placeholder="you@example.com">
+                                    <div class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300">
+                                        <i class="fas fa-envelope text-sm"></i>
+                                    </div>
+                                </div>
+                                <span asp-validation-for="UsernameOrEmail" class="text-red-600 text-xs font-medium"></span>
+                            </div>
+
+                            <!-- Password -->
+                            <div class="space-y-2">
+                                <div class="flex justify-between items-center">
+                                    <label asp-for="Password" class="block text-sm font-semibold text-slate-700">
+                                        Password
+                                    </label>
+                                    <a href="#" class="text-sm text-indigo-600 hover:text-indigo-700 font-semibold transition-colors">
+                                        Forgot password?
+                                    </a>
+                                </div>
+                                <div class="relative">
+                                    <input asp-for="Password"
+                                           type="password"
+                                           id="Password"
+                                           class="w-full px-4 py-3.5 border-2 border-slate-200 rounded-xl focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all pr-12"
+                                           placeholder="••••••••">
+                                    <button type="button"
+                                            class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                                            onclick="togglePassword()">
+                                        <i class="fas fa-eye text-base"></i>
+                                    </button>
+                                </div>
+                                <span asp-validation-for="Password" class="text-red-600 text-xs font-medium"></span>
+                            </div>
+
+                            <!-- Remember Me -->
+                            <div class="flex items-center pt-2">
+                                <input asp-for="RememberMe"
+                                       type="checkbox"
+                                       id="RememberMe"
+                                       class="h-5 w-5 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 focus:ring-2 transition-all cursor-pointer">
+                                <label asp-for="RememberMe" class="ml-3 text-sm text-slate-700 cursor-pointer select-none">
+                                    Keep me signed in for 30 days
+                                </label>
+                            </div>
+
+                            <!-- Hidden ReturnUrl -->
+                            <input type="hidden" asp-for="ReturnUrl" />
+
+                            <!-- Submit Button -->
+                            <button type="submit"
+                                    class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-4 rounded-xl font-semibold text-base transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0">
+                                Sign In to Dashboard
                             </button>
+
+                            <!-- Divider -->
+                            <div class="relative my-8">
+                                <div class="absolute inset-0 flex items-center">
+                                    <div class="w-full border-t border-slate-200"></div>
+                                </div>
+                                <div class="relative flex justify-center text-sm">
+                                    <span class="px-4 bg-white text-slate-500 font-medium">Or continue with</span>
+                                </div>
+                            </div>
+
+                            <!-- Google Login -->
+                            <button type="button"
+                                    class="w-full bg-white border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center space-x-3 shadow-sm hover:shadow group">
+                                <svg class="h-6 w-6 transition-transform group-hover:scale-110" viewBox="0 0 24 24">
+                                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                                </svg>
+                                <span>Sign in with Google</span>
+                            </button>
+
+                            <!-- Sign Up Link -->
+                            <p class="text-center text-sm text-slate-600 pt-4">
+                                Don't have an account? 
+                                <a href="#" class="text-indigo-600 hover:text-indigo-700 font-semibold transition-colors">Create an account</a>
+                            </p>
+                        </form>
+                    </div>
+
+                    <!-- Footer Links -->
+                    <div class="absolute bottom-8 left-0 right-0 px-16">
+                        <div class="flex items-center justify-between text-xs text-slate-500 pt-6 border-t border-slate-100">
+                            <div class="flex space-x-6">
+                                <a href="#" class="hover:text-slate-700 transition-colors font-medium">Privacy Policy</a>
+                                <a href="#" class="hover:text-slate-700 transition-colors font-medium">Terms of Service</a>
+                                <a href="#" class="hover:text-slate-700 transition-colors font-medium">Support</a>
+                            </div>
+                            <div class="text-slate-400">
+                                © 2024 MedOffice
+                            </div>
                         </div>
-                        <span asp-validation-for="Password" class="text-red-600 text-xs font-medium"></span>
-                    </div>
-
-                    <!-- Remember Me -->
-                    <div class="flex items-center pt-2">
-                        <input asp-for="RememberMe"
-                               type="checkbox"
-                               id="RememberMe"
-                               class="h-5 w-5 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 focus:ring-2 transition-all cursor-pointer">
-                        <label asp-for="RememberMe" class="ml-3 text-sm text-slate-700 cursor-pointer select-none">
-                            Keep me signed in for 30 days
-                        </label>
-                    </div>
-
-                    <!-- Hidden ReturnUrl -->
-                    <input type="hidden" asp-for="ReturnUrl" />
-
-                    <!-- Submit Button -->
-                    <button type="submit"
-                            class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-4 rounded-xl font-semibold text-base transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0">
-                        Sign In to Dashboard
-                    </button>
-
-                    <!-- Divider -->
-                    <div class="relative my-8">
-                        <div class="absolute inset-0 flex items-center">
-                            <div class="w-full border-t border-slate-200"></div>
-                        </div>
-                        <div class="relative flex justify-center text-sm">
-                            <span class="px-4 bg-white text-slate-500 font-medium">Or continue with</span>
-                        </div>
-                    </div>
-
-                    <!-- Google Login -->
-                    <button type="button"
-                            class="w-full bg-white border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center space-x-3 shadow-sm hover:shadow group">
-                        <svg class="h-6 w-6 transition-transform group-hover:scale-110" viewBox="0 0 24 24">
-                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                        </svg>
-                        <span>Sign in with Google</span>
-                    </button>
-
-                    <!-- Sign Up Link -->
-                    <p class="text-center text-sm text-slate-600 pt-4">
-                        Don't have an account? 
-                        <a href="#" class="text-indigo-600 hover:text-indigo-700 font-semibold transition-colors">Create an account</a>
-                    </p>
-                </form>
-            </div>
-
-            <!-- Footer Links -->
-            <div class="absolute bottom-8 left-0 right-0 px-16">
-                <div class="flex items-center justify-between text-xs text-slate-500 pt-6 border-t border-slate-100">
-                    <div class="flex space-x-6">
-                        <a href="#" class="hover:text-slate-700 transition-colors font-medium">Privacy Policy</a>
-                        <a href="#" class="hover:text-slate-700 transition-colors font-medium">Terms of Service</a>
-                        <a href="#" class="hover:text-slate-700 transition-colors font-medium">Support</a>
-                    </div>
-                    <div class="text-slate-400">
-                        © 2024 MedOffice
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
+    </main>
 
-@section Scripts {
     <script>
         function togglePassword() {
             const passwordInput = document.getElementById('Password');
@@ -309,4 +324,5 @@
             user-select: none;
         }
     </style>
-}
+</body>
+</html>
