@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using MedicalOfficeManagement.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace MedicalOfficeManagement.ViewModels
 {
@@ -28,7 +29,11 @@ namespace MedicalOfficeManagement.ViewModels
     public class ScheduleFormViewModel
     {
         public RendezVou Appointment { get; set; } = new();
+
+        [ValidateNever]
         public IEnumerable<SelectListItem> Patients { get; set; } = Array.Empty<SelectListItem>();
+
+        [ValidateNever]
         public IEnumerable<SelectListItem> Medecins { get; set; } = Array.Empty<SelectListItem>();
     }
 }
