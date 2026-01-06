@@ -36,7 +36,7 @@ namespace MedicalOfficeManagement.Controllers
                     PatientName = c.Patient == null
                         ? "Unknown patient"
                         : $"{c.Patient.Prenom} {c.Patient.Nom}".Trim(),
-                    VisitReason = string.IsNullOrWhiteSpace(c.RendezVous?.Motif) ? "Consultation" : c.RendezVous.Motif,
+                    VisitReason = c.RendezVous == null || string.IsNullOrWhiteSpace(c.RendezVous.Motif) ? "Consultation" : c.RendezVous.Motif,
                     Status = string.IsNullOrWhiteSpace(c.Diagnostics) ? "In Review" : "Signed",
                     Provider = c.Medecin == null || string.IsNullOrWhiteSpace(c.Medecin.NomPrenom)
                         ? "Unassigned"

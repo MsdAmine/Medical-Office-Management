@@ -19,30 +19,29 @@ public class DashboardMetricsService : IDashboardMetricsService
     {
         var now = DateTime.UtcNow;
 
-        var upcomingAppointmentsTask = _context.RendezVous
+        var upcomingAppointments = await _context.RendezVous
             .AsNoTracking()
             .CountAsync(r => r.DateDebut >= now);
 
-        var totalPatientsTask = _context.Patients
+        var totalPatients = await _context.Patients
             .AsNoTracking()
             .CountAsync();
 
-        var openInvoicesTask = _context.BillingInvoices
+        var openInvoices = await _context.BillingInvoices
             .AsNoTracking()
-            .CountAsync(i => !i.Status.Equals("Paid", StringComparison.OrdinalIgnoreCase));
+            .CountAsync(i => i.Status != "Paid");
 
-        var pendingLabResultsTask = _context.ReportArtifacts
+        var pendingLabResults = await _context.ReportArtifacts
             .AsNoTracking()
-            .CountAsync(r => !r.Status.Equals("Ready", StringComparison.OrdinalIgnoreCase));
-
-        await Task.WhenAll(upcomingAppointmentsTask, totalPatientsTask, openInvoicesTask, pendingLabResultsTask);
+            .CountAsync(r => r.Status != "Ready");
 
         return new LayoutViewModel
         {
-            UpcomingAppointments = upcomingAppointmentsTask.Result,
-            TotalPatients = totalPatientsTask.Result,
-            OpenInvoices = openInvoicesTask.Result,
-            PendingLabResults = pendingLabResultsTask.Result
+            UpcomingAppointments = upcomingAppointments,
+            TotalPatients = totalPatients,
+            OpenInvoices = openInvoices,
+            PendingLabResults = pendingLabResults
         };
     }
+
 }
