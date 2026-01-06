@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace MedicalOfficeManagement.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreateWithBilling : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -88,33 +88,6 @@ namespace MedicalOfficeManagement.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_InventoryItems", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Patients",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Nom = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Prenom = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    DateNaissance = table.Column<DateOnly>(type: "date", nullable: true),
-                    Sexe = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
-                    Adresse = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    Telephone = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
-                    Antecedents = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CreatedBy = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    UpdatedBy = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeletedBy = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Patients", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -265,6 +238,104 @@ namespace MedicalOfficeManagement.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Patients",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Nom = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Prenom = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    DateNaissance = table.Column<DateOnly>(type: "date", nullable: true),
+                    Sexe = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    Adresse = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    Telephone = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
+                    Antecedents = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    UpdatedBy = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    ApplicationUserId = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Patients", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Patients_AspNetUsers_ApplicationUserId",
+                        column: x => x.ApplicationUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "LabResults",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PatientId = table.Column<int>(type: "int", nullable: false),
+                    MedecinId = table.Column<int>(type: "int", nullable: true),
+                    TestName = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
+                    Priority = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(60)", maxLength: 60, nullable: false),
+                    CollectedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ResultValue = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    Notes = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LabResults", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_LabResults_Medecins_MedecinId",
+                        column: x => x.MedecinId,
+                        principalTable: "Medecins",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_LabResults_Patients_PatientId",
+                        column: x => x.PatientId,
+                        principalTable: "Patients",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Prescriptions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PatientId = table.Column<int>(type: "int", nullable: false),
+                    MedecinId = table.Column<int>(type: "int", nullable: true),
+                    Medication = table.Column<string>(type: "nvarchar(180)", maxLength: 180, nullable: false),
+                    Dosage = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: true),
+                    Frequency = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
+                    IssuedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    NextRefill = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    RefillsRemaining = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Prescriptions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Prescriptions_Medecins_MedecinId",
+                        column: x => x.MedecinId,
+                        principalTable: "Medecins",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Prescriptions_Patients_PatientId",
+                        column: x => x.PatientId,
+                        principalTable: "Patients",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "RendezVous",
                 columns: table => new
                 {
@@ -385,9 +456,26 @@ namespace MedicalOfficeManagement.Migrations
                 column: "RendezVousId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_LabResults_MedecinId",
+                table: "LabResults",
+                column: "MedecinId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LabResults_PatientId",
+                table: "LabResults",
+                column: "PatientId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Medecins_ApplicationUserId",
                 table: "Medecins",
                 column: "ApplicationUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Patients_ApplicationUserId",
+                table: "Patients",
+                column: "ApplicationUserId",
+                unique: true,
+                filter: "[ApplicationUserId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Patients_Email",
@@ -400,6 +488,16 @@ namespace MedicalOfficeManagement.Migrations
                 table: "Patients",
                 column: "Telephone",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Prescriptions_MedecinId",
+                table: "Prescriptions",
+                column: "MedecinId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Prescriptions_PatientId",
+                table: "Prescriptions",
+                column: "PatientId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RendezVous_MedecinId",
@@ -438,6 +536,12 @@ namespace MedicalOfficeManagement.Migrations
 
             migrationBuilder.DropTable(
                 name: "InventoryItems");
+
+            migrationBuilder.DropTable(
+                name: "LabResults");
+
+            migrationBuilder.DropTable(
+                name: "Prescriptions");
 
             migrationBuilder.DropTable(
                 name: "ReportArtifacts");

@@ -36,4 +36,5 @@ public class LabResult
 
     [ValidateNever]
     public Medecin? Medecin { get; set; }
+
 }

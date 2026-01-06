@@ -232,24 +232,22 @@ namespace MedicalOfficeManagement.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
-                    b.Property<string>("Priority")
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValue("Routine");
-
                     b.Property<int>("PatientId")
                         .HasColumnType("int");
+
+                    b.Property<string>("Priority")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.Property<string>("ResultValue")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("Status")
+                        .IsRequired()
                         .HasMaxLength(60)
-                        .HasColumnType("nvarchar(60)")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValue("Pending");
+                        .HasColumnType("nvarchar(60)");
 
                     b.Property<string>("TestName")
                         .IsRequired()
@@ -304,64 +302,6 @@ namespace MedicalOfficeManagement.Migrations
                     b.ToTable("Medecins");
                 });
 
-            modelBuilder.Entity("MedicalOfficeManagement.Models.Prescription", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Dosage")
-                        .HasMaxLength(120)
-                        .HasColumnType("nvarchar(120)");
-
-                    b.Property<string>("Frequency")
-                        .HasMaxLength(120)
-                        .HasColumnType("nvarchar(120)");
-
-                    b.Property<DateTime>("IssuedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("MedecinId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Medication")
-                        .IsRequired()
-                        .HasMaxLength(180)
-                        .HasColumnType("nvarchar(180)");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<DateTime?>("NextRefill")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("PatientId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RefillsRemaining")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasDefaultValue("Pending");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MedecinId");
-
-                    b.HasIndex("PatientId");
-
-                    b.ToTable("Prescriptions");
-                });
-
             modelBuilder.Entity("MedicalOfficeManagement.Models.Patient", b =>
                 {
                     b.Property<int>("Id")
@@ -370,10 +310,6 @@ namespace MedicalOfficeManagement.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ApplicationUserId")
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<string>("Adresse")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
@@ -381,6 +317,10 @@ namespace MedicalOfficeManagement.Migrations
                     b.Property<string>("Antecedents")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("ApplicationUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -446,6 +386,60 @@ namespace MedicalOfficeManagement.Migrations
                         .IsUnique();
 
                     b.ToTable("Patients");
+                });
+
+            modelBuilder.Entity("MedicalOfficeManagement.Models.Prescription", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Dosage")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("Frequency")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<DateTime>("IssuedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("MedecinId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Medication")
+                        .IsRequired()
+                        .HasMaxLength(180)
+                        .HasColumnType("nvarchar(180)");
+
+                    b.Property<DateTime?>("NextRefill")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("PatientId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RefillsRemaining")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MedecinId");
+
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("Prescriptions");
                 });
 
             modelBuilder.Entity("MedicalOfficeManagement.Models.RendezVou", b =>
@@ -685,8 +679,7 @@ namespace MedicalOfficeManagement.Migrations
                 {
                     b.HasOne("MedicalOfficeManagement.Models.Medecin", "Medecin")
                         .WithMany()
-                        .HasForeignKey("MedecinId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("MedecinId");
 
                     b.HasOne("MedicalOfficeManagement.Models.Patient", "Patient")
                         .WithMany("LabResults")
@@ -710,12 +703,21 @@ namespace MedicalOfficeManagement.Migrations
                     b.Navigation("ApplicationUser");
                 });
 
+            modelBuilder.Entity("MedicalOfficeManagement.Models.Patient", b =>
+                {
+                    b.HasOne("MedicalOfficeManagement.Models.ApplicationUser", "ApplicationUser")
+                        .WithMany()
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("ApplicationUser");
+                });
+
             modelBuilder.Entity("MedicalOfficeManagement.Models.Prescription", b =>
                 {
                     b.HasOne("MedicalOfficeManagement.Models.Medecin", "Medecin")
                         .WithMany()
-                        .HasForeignKey("MedecinId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("MedecinId");
 
                     b.HasOne("MedicalOfficeManagement.Models.Patient", "Patient")
                         .WithMany("Prescriptions")
@@ -745,16 +747,6 @@ namespace MedicalOfficeManagement.Migrations
                     b.Navigation("Medecin");
 
                     b.Navigation("Patient");
-                });
-
-            modelBuilder.Entity("MedicalOfficeManagement.Models.Patient", b =>
-                {
-                    b.HasOne("MedicalOfficeManagement.Models.ApplicationUser", "ApplicationUser")
-                        .WithMany()
-                        .HasForeignKey("ApplicationUserId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("ApplicationUser");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
