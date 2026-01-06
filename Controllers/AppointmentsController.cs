@@ -364,7 +364,7 @@ namespace MedicalOfficeManagement.Controllers
             }
 
             var pending = await BuildAppointmentQuery()
-                .Where(r => r.Statut.Equals("Pending Approval", StringComparison.OrdinalIgnoreCase))
+                .Where(r => r.Statut == "Pending Approval")
                 .OrderBy(r => r.DateDebut)
                 .ToListAsync();
 
