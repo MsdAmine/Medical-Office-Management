@@ -1,0 +1,66 @@
+@model MedicalOfficeManagement.Models.Prescription
+@{
+    ViewData["Title"] = "Prescription Details";
+}
+
+<div class="max-w-4xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <p class="text-sm text-indigo-600 font-semibold uppercase tracking-wide">Prescriptions</p>
+            <h1 class="text-2xl font-bold text-slate-900">Prescription Details</h1>
+            <p class="text-slate-600 mt-1">Verify medication order and refill plan.</p>
+        </div>
+        <div class="flex gap-3">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="inline-flex items-center px-4 py-2 rounded-lg border border-amber-200 text-amber-700 hover:bg-amber-50">
+                <i class="fas fa-pen mr-2"></i>
+                Edit
+            </a>
+            <a asp-action="Index" class="inline-flex items-center px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">Back to list</a>
+        </div>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6 space-y-4">
+        <dl class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <dt class="text-sm font-medium text-slate-500">Patient</dt>
+                <dd class="text-lg font-semibold text-slate-900">@Model.Patient?.Prenom @Model.Patient?.Nom</dd>
+            </div>
+            <div>
+                <dt class="text-sm font-medium text-slate-500">Prescriber</dt>
+                <dd class="text-lg font-semibold text-slate-900">@Model.Medecin?.NomPrenom ?? "Unassigned"</dd>
+            </div>
+            <div>
+                <dt class="text-sm font-medium text-slate-500">Medication</dt>
+                <dd class="text-lg font-semibold text-slate-900">@Model.Medication</dd>
+            </div>
+            <div>
+                <dt class="text-sm font-medium text-slate-500">Status</dt>
+                <dd class="text-lg font-semibold text-slate-900">@Model.Status</dd>
+            </div>
+            <div>
+                <dt class="text-sm font-medium text-slate-500">Dosage</dt>
+                <dd class="text-lg text-slate-900">@Model.Dosage</dd>
+            </div>
+            <div>
+                <dt class="text-sm font-medium text-slate-500">Frequency</dt>
+                <dd class="text-lg text-slate-900">@Model.Frequency</dd>
+            </div>
+            <div>
+                <dt class="text-sm font-medium text-slate-500">Issued On</dt>
+                <dd class="text-lg text-slate-900">@Model.IssuedOn.ToString("d")</dd>
+            </div>
+            <div>
+                <dt class="text-sm font-medium text-slate-500">Next Refill</dt>
+                <dd class="text-lg text-slate-900">@Model.NextRefill?.ToString("d") ?? "N/A"</dd>
+            </div>
+            <div>
+                <dt class="text-sm font-medium text-slate-500">Refills Remaining</dt>
+                <dd class="text-lg text-slate-900">@Model.RefillsRemaining</dd>
+            </div>
+        </dl>
+        <div>
+            <h2 class="text-sm font-medium text-slate-500 uppercase tracking-wide mb-2">Notes</h2>
+            <p class="text-slate-700 whitespace-pre-line">@Model.Notes</p>
+        </div>
+    </div>
+</div>

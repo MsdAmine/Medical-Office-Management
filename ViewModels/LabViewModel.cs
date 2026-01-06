@@ -5,6 +5,7 @@ namespace MedicalOfficeManagement.ViewModels
 {
     public class LabResultViewModel
     {
+        public int Id { get; set; }
         public string TestName { get; set; } = string.Empty;
         public string PatientName { get; set; } = string.Empty;
         public string Priority { get; set; } = string.Empty;

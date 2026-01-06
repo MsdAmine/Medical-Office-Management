@@ -119,6 +119,102 @@ namespace MedicalOfficeManagement.Data.Seeders
                 );
             }
 
+            var medecinUser = await userManager.FindByEmailAsync("medecin@medoffice.local");
+            if (!await context.Medecins.AnyAsync() && medecinUser != null)
+            {
+                context.Medecins.Add(new Medecin
+                {
+                    ApplicationUserId = medecinUser.Id,
+                    NomPrenom = "Dr. Claire Leclerc",
+                    Specialite = "Médecine générale",
+                    Adresse = "12 Rue de la Santé",
+                    Telephone = "+33155501010",
+                    Email = "medecin@medoffice.local"
+                });
+            }
+
+            var patientUser = await userManager.FindByEmailAsync("patient@medoffice.local");
+            if (!await context.Patients.AnyAsync())
+            {
+                context.Patients.Add(new Patient
+                {
+                    ApplicationUserId = patientUser?.Id,
+                    Nom = "Martin",
+                    Prenom = "Alice",
+                    Telephone = "+33155500001",
+                    Email = "patient@medoffice.local",
+                    Adresse = "5 Avenue des Lilas",
+                    Sexe = "F",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                });
+            }
+
+            await context.SaveChangesAsync();
+
+            var medecinId = await context.Medecins.Select(m => m.Id).FirstOrDefaultAsync();
+            var patientId = await context.Patients.Select(p => p.Id).FirstOrDefaultAsync();
+
+            if (patientId != 0 && medecinId != 0)
+            {
+                if (!await context.Consultations.AnyAsync())
+                {
+                    context.Consultations.Add(new Consultation
+                    {
+                        PatientId = patientId,
+                        MedecinId = medecinId,
+                        DateConsult = DateTime.UtcNow.AddDays(-2),
+                        Observations = "Routine check-up; vitals within normal limits.",
+                        Diagnostics = "Healthy adult",
+                        RendezVousId = null
+                    });
+                }
+
+                if (!await context.Prescriptions.AnyAsync())
+                {
+                    context.Prescriptions.Add(new Prescription
+                    {
+                        PatientId = patientId,
+                        MedecinId = medecinId,
+                        Medication = "Amoxicillin",
+                        Dosage = "500mg",
+                        Frequency = "Twice daily",
+                        Status = "Active",
+                        IssuedOn = DateTime.UtcNow.AddDays(-2),
+                        NextRefill = DateTime.UtcNow.AddDays(12),
+                        RefillsRemaining = 2,
+                        Notes = "Take with food"
+                    });
+                }
+
+                if (!await context.LabResults.AnyAsync())
+                {
+                    context.LabResults.AddRange(
+                        new LabResult
+                        {
+                            PatientId = patientId,
+                            MedecinId = medecinId,
+                            TestName = "CBC with Differential",
+                            Priority = "Routine",
+                            Status = "Completed",
+                            CollectedOn = DateTime.UtcNow.AddHours(-4),
+                            ResultValue = "Within normal limits"
+                        },
+                        new LabResult
+                        {
+                            PatientId = patientId,
+                            MedecinId = medecinId,
+                            TestName = "Troponin I",
+                            Priority = "STAT",
+                            Status = "Pending Review",
+                            CollectedOn = DateTime.UtcNow.AddHours(-1),
+                            ResultValue = "0.03 ng/mL",
+                            Notes = "Escalate if symptoms worsen"
+                        }
+                    );
+                }
+            }
+
             await context.SaveChangesAsync();
         }
 

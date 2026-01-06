@@ -22,10 +22,14 @@
                        class="pl-10 pr-4 py-2 border border-slate-300 rounded-lg w-full md:w-72
                               focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
             </div>
-            <button class="gradient-primary text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-shadow flex items-center">
+            <a asp-action="Create" class="gradient-primary text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-shadow flex items-center">
                 <i class="fas fa-plus mr-2"></i>
                 New Prescription
-            </button>
+            </a>
+            <a asp-action="Export" class="inline-flex items-center px-4 py-2 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition">
+                <i class="fas fa-cloud-download-alt mr-2 text-slate-500"></i>
+                Export
+            </a>
         </div>
     </div>
 
@@ -131,12 +135,15 @@
                             </td>
                             <td class="py-4 px-6">
                                 <div class="flex items-center space-x-2">
-                                    <button class="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg" title="View details">
+                                    <a asp-action="Details" asp-route-id="@prescription.Id" class="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg" title="View details">
                                         <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="p-2 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg" title="Renew">
-                                        <i class="fas fa-sync"></i>
-                                    </button>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@prescription.Id" class="p-2 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg" title="Edit">
+                                        <i class="fas fa-pen"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@prescription.Id" class="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
                                 </div>
                             </td>
                         </tr>

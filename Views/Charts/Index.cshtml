@@ -13,14 +13,14 @@
                 <p class="text-slate-600 mt-1">Track documentation progress and outstanding sign-offs.</p>
             </div>
             <div class="flex items-center gap-3">
-                <button class="inline-flex items-center px-4 py-2 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition">
+                <a asp-action="Export" class="inline-flex items-center px-4 py-2 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition">
                     <i class="fas fa-cloud-download-alt mr-2 text-slate-500"></i>
                     Export charts
-                </button>
-                <button class="inline-flex items-center px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition">
+                </a>
+                <a asp-action="Create" class="inline-flex items-center px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition">
                     <i class="fas fa-plus mr-2"></i>
                     New chart
-                </button>
+                </a>
             </div>
         </div>
     </div>
@@ -97,9 +97,12 @@
                                 <i class="fas fa-circle text-xs mr-2"></i>
                                 @chart.Status
                             </span>
-                            <button class="inline-flex items-center px-3 py-2 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                            <a asp-action="Details" asp-route-id="@chart.Id" class="inline-flex items-center px-3 py-2 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-50">
                                 Review
-                            </button>
+                            </a>
+                            <a asp-action="Edit" asp-route-id="@chart.Id" class="inline-flex items-center px-3 py-2 rounded-lg border border-amber-200 text-sm font-medium text-amber-800 hover:bg-amber-50">
+                                Edit
+                            </a>
                         </div>
                     </div>
                 }

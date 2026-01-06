@@ -1,0 +1,50 @@
+@model MedicalOfficeManagement.Models.Prescription
+@{
+    ViewData["Title"] = "Delete Prescription";
+}
+
+<div class="max-w-4xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <p class="text-sm text-red-600 font-semibold uppercase tracking-wide">Prescriptions</p>
+            <h1 class="text-2xl font-bold text-slate-900">Delete Prescription</h1>
+            <p class="text-slate-600 mt-1">Removing this order will also remove its refill history.</p>
+        </div>
+        <a asp-action="Index" class="inline-flex items-center px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">Back to list</a>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <p class="text-sm font-medium text-slate-500">Patient</p>
+                <p class="text-lg font-semibold text-slate-900">@Model.Patient?.Prenom @Model.Patient?.Nom</p>
+            </div>
+            <div>
+                <p class="text-sm font-medium text-slate-500">Prescriber</p>
+                <p class="text-lg font-semibold text-slate-900">@Model.Medecin?.NomPrenom ?? "Unassigned"</p>
+            </div>
+            <div>
+                <p class="text-sm font-medium text-slate-500">Medication</p>
+                <p class="text-lg font-semibold text-slate-900">@Model.Medication</p>
+            </div>
+            <div>
+                <p class="text-sm font-medium text-slate-500">Status</p>
+                <p class="text-lg font-semibold text-slate-900">@Model.Status</p>
+            </div>
+        </div>
+
+        <div>
+            <p class="text-sm font-medium text-slate-500 mb-1">Notes</p>
+            <p class="text-slate-700 whitespace-pre-line">@Model.Notes</p>
+        </div>
+
+        <form asp-action="Delete" method="post" class="flex items-center justify-end gap-3">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <button type="submit" class="inline-flex items-center px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700">
+                <i class="fas fa-trash mr-2"></i>
+                Confirm delete
+            </button>
+        </form>
+    </div>
+</div>
