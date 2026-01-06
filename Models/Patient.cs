@@ -68,4 +68,8 @@ public partial class Patient
     public virtual ICollection<Consultation> Consultations { get; set; } = new List<Consultation>();
 
     public virtual ICollection<RendezVou> RendezVous { get; set; } = new List<RendezVou>();
+
+    public virtual ICollection<Prescription> Prescriptions { get; set; } = new List<Prescription>();
+
+    public virtual ICollection<LabResult> LabResults { get; set; } = new List<LabResult>();
 }

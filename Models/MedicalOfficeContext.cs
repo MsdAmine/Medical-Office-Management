@@ -36,6 +36,10 @@ public partial class MedicalOfficeContext : IdentityDbContext<ApplicationUser>
 
     public virtual DbSet<ReportArtifact> ReportArtifacts { get; set; } = null!;
 
+    public virtual DbSet<Prescription> Prescriptions { get; set; } = null!;
+
+    public virtual DbSet<LabResult> LabResults { get; set; } = null!;
+
 
     // public virtual DbSet<Utilisateur> Utilisateurs { get; set; } // Ligne retirée
 

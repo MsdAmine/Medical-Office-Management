@@ -1,0 +1,56 @@
+@model MedicalOfficeManagement.Models.Consultation
+@{
+    ViewData["Title"] = "Delete Chart";
+}
+
+<div class="max-w-3xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <p class="text-sm text-red-600 font-semibold uppercase tracking-wide">Charts</p>
+            <h1 class="text-2xl font-bold text-slate-900">Delete Consultation</h1>
+            <p class="text-slate-600 mt-1">This action cannot be undone.</p>
+        </div>
+        <a asp-action="Index" class="inline-flex items-center px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">
+            Back to list
+        </a>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <p class="text-sm font-medium text-slate-500">Patient</p>
+                <p class="text-lg font-semibold text-slate-900">@Model.Patient?.Prenom @Model.Patient?.Nom</p>
+            </div>
+            <div>
+                <p class="text-sm font-medium text-slate-500">Provider</p>
+                <p class="text-lg font-semibold text-slate-900">@Model.Medecin?.NomPrenom ?? "Unassigned"</p>
+            </div>
+            <div>
+                <p class="text-sm font-medium text-slate-500">Date</p>
+                <p class="text-lg font-semibold text-slate-900">@Model.DateConsult.ToString("f")</p>
+            </div>
+            <div>
+                <p class="text-sm font-medium text-slate-500">Appointment Id</p>
+                <p class="text-lg font-semibold text-slate-900">@Model.RendezVousId?.ToString() ?? "N/A"</p>
+            </div>
+        </div>
+
+        <div>
+            <p class="text-sm font-medium text-slate-500 mb-1">Observations</p>
+            <p class="text-slate-700 whitespace-pre-line">@Model.Observations</p>
+        </div>
+        <div>
+            <p class="text-sm font-medium text-slate-500 mb-1">Diagnostics</p>
+            <p class="text-slate-700 whitespace-pre-line">@Model.Diagnostics</p>
+        </div>
+
+        <form asp-action="Delete" method="post" class="flex items-center justify-end gap-3">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <button type="submit" class="inline-flex items-center px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700">
+                <i class="fas fa-trash mr-2"></i>
+                Confirm delete
+            </button>
+        </form>
+    </div>
+</div>

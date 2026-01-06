@@ -1,0 +1,97 @@
+@model MedicalOfficeManagement.Models.LabResult
+@{
+    ViewData["Title"] = "Create Lab Result";
+}
+
+<div class="max-w-4xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <p class="text-sm text-emerald-600 font-semibold uppercase tracking-wide">Lab</p>
+            <h1 class="text-2xl font-bold text-slate-900">New Result</h1>
+            <p class="text-slate-600 mt-1">Capture laboratory findings and routing details.</p>
+        </div>
+        <a asp-action="Index" class="inline-flex items-center px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Back to queue
+        </a>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
+        <form asp-action="Create" method="post" class="space-y-6">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-red-600 text-sm"></div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label asp-for="PatientId" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                    <select asp-for="PatientId" asp-items="ViewBag.PatientId" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"></select>
+                    <span asp-validation-for="PatientId" class="text-red-600 text-sm"></span>
+                </div>
+                <div>
+                    <label asp-for="MedecinId" class="block text-sm font-medium text-slate-900 mb-2">Ordering Provider</label>
+                    <select asp-for="MedecinId" asp-items="ViewBag.MedecinId" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"></select>
+                    <span asp-validation-for="MedecinId" class="text-red-600 text-sm"></span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label asp-for="TestName" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                    <input asp-for="TestName" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
+                    <span asp-validation-for="TestName" class="text-red-600 text-sm"></span>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label asp-for="Priority" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                        <select asp-for="Priority" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                            <option>Routine</option>
+                            <option>STAT</option>
+                        </select>
+                        <span asp-validation-for="Priority" class="text-red-600 text-sm"></span>
+                    </div>
+                    <div>
+                        <label asp-for="Status" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                        <select asp-for="Status" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                            <option>Pending</option>
+                            <option>In Progress</option>
+                            <option>Pending Review</option>
+                            <option>Completed</option>
+                        </select>
+                        <span asp-validation-for="Status" class="text-red-600 text-sm"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label asp-for="CollectedOn" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                    <input asp-for="CollectedOn" type="datetime-local" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
+                    <span asp-validation-for="CollectedOn" class="text-red-600 text-sm"></span>
+                </div>
+                <div>
+                    <label asp-for="ResultValue" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                    <input asp-for="ResultValue" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
+                    <span asp-validation-for="ResultValue" class="text-red-600 text-sm"></span>
+                </div>
+            </div>
+
+            <div>
+                <label asp-for="Notes" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                <textarea asp-for="Notes" rows="3" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"></textarea>
+                <span asp-validation-for="Notes" class="text-red-600 text-sm"></span>
+            </div>
+
+            <div class="flex items-center justify-end gap-3">
+                <a asp-action="Index" class="inline-flex items-center px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">Cancel</a>
+                <button type="submit" class="inline-flex items-center px-4 py-2 rounded-lg bg-emerald-600 text-white font-medium hover:bg-emerald-700">
+                    <i class="fas fa-save mr-2"></i>
+                    Save result
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

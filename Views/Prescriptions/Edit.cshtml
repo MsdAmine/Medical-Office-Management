@@ -1,0 +1,105 @@
+@model MedicalOfficeManagement.Models.Prescription
+@{
+    ViewData["Title"] = "Edit Prescription";
+}
+
+<div class="max-w-5xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <p class="text-sm text-amber-600 font-semibold uppercase tracking-wide">Prescriptions</p>
+            <h1 class="text-2xl font-bold text-slate-900">Edit Prescription</h1>
+            <p class="text-slate-600 mt-1">Update medication directions or refill counts.</p>
+        </div>
+        <a asp-action="Index" class="inline-flex items-center px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Back to list
+        </a>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
+        <form asp-action="Edit" method="post" class="space-y-6">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <div asp-validation-summary="ModelOnly" class="text-red-600 text-sm"></div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label asp-for="PatientId" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                    <select asp-for="PatientId" asp-items="ViewBag.PatientId" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"></select>
+                    <span asp-validation-for="PatientId" class="text-red-600 text-sm"></span>
+                </div>
+                <div>
+                    <label asp-for="MedecinId" class="block text-sm font-medium text-slate-900 mb-2">Prescriber</label>
+                    <select asp-for="MedecinId" asp-items="ViewBag.MedecinId" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"></select>
+                    <span asp-validation-for="MedecinId" class="text-red-600 text-sm"></span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="md:col-span-2">
+                    <label asp-for="Medication" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                    <input asp-for="Medication" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                    <span asp-validation-for="Medication" class="text-red-600 text-sm"></span>
+                </div>
+                <div>
+                    <label asp-for="Status" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                    <select asp-for="Status" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option>Pending</option>
+                        <option>Active</option>
+                        <option>Completed</option>
+                    </select>
+                    <span asp-validation-for="Status" class="text-red-600 text-sm"></span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label asp-for="Dosage" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                    <input asp-for="Dosage" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                    <span asp-validation-for="Dosage" class="text-red-600 text-sm"></span>
+                </div>
+                <div>
+                    <label asp-for="Frequency" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                    <input asp-for="Frequency" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                    <span asp-validation-for="Frequency" class="text-red-600 text-sm"></span>
+                </div>
+                <div>
+                    <label asp-for="RefillsRemaining" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                    <input asp-for="RefillsRemaining" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                    <span asp-validation-for="RefillsRemaining" class="text-red-600 text-sm"></span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label asp-for="IssuedOn" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                    <input asp-for="IssuedOn" type="date" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                    <span asp-validation-for="IssuedOn" class="text-red-600 text-sm"></span>
+                </div>
+                <div>
+                    <label asp-for="NextRefill" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                    <input asp-for="NextRefill" type="date" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                    <span asp-validation-for="NextRefill" class="text-red-600 text-sm"></span>
+                </div>
+            </div>
+
+            <div>
+                <label asp-for="Notes" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                <textarea asp-for="Notes" rows="3" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                <span asp-validation-for="Notes" class="text-red-600 text-sm"></span>
+            </div>
+
+            <div class="flex items-center justify-end gap-3">
+                <a asp-action="Index" class="inline-flex items-center px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">Cancel</a>
+                <button type="submit" class="inline-flex items-center px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700">
+                    <i class="fas fa-save mr-2"></i>
+                    Save changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,75 @@
+@model MedicalOfficeManagement.Models.Consultation
+@{
+    ViewData["Title"] = "Create Chart";
+}
+
+<div class="max-w-4xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <p class="text-sm text-blue-600 font-semibold uppercase tracking-wide">Charts</p>
+            <h1 class="text-2xl font-bold text-slate-900">New Consultation</h1>
+            <p class="text-slate-600 mt-1">Capture visit details for clinical documentation.</p>
+        </div>
+        <a asp-action="Index" class="inline-flex items-center px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Back to list
+        </a>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
+        <form asp-action="Create" method="post" class="space-y-6">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-red-600 text-sm"></div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label asp-for="PatientId" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                    <select asp-for="PatientId" asp-items="ViewBag.PatientId" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></select>
+                    <span asp-validation-for="PatientId" class="text-red-600 text-sm"></span>
+                </div>
+                <div>
+                    <label asp-for="MedecinId" class="block text-sm font-medium text-slate-900 mb-2">Provider</label>
+                    <select asp-for="MedecinId" asp-items="ViewBag.MedecinId" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></select>
+                    <span asp-validation-for="MedecinId" class="text-red-600 text-sm"></span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label asp-for="DateConsult" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                    <input asp-for="DateConsult" type="datetime-local" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                    <span asp-validation-for="DateConsult" class="text-red-600 text-sm"></span>
+                </div>
+                <div>
+                    <label asp-for="RendezVousId" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                    <input asp-for="RendezVousId" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                    <span asp-validation-for="RendezVousId" class="text-red-600 text-sm"></span>
+                </div>
+            </div>
+
+            <div>
+                <label asp-for="Observations" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                <textarea asp-for="Observations" rows="3" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                <span asp-validation-for="Observations" class="text-red-600 text-sm"></span>
+            </div>
+
+            <div>
+                <label asp-for="Diagnostics" class="block text-sm font-medium text-slate-900 mb-2"></label>
+                <textarea asp-for="Diagnostics" rows="3" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                <span asp-validation-for="Diagnostics" class="text-red-600 text-sm"></span>
+            </div>
+
+            <div class="flex items-center justify-end gap-3">
+                <a asp-action="Index" class="inline-flex items-center px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">Cancel</a>
+                <button type="submit" class="inline-flex items-center px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700">
+                    <i class="fas fa-save mr-2"></i>
+                    Save chart
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
