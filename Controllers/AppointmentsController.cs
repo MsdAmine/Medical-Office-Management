@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MedicalOfficeManagement.Models.Security;
 using System.Security.Claims;
+using System.Text;
 
 namespace MedicalOfficeManagement.Controllers
 {
@@ -247,6 +248,125 @@ namespace MedicalOfficeManagement.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpGet]
+        public async Task<IActionResult> CalendarEvents(DateTime? start, DateTime? end)
+        {
+            var medecinId = await GetCurrentMedecinIdAsync();
+            if (User.IsInRole(SystemRoles.Medecin) && !medecinId.HasValue)
+            {
+                return Forbid();
+            }
+
+            var query = GetScopedAppointmentsQueryable(medecinId);
+
+            if (start.HasValue)
+            {
+                query = query.Where(r => r.DateFin >= start.Value);
+            }
+
+            if (end.HasValue)
+            {
+                query = query.Where(r => r.DateDebut <= end.Value);
+            }
+
+            var appointments = await query.AsNoTracking().ToListAsync();
+
+            var events = appointments
+                .Select(r => new
+                {
+                    id = r.Id,
+                    title = string.IsNullOrWhiteSpace(r.Motif)
+                        ? BuildPatientName(r.Patient)
+                        : $"{BuildPatientName(r.Patient)} - {r.Motif}",
+                    start = r.DateDebut,
+                    end = r.DateFin,
+                    status = r.Statut,
+                    patient = BuildPatientName(r.Patient),
+                    medecin = string.IsNullOrWhiteSpace(r.Medecin.NomPrenom) ? "Unassigned" : r.Medecin.NomPrenom,
+                    reason = string.IsNullOrWhiteSpace(r.Motif) ? "Not specified" : r.Motif,
+                    location = r.SalleId.HasValue ? $"Room {r.SalleId}" : "Unassigned"
+                })
+                .ToList();
+
+            return Json(events);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Reschedule([FromBody] RescheduleRequest request)
+        {
+            if (request == null)
+            {
+                return BadRequest("Missing reschedule payload.");
+            }
+
+            var appointment = await BuildAppointmentQuery()
+                .FirstOrDefaultAsync(r => r.Id == request.Id);
+
+            if (appointment == null)
+                return NotFound();
+
+            if (!await CanAccessAppointmentAsync(appointment))
+                return Forbid();
+
+            if (request.End <= request.Start)
+            {
+                return BadRequest("End time must be after the start time.");
+            }
+
+            appointment.DateDebut = request.Start;
+            appointment.DateFin = request.End;
+
+            await _context.SaveChangesAsync();
+            return Json(new { success = true });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateStatus([FromBody] UpdateStatusRequest request)
+        {
+            if (request == null)
+            {
+                return BadRequest("Missing status payload.");
+            }
+
+            var appointment = await _context.RendezVous.FindAsync(request.Id);
+
+            if (appointment == null)
+                return NotFound();
+
+            if (!await CanAccessAppointmentAsync(appointment))
+                return Forbid();
+
+            if (!AllowedStatuses.Contains(request.Status, StringComparer.OrdinalIgnoreCase))
+            {
+                return BadRequest("Unsupported status value.");
+            }
+
+            appointment.Statut = request.Status;
+            await _context.SaveChangesAsync();
+            return Json(new { success = true });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DownloadIcs(int id)
+        {
+            var appointment = await BuildAppointmentQuery()
+                .FirstOrDefaultAsync(r => r.Id == id);
+
+            if (appointment == null)
+                return NotFound();
+
+            if (!await CanAccessAppointmentAsync(appointment))
+                return Forbid();
+
+            var icsContent = BuildIcsContent(appointment);
+            var bytes = Encoding.UTF8.GetBytes(icsContent);
+            var fileName = $"appointment-{appointment.Id}.ics";
+
+            return File(bytes, "text/calendar", fileName);
+        }
+
         private IQueryable<RendezVou> BuildAppointmentQuery()
         {
             return _context.RendezVous
@@ -437,6 +557,8 @@ namespace MedicalOfficeManagement.Controllers
             viewModel.Medecins = await GetMedecinsSelectListAsync(viewModel.Appointment.MedecinId, medecinId);
         }
 
+        private static readonly string[] AllowedStatuses = new[] { "Scheduled", "Checked-in", "Completed" };
+
         private async Task ValidateAppointmentAsync(RendezVou appointment, int? medecinId)
         {
             if (appointment.DateFin <= appointment.DateDebut)
@@ -498,5 +620,47 @@ namespace MedicalOfficeManagement.Controllers
             ViewData["Title"] = title;
             ViewData["Breadcrumb"] = "Schedule";
         }
+
+        private static string BuildIcsContent(RendezVou appointment)
+        {
+            string Escape(string? value) =>
+                (value ?? string.Empty)
+                    .Replace("\\", "\\\\")
+                    .Replace(";", "\\;")
+                    .Replace(",", "\\,")
+                    .Replace("\n", "\\n");
+
+            var builder = new StringBuilder();
+            builder.AppendLine("BEGIN:VCALENDAR");
+            builder.AppendLine("VERSION:2.0");
+            builder.AppendLine("PRODID:-//MedicalOfficeManagement//Appointments//EN");
+            builder.AppendLine("CALSCALE:GREGORIAN");
+            builder.AppendLine("METHOD:PUBLISH");
+            builder.AppendLine("BEGIN:VEVENT");
+            builder.AppendLine($"UID:appointment-{appointment.Id}@medicaloffice.local");
+            builder.AppendLine($"DTSTAMP:{DateTime.UtcNow:yyyyMMddTHHmmssZ}");
+            builder.AppendLine($"DTSTART:{appointment.DateDebut.ToUniversalTime():yyyyMMddTHHmmssZ}");
+            builder.AppendLine($"DTEND:{appointment.DateFin.ToUniversalTime():yyyyMMddTHHmmssZ}");
+            builder.AppendLine($"SUMMARY:{Escape(BuildPatientName(appointment.Patient))}");
+            builder.AppendLine($"DESCRIPTION:{Escape(appointment.Motif ?? "Appointment")}");
+            builder.AppendLine($"LOCATION:{Escape(appointment.SalleId.HasValue ? $"Room {appointment.SalleId}" : "Unassigned")}");
+            builder.AppendLine($"STATUS:{Escape(appointment.Statut)}");
+            builder.AppendLine("END:VEVENT");
+            builder.AppendLine("END:VCALENDAR");
+            return builder.ToString();
+        }
+    }
+
+    public class RescheduleRequest
+    {
+        public int Id { get; set; }
+        public DateTime Start { get; set; }
+        public DateTime End { get; set; }
+    }
+
+    public class UpdateStatusRequest
+    {
+        public int Id { get; set; }
+        public string Status { get; set; } = string.Empty;
     }
 }

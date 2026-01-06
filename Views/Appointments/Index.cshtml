@@ -1,8 +1,23 @@
 @model ScheduleIndexViewModel
+@using System.Text.Json
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
 
 @{
     ViewData["Title"] = "Schedule";
     ViewData["Breadcrumb"] = "Schedule";
+    var antiForgeryToken = Antiforgery.GetAndStoreTokens(HttpContext).RequestToken;
+    var appointmentsJson = JsonSerializer.Serialize(Model.Appointments.Select(a => new
+    {
+        id = a.Id,
+        title = $"{a.PatientName} - {a.Reason}",
+        start = a.StartTime.ToString("o"),
+        end = a.EndTime.ToString("o"),
+        status = a.Status,
+        location = a.Location,
+        patient = a.PatientName,
+        medecin = a.MedecinName,
+        reason = a.Reason
+    }));
 }
 
 <div class="space-y-6">
@@ -44,6 +59,112 @@
             <p class="text-sm text-slate-500">Completed this week</p>
             <p class="text-3xl font-bold text-slate-900">@Model.CompletedThisWeek</p>
             <p class="text-xs text-slate-600 mt-1">Marked as completed</p>
+        </div>
+    </div>
+
+    <div class="glass-card rounded-xl overflow-hidden">
+        <div class="p-6 border-b border-slate-200 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div>
+                <h2 class="text-lg font-semibold text-slate-900">Calendar</h2>
+                <p class="text-sm text-slate-600">Drag and drop to reschedule. Use chips to update status.</p>
+            </div>
+            <div class="flex items-center gap-2 text-sm text-slate-600">
+                <span class="flex items-center gap-1"><span class="badge-dot bg-blue-500"></span> Scheduled</span>
+                <span class="flex items-center gap-1"><span class="badge-dot bg-emerald-500"></span> Checked-in</span>
+                <span class="flex items-center gap-1"><span class="badge-dot bg-slate-400"></span> Completed</span>
+            </div>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-6 p-6">
+            <div class="lg:col-span-2 space-y-4">
+                <div class="flex flex-wrap gap-2 items-center">
+                    <button id="calendarToday" class="px-3 py-2 rounded-lg border border-slate-200 text-sm hover:bg-slate-50">
+                        <i class="fas fa-calendar-day mr-2 text-slate-500"></i> Today
+                    </button>
+                    <div class="inline-flex rounded-lg border border-slate-200 overflow-hidden">
+                        <button data-view="dayGridMonth" class="calendar-view-btn px-4 py-2 text-sm hover:bg-slate-50 font-medium">Month</button>
+                        <button data-view="timeGridWeek" class="calendar-view-btn px-4 py-2 text-sm hover:bg-slate-50 font-medium">Week</button>
+                        <button data-view="timeGridDay" class="calendar-view-btn px-4 py-2 text-sm hover:bg-slate-50 font-medium">Day</button>
+                        <button data-view="listWeek" class="calendar-view-btn px-4 py-2 text-sm hover:bg-slate-50 font-medium">Agenda</button>
+                    </div>
+                </div>
+                <div id="calendar" class="bg-white border border-slate-200 rounded-xl shadow-inner"></div>
+            </div>
+
+            <div class="space-y-4">
+                <div class="glass-card p-4 rounded-xl">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-1">Quick actions</p>
+                            <h3 class="text-lg font-semibold text-slate-900" id="selected-title">Select an appointment</h3>
+                            <p class="text-sm text-slate-600" id="selected-subtitle">Click a calendar entry to unlock actions.</p>
+                        </div>
+                        <span id="selected-status" class="px-3 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-700">—</span>
+                    </div>
+
+                    <dl class="mt-4 space-y-2 text-sm text-slate-600">
+                        <div class="flex justify-between">
+                            <dt class="font-medium text-slate-700">Patient</dt>
+                            <dd id="selected-patient">—</dd>
+                        </div>
+                        <div class="flex justify-between">
+                            <dt class="font-medium text-slate-700">Provider</dt>
+                            <dd id="selected-medecin">—</dd>
+                        </div>
+                        <div class="flex justify-between">
+                            <dt class="font-medium text-slate-700">Time</dt>
+                            <dd id="selected-time">—</dd>
+                        </div>
+                        <div class="flex justify-between">
+                            <dt class="font-medium text-slate-700">Location</dt>
+                            <dd id="selected-location">—</dd>
+                        </div>
+                    </dl>
+
+                    <div class="mt-5">
+                        <p class="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-2">Update status</p>
+                        <div class="flex flex-wrap gap-2" id="statusChips">
+                            <button class="status-chip px-3 py-2 rounded-lg border text-xs font-semibold text-slate-700 border-slate-200 hover:border-blue-500 hover:text-blue-600"
+                                    data-status="Scheduled">
+                                Scheduled
+                            </button>
+                            <button class="status-chip px-3 py-2 rounded-lg border text-xs font-semibold text-slate-700 border-slate-200 hover:border-emerald-500 hover:text-emerald-600"
+                                    data-status="Checked-in">
+                                Checked-in
+                            </button>
+                            <button class="status-chip px-3 py-2 rounded-lg border text-xs font-semibold text-slate-700 border-slate-200 hover:border-slate-400 hover:text-slate-600"
+                                    data-status="Completed">
+                                Completed
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 space-y-2">
+                        <a id="icsDownload" class="w-full inline-flex items-center justify-center px-4 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50 pointer-events-none opacity-50">
+                            <i class="fas fa-download mr-2"></i> Download .ics
+                        </a>
+                        <div class="flex items-center gap-2 text-sm text-slate-600">
+                            <a id="detailsLink" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 pointer-events-none opacity-50">
+                                <i class="fas fa-eye"></i>
+                                Details
+                            </a>
+                            <span class="text-slate-400">·</span>
+                            <a id="editLink" class="inline-flex items-center gap-1 text-emerald-600 hover:text-emerald-700 pointer-events-none opacity-50">
+                                <i class="fas fa-pen"></i>
+                                Edit
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 border border-amber-100 bg-amber-50 rounded-xl text-sm text-amber-800">
+                    <div class="flex items-start gap-2">
+                        <i class="fas fa-info-circle mt-0.5"></i>
+                        <p>
+                            Drag events on the calendar to reschedule. Status changes and rescheduling are limited to your scheduling permissions and medecin scope.
+                        </p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -112,6 +233,9 @@
                                     <a asp-action="Delete" asp-route-id="@appointment.Id" class="p-2 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg" title="Delete">
                                         <i class="fas fa-trash"></i>
                                     </a>
+                                    <a asp-action="DownloadIcs" asp-route-id="@appointment.Id" class="p-2 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg" title="Download .ics">
+                                        <i class="fas fa-file-download"></i>
+                                    </a>
                                 </div>
                             </td>
                         </tr>
@@ -137,11 +261,172 @@
     </div>
 </div>
 
+<form id="calendarActionsForm">
+    <input name="__RequestVerificationToken" type="hidden" value="@antiForgeryToken" />
+</form>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" integrity="sha256-yjJ4RvV0mRcLDoU5f47a3Xd+MkMM7sN3Wq4lRjOD2fE=" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js" integrity="sha256-Vt0kHEocWyD+qUxLUIrbq3QhGDO6FJkZw1uW0CWcYgA=" crossorigin="anonymous"></script>
 <script>
+    const calendarEl = document.getElementById('calendar');
+    const antiForgeryToken = document.querySelector('input[name="__RequestVerificationToken"]').value;
+    const initialEvents = @Html.Raw(appointmentsJson);
+    const statusBadgeClasses = {
+        'Scheduled': 'bg-blue-100 text-blue-700 border-blue-100',
+        'Checked-in': 'bg-emerald-100 text-emerald-700 border-emerald-100',
+        'Completed': 'bg-slate-100 text-slate-700 border-slate-100'
+    };
+
+    let selectedEventId = null;
+
+    function formatDateRange(start, end) {
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+        const optionsDate = { month: 'short', day: 'numeric', year: 'numeric' };
+        const optionsTime = { hour: 'numeric', minute: '2-digit' };
+        return `${startDate.toLocaleDateString(undefined, optionsDate)} · ${startDate.toLocaleTimeString(undefined, optionsTime)} - ${endDate.toLocaleTimeString(undefined, optionsTime)}`;
+    }
+
+    function setSelectedEvent(event) {
+        selectedEventId = event.id;
+        document.getElementById('selected-title').textContent = event.title;
+        document.getElementById('selected-subtitle').textContent = event.extendedProps.reason || 'No reason provided';
+        document.getElementById('selected-patient').textContent = event.extendedProps.patient || '—';
+        document.getElementById('selected-medecin').textContent = event.extendedProps.medecin || '—';
+        document.getElementById('selected-time').textContent = formatDateRange(event.start, event.end);
+        document.getElementById('selected-location').textContent = event.extendedProps.location || 'Unassigned';
+
+        const status = event.extendedProps.status || 'Scheduled';
+        const badge = document.getElementById('selected-status');
+        badge.textContent = status;
+        badge.className = `px-3 py-1 text-xs font-semibold rounded-full ${statusBadgeClasses[status] || 'bg-slate-100 text-slate-700'}`;
+
+        document.getElementById('icsDownload').classList.remove('pointer-events-none', 'opacity-50');
+        document.getElementById('icsDownload').setAttribute('href', `@Url.Action("DownloadIcs", "Appointments")/${event.id}`);
+
+        document.getElementById('detailsLink').classList.remove('pointer-events-none', 'opacity-50');
+        document.getElementById('detailsLink').setAttribute('href', `@Url.Action("Details", "Appointments")/${event.id}`);
+
+        document.getElementById('editLink').classList.remove('pointer-events-none', 'opacity-50');
+        document.getElementById('editLink').setAttribute('href', `@Url.Action("Edit", "Appointments")/${event.id}`);
+
+        document.querySelectorAll('.status-chip').forEach(chip => {
+            chip.classList.toggle('bg-slate-900 text-white', chip.dataset.status === status);
+            chip.classList.toggle('border-slate-900', chip.dataset.status === status);
+        });
+    }
+
+    async function postJson(url, payload) {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': antiForgeryToken
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error(text || 'Request failed');
+        }
+
+        return response.json().catch(() => ({}));
+    }
+
+    async function updateStatus(eventId, status) {
+        await postJson('@Url.Action("UpdateStatus", "Appointments")', { id: eventId, status });
+
+        const event = calendar.getEventById(eventId);
+        if (event) {
+            event.setExtendedProp('status', status);
+            event.setProp('classNames', buildEventClasses(event));
+            if (selectedEventId === eventId) {
+                setSelectedEvent(event);
+            }
+        }
+    }
+
+    async function reschedule(event) {
+        await postJson('@Url.Action("Reschedule", "Appointments")', {
+            id: event.id,
+            start: event.start.toISOString(),
+            end: event.end.toISOString()
+        });
+
+        if (selectedEventId === event.id) {
+            setSelectedEvent(event);
+        }
+    }
+
+    function buildEventClasses(event) {
+        const status = event.extendedProps.status || 'Scheduled';
+        const statusClass = status === 'Checked-in' ? 'fc-event-checked' :
+            status === 'Completed' ? 'fc-event-completed' : 'fc-event-scheduled';
+        return [statusClass, 'cursor-pointer'];
+    }
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'timeGridWeek',
+        editable: true,
+        selectable: true,
+        height: 'auto',
+        headerToolbar: {
+            left: 'prev,next',
+            center: 'title',
+            right: ''
+        },
+        events: initialEvents,
+        eventClassNames: buildEventClasses,
+        eventDrop: async function (info) {
+            try {
+                await reschedule(info.event);
+            } catch (error) {
+                info.revert();
+                alert('Unable to reschedule: ' + error.message);
+            }
+        },
+        eventResize: async function (info) {
+            try {
+                await reschedule(info.event);
+            } catch (error) {
+                info.revert();
+                alert('Unable to reschedule: ' + error.message);
+            }
+        },
+        eventClick: function (info) {
+            setSelectedEvent(info.event);
+        }
+    });
+
+    calendar.render();
+
+    document.querySelectorAll('.calendar-view-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            calendar.changeView(btn.dataset.view);
+        });
+    });
+
+    document.getElementById('calendarToday').addEventListener('click', () => {
+        calendar.today();
+    });
+
     document.getElementById('appointmentSearch')?.addEventListener('input', function () {
         const term = this.value.toLowerCase();
         document.querySelectorAll('tbody tr').forEach(row => {
             row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
+        });
+    });
+
+    document.querySelectorAll('.status-chip').forEach(chip => {
+        chip.addEventListener('click', async () => {
+            if (!selectedEventId) return;
+            const status = chip.dataset.status;
+            try {
+                await updateStatus(selectedEventId, status);
+            } catch (error) {
+                alert('Unable to update status: ' + error.message);
+            }
         });
     });
 </script>
