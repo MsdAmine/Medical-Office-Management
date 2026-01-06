@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using MedicalOfficeManagement.Models;
 using MedicalOfficeManagement.Models.Security;
 using MedicalOfficeManagement.ViewModels;
@@ -22,7 +23,7 @@ namespace MedicalOfficeManagement.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index(string? statusMessage = null)
+        public IActionResult Index(string? statusMessage = null)
         {
             return RedirectToAction(nameof(Upcoming), new { statusMessage });
         }
@@ -31,8 +32,9 @@ namespace MedicalOfficeManagement.Controllers
         public async Task<IActionResult> Upcoming(string? statusMessage = null)
         {
             var patient = await GetCurrentPatientAsync();
-            var viewModel = await BuildPortalViewModelAsync(patient, null, statusMessage);
+            if (patient == null) return Forbid();
 
+            var viewModel = await BuildPortalViewModelAsync(patient, null, statusMessage);
             return View(viewModel);
         }
 
@@ -40,26 +42,29 @@ namespace MedicalOfficeManagement.Controllers
         public async Task<IActionResult> History()
         {
             var patient = await GetCurrentPatientAsync();
-            var viewModel = await BuildPortalViewModelAsync(patient);
+            if (patient == null) return Forbid();
 
+            var viewModel = await BuildPortalViewModelAsync(patient);
             return View(viewModel);
         }
 
         [HttpGet]
-        public async Task<IActionResult> Request()
+        public async Task<IActionResult> RequestAppointment()
         {
             var patient = await GetCurrentPatientAsync();
-            var viewModel = await BuildPortalViewModelAsync(patient);
+            if (patient == null) return Forbid();
 
-            return View(viewModel);
+            var viewModel = await BuildPortalViewModelAsync(patient);
+            return View("Request", viewModel);
         }
 
         [HttpGet]
         public async Task<IActionResult> Treatments()
         {
             var patient = await GetCurrentPatientAsync();
-            var viewModel = await BuildPortalViewModelAsync(patient);
+            if (patient == null) return Forbid();
 
+            var viewModel = await BuildPortalViewModelAsync(patient);
             return View(viewModel);
         }
 
@@ -67,8 +72,9 @@ namespace MedicalOfficeManagement.Controllers
         public async Task<IActionResult> Results()
         {
             var patient = await GetCurrentPatientAsync();
-            var viewModel = await BuildPortalViewModelAsync(patient);
+            if (patient == null) return Forbid();
 
+            var viewModel = await BuildPortalViewModelAsync(patient);
             return View(viewModel);
         }
 
@@ -76,10 +82,10 @@ namespace MedicalOfficeManagement.Controllers
         public async Task<IActionResult> AppointmentStatus(int id)
         {
             var patient = await GetCurrentPatientAsync();
-            if (patient == null)
-                return Forbid();
+            if (patient == null) return Forbid();
 
             var appointment = await _context.RendezVous
+                .AsNoTracking()
                 .Include(r => r.Medecin)
                 .FirstOrDefaultAsync(r => r.Id == id && r.PatientId == patient.Id);
 
@@ -93,12 +99,14 @@ namespace MedicalOfficeManagement.Controllers
         public async Task<IActionResult> LabNotifications()
         {
             var patient = await GetCurrentPatientAsync();
-            if (patient == null)
-                return Forbid();
+            if (patient == null) return Forbid();
+
+            var patientId = patient.Id;
 
             var labResults = await _context.LabResults
+                .AsNoTracking()
                 .Include(l => l.Medecin)
-                .Where(l => l.PatientId == patient.Id)
+                .Where(l => l.PatientId == patientId)
                 .OrderByDescending(l => l.CollectedOn)
                 .Select(l => new PatientResultViewModel
                 {
@@ -106,8 +114,12 @@ namespace MedicalOfficeManagement.Controllers
                     Title = string.IsNullOrWhiteSpace(l.TestName) ? "Résultat de test" : l.TestName,
                     Status = string.IsNullOrWhiteSpace(l.Status) ? "En attente" : l.Status,
                     Date = l.CollectedOn,
-                    OrderedBy = l.Medecin?.NomPrenom ?? "Laboratoire",
-                    Notes = string.IsNullOrWhiteSpace(l.Notes) ? "Consultez votre médecin pour plus de détails." : l.Notes!
+                    OrderedBy = l.Medecin != null && !string.IsNullOrWhiteSpace(l.Medecin.NomPrenom)
+                        ? l.Medecin.NomPrenom
+                        : "Laboratoire",
+                    Notes = string.IsNullOrWhiteSpace(l.Notes)
+                        ? "Consultez votre médecin pour plus de détails."
+                        : l.Notes!
                 })
                 .ToListAsync();
 
@@ -118,8 +130,7 @@ namespace MedicalOfficeManagement.Controllers
         public async Task<IActionResult> RequestRefill(int prescriptionId)
         {
             var patient = await GetCurrentPatientAsync();
-            if (patient == null)
-                return Forbid();
+            if (patient == null) return Forbid();
 
             var prescription = await _context.Prescriptions
                 .FirstOrDefaultAsync(p => p.Id == prescriptionId);
@@ -150,11 +161,7 @@ namespace MedicalOfficeManagement.Controllers
         public async Task<IActionResult> RequestAppointment(AppointmentRequestInput request)
         {
             var patient = await GetCurrentPatientAsync();
-
-            if (patient == null)
-            {
-                return Forbid();
-            }
+            if (patient == null) return Forbid();
 
             ValidateAppointmentRequest(request);
 
@@ -166,7 +173,7 @@ namespace MedicalOfficeManagement.Controllers
 
             var rendezVous = new RendezVou
             {
-                PatientId = patient!.Id,
+                PatientId = patient.Id,
                 MedecinId = request.MedecinId,
                 DateDebut = request.PreferredStart,
                 DateFin = request.PreferredEnd,
@@ -177,7 +184,9 @@ namespace MedicalOfficeManagement.Controllers
             _context.RendezVous.Add(rendezVous);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Request), new { statusMessage = "Votre demande de rendez-vous a été envoyée." });
+            // IMPORTANT: Redirect to the GET action you actually have ("RequestAppointment")
+            return RedirectToAction(nameof(RequestAppointment),
+                new { statusMessage = "Votre demande de rendez-vous a été envoyée." });
         }
 
         private async Task<Patient?> GetCurrentPatientAsync()
@@ -187,21 +196,24 @@ namespace MedicalOfficeManagement.Controllers
                 return null;
 
             return await _context.Patients
+                .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.ApplicationUserId == userId);
         }
 
         private async Task<PatientPortalViewModel> BuildPortalViewModelAsync(
-            Patient? patient,
+            Patient patient,
             AppointmentRequestInput? request = null,
             string? statusMessage = null)
         {
+            var patientId = patient.Id;
+            var now = DateTime.UtcNow;
+
             var appointments = await _context.RendezVous
+                .AsNoTracking()
                 .Include(r => r.Medecin)
-                .Where(r => patient != null && r.PatientId == patient.Id)
+                .Where(r => r.PatientId == patientId)
                 .OrderBy(r => r.DateDebut)
                 .ToListAsync();
-
-            var now = DateTime.UtcNow;
 
             var upcoming = appointments
                 .Where(a => a.DateDebut >= now)
@@ -215,8 +227,9 @@ namespace MedicalOfficeManagement.Controllers
                 .ToList();
 
             var consultations = await _context.Consultations
+                .AsNoTracking()
                 .Include(c => c.Medecin)
-                .Where(c => patient != null && c.PatientId == patient.Id)
+                .Where(c => c.PatientId == patientId)
                 .OrderByDescending(c => c.DateConsult)
                 .ToListAsync();
 
@@ -224,7 +237,9 @@ namespace MedicalOfficeManagement.Controllers
                 .Select(c => new PatientTreatmentViewModel
                 {
                     Title = string.IsNullOrWhiteSpace(c.Diagnostics) ? "Suivi médical" : c.Diagnostics,
-                    PrescribedBy = c.Medecin?.NomPrenom ?? "Médecin",
+                    PrescribedBy = c.Medecin != null && !string.IsNullOrWhiteSpace(c.Medecin.NomPrenom)
+                        ? c.Medecin.NomPrenom
+                        : "Médecin",
                     Date = c.DateConsult,
                     Notes = string.IsNullOrWhiteSpace(c.Observations) ? "Aucune note fournie." : c.Observations,
                     Status = "En cours"
@@ -232,8 +247,9 @@ namespace MedicalOfficeManagement.Controllers
                 .ToList();
 
             var labResults = await _context.LabResults
+                .AsNoTracking()
                 .Include(l => l.Medecin)
-                .Where(l => patient != null && l.PatientId == patient.Id)
+                .Where(l => l.PatientId == patientId)
                 .OrderByDescending(l => l.CollectedOn)
                 .Select(l => new PatientResultViewModel
                 {
@@ -241,12 +257,17 @@ namespace MedicalOfficeManagement.Controllers
                     Title = string.IsNullOrWhiteSpace(l.TestName) ? "Résultat de test" : l.TestName,
                     Status = string.IsNullOrWhiteSpace(l.Status) ? "En attente" : l.Status,
                     Date = l.CollectedOn,
-                    OrderedBy = l.Medecin?.NomPrenom ?? "Laboratoire",
-                    Notes = string.IsNullOrWhiteSpace(l.Notes) ? "Consultez votre médecin pour plus de détails." : l.Notes!
+                    OrderedBy = l.Medecin != null && !string.IsNullOrWhiteSpace(l.Medecin.NomPrenom)
+                        ? l.Medecin.NomPrenom
+                        : "Laboratoire",
+                    Notes = string.IsNullOrWhiteSpace(l.Notes)
+                        ? "Consultez votre médecin pour plus de détails."
+                        : l.Notes!
                 })
                 .ToListAsync();
 
             var medecins = await _context.Medecins
+                .AsNoTracking()
                 .OrderBy(m => m.NomPrenom)
                 .Select(m => new SelectListItem
                 {
@@ -276,7 +297,9 @@ namespace MedicalOfficeManagement.Controllers
                 Id = appointment.Id,
                 ScheduledFor = appointment.DateDebut,
                 EndsAt = appointment.DateFin,
-                MedecinName = appointment.Medecin?.NomPrenom ?? "Non assigné",
+                MedecinName = appointment.Medecin != null && !string.IsNullOrWhiteSpace(appointment.Medecin.NomPrenom)
+                    ? appointment.Medecin.NomPrenom
+                    : "Non assigné",
                 Status = string.IsNullOrWhiteSpace(appointment.Statut) ? "Planifié" : appointment.Statut,
                 Reason = string.IsNullOrWhiteSpace(appointment.Motif) ? "Non spécifié" : appointment.Motif
             };
@@ -296,12 +319,14 @@ namespace MedicalOfficeManagement.Controllers
         {
             if (request.PreferredEnd <= request.PreferredStart)
             {
-                ModelState.AddModelError(nameof(request.PreferredEnd), "L'heure de fin doit être après l'heure de début.");
+                ModelState.AddModelError(nameof(request.PreferredEnd),
+                    "L'heure de fin doit être après l'heure de début.");
             }
 
             if (request.PreferredStart < DateTime.UtcNow)
             {
-                ModelState.AddModelError(nameof(request.PreferredStart), "La date de début doit être dans le futur.");
+                ModelState.AddModelError(nameof(request.PreferredStart),
+                    "La date de début doit être dans le futur.");
             }
         }
     }

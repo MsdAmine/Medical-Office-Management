@@ -5,7 +5,7 @@
 @{
     ViewData["Title"] = "Schedule";
     ViewData["Breadcrumb"] = "Schedule";
-    var antiForgeryToken = Antiforgery.GetAndStoreTokens(HttpContext).RequestToken;
+    var antiForgeryToken = Antiforgery.GetAndStoreTokens(Context).RequestToken;
     var appointmentsJson = JsonSerializer.Serialize(Model.Appointments.Select(a => new
     {
         id = a.Id,
