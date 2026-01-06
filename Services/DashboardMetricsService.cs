@@ -35,12 +35,17 @@ public class DashboardMetricsService : IDashboardMetricsService
             .AsNoTracking()
             .CountAsync(r => r.Status != "Ready");
 
+        var pendingAppointmentApprovals = await _context.RendezVous
+            .AsNoTracking()
+            .CountAsync(r => r.Statut == "Pending Approval");
+
         return new LayoutViewModel
         {
             UpcomingAppointments = upcomingAppointments,
             TotalPatients = totalPatients,
             OpenInvoices = openInvoices,
-            PendingLabResults = pendingLabResults
+            PendingLabResults = pendingLabResults,
+            PendingAppointmentApprovals = pendingAppointmentApprovals
         };
     }
 

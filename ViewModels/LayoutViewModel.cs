@@ -11,5 +11,7 @@ namespace MedicalOfficeManagement.ViewModels
         public int OpenInvoices { get; set; }
 
         public int PendingLabResults { get; set; }
+
+        public int PendingAppointmentApprovals { get; set; }
     }
 }

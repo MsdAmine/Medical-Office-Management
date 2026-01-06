@@ -165,14 +165,13 @@ namespace MedicalOfficeManagement.Controllers
             if (id != viewModel.Appointment.Id)
                 return NotFound();
 
-            var existingAppointment = await _context.RendezVous
-                .AsNoTracking()
+            var appointment = await _context.RendezVous
                 .FirstOrDefaultAsync(r => r.Id == id);
 
-            if (existingAppointment == null)
+            if (appointment == null)
                 return NotFound();
 
-            if (!await CanAccessAppointmentAsync(existingAppointment))
+            if (!await CanAccessAppointmentAsync(appointment))
                 return Forbid();
 
             var medecinId = await GetCurrentMedecinIdAsync();
@@ -186,10 +185,19 @@ namespace MedicalOfficeManagement.Controllers
                 viewModel.Appointment.MedecinId = medecinId.Value;
             }
 
-            await ValidateAppointmentAsync(viewModel.Appointment, medecinId);
+            appointment.PatientId = viewModel.Appointment.PatientId;
+            appointment.MedecinId = viewModel.Appointment.MedecinId;
+            appointment.DateDebut = viewModel.Appointment.DateDebut;
+            appointment.DateFin = viewModel.Appointment.DateFin;
+            appointment.SalleId = viewModel.Appointment.SalleId;
+            appointment.Statut = viewModel.Appointment.Statut;
+            appointment.Motif = viewModel.Appointment.Motif;
+
+            await ValidateAppointmentAsync(appointment, medecinId);
 
             if (!ModelState.IsValid)
             {
+                viewModel.Appointment = appointment;
                 await PopulateDropdownsAsync(viewModel, medecinId);
                 SetSchedulePageMetadata("Edit Appointment");
                 return View(viewModel);
@@ -197,7 +205,6 @@ namespace MedicalOfficeManagement.Controllers
 
             try
             {
-                _context.Update(viewModel.Appointment);
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
@@ -346,6 +353,72 @@ namespace MedicalOfficeManagement.Controllers
             appointment.Statut = request.Status;
             await _context.SaveChangesAsync();
             return Json(new { success = true });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> PendingApproval()
+        {
+            if (!IsAdminOrSecretaire())
+            {
+                return Forbid();
+            }
+
+            var pending = await BuildAppointmentQuery()
+                .Where(r => r.Statut.Equals("Pending Approval", StringComparison.OrdinalIgnoreCase))
+                .OrderBy(r => r.DateDebut)
+                .ToListAsync();
+
+            var viewModel = new PendingApprovalViewModel
+            {
+                PendingAppointments = pending.Select(MapToViewModel).ToList()
+            };
+
+            SetSchedulePageMetadata("Pending Approvals");
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApprovePending(int id)
+        {
+            if (!IsAdminOrSecretaire())
+            {
+                return Forbid();
+            }
+
+            var appointment = await _context.RendezVous.FindAsync(id);
+            if (appointment == null)
+            {
+                return NotFound();
+            }
+
+            appointment.Statut = "Scheduled";
+            await _context.SaveChangesAsync();
+
+            TempData["StatusMessage"] = "Appointment approved and scheduled.";
+            return RedirectToAction(nameof(PendingApproval));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeclinePending(int id)
+        {
+            if (!IsAdminOrSecretaire())
+            {
+                return Forbid();
+            }
+
+            var appointment = await _context.RendezVous.FindAsync(id);
+            if (appointment == null)
+            {
+                return NotFound();
+            }
+
+            appointment.Statut = "Cancelled";
+            await _context.SaveChangesAsync();
+
+            TempData["StatusMessage"] = "Appointment marked as cancelled.";
+            return RedirectToAction(nameof(PendingApproval));
         }
 
         [HttpGet]
@@ -557,7 +630,7 @@ namespace MedicalOfficeManagement.Controllers
             viewModel.Medecins = await GetMedecinsSelectListAsync(viewModel.Appointment.MedecinId, medecinId);
         }
 
-        private static readonly string[] AllowedStatuses = new[] { "Scheduled", "Checked-in", "Completed" };
+        private static readonly string[] AllowedStatuses = new[] { "Scheduled", "Confirmed", "Checked-in", "In Progress", "Completed", "Pending Approval", "Cancelled" };
 
         private async Task ValidateAppointmentAsync(RendezVou appointment, int? medecinId)
         {
@@ -569,6 +642,15 @@ namespace MedicalOfficeManagement.Controllers
             if (string.IsNullOrWhiteSpace(appointment.Statut))
             {
                 appointment.Statut = "Scheduled";
+            }
+            else
+            {
+                appointment.Statut = appointment.Statut.Trim();
+            }
+
+            if (!AllowedStatuses.Contains(appointment.Statut, StringComparer.OrdinalIgnoreCase))
+            {
+                ModelState.AddModelError("Appointment.Statut", "Please select a supported status value.");
             }
 
             if (IsAdminOrSecretaire())

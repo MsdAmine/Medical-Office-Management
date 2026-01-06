@@ -36,4 +36,9 @@ namespace MedicalOfficeManagement.ViewModels
         [ValidateNever]
         public IEnumerable<SelectListItem> Medecins { get; set; } = Array.Empty<SelectListItem>();
     }
+
+    public class PendingApprovalViewModel
+    {
+        public IEnumerable<AppointmentViewModel> PendingAppointments { get; set; } = Array.Empty<AppointmentViewModel>();
+    }
 }
