@@ -20,6 +20,177 @@
     }));
 }
 
+<!-- Load FullCalendar CSS FIRST -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" integrity="sha256-yjJ4RvV0mRcLDoU5f47a3Xd+MkMM7sN3Wq4lRjOD2fE=" crossorigin="anonymous">
+
+<style>
+    /* FullCalendar Event Styling */
+    .fc-event {
+        border-radius: 6px;
+        padding: 4px 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        border-width: 2px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .fc-event:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Status-based event colors */
+    .fc-event-scheduled {
+        background-color: #dbeafe !important;
+        border-color: #3b82f6 !important;
+        color: #1e40af !important;
+    }
+
+    .fc-event-checked {
+        background-color: #d1fae5 !important;
+        border-color: #10b981 !important;
+        color: #065f46 !important;
+    }
+
+    .fc-event-completed {
+        background-color: #f1f5f9 !important;
+        border-color: #94a3b8 !important;
+        color: #475569 !important;
+    }
+
+    .fc-event-confirmed {
+        background-color: #ccfbf1 !important;
+        border-color: #14b8a6 !important;
+        color: #115e59 !important;
+    }
+
+    .fc-event-inprogress {
+        background-color: #e0e7ff !important;
+        border-color: #6366f1 !important;
+        color: #3730a3 !important;
+    }
+
+    .fc-event-pending {
+        background-color: #fef3c7 !important;
+        border-color: #f59e0b !important;
+        color: #92400e !important;
+    }
+
+    .fc-event-cancelled {
+        background-color: #fee2e2 !important;
+        border-color: #ef4444 !important;
+        color: #991b1b !important;
+    }
+
+    /* Calendar styling improvements */
+    .fc {
+        font-family: inherit;
+    }
+
+    .fc-toolbar-title {
+        font-size: 1.25rem !important;
+        font-weight: 700 !important;
+        color: #0f172a;
+    }
+
+    .fc-button {
+        background-color: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #334155 !important;
+        padding: 0.5rem 1rem !important;
+        border-radius: 0.5rem !important;
+        font-weight: 600 !important;
+        text-transform: capitalize !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+    }
+
+    .fc-button:hover {
+        background-color: #f8fafc !important;
+        border-color: #cbd5e1 !important;
+    }
+
+    .fc-button-active {
+        background-color: #4338ca !important;
+        color: white !important;
+        border-color: #4338ca !important;
+    }
+
+    .fc-button:disabled {
+        opacity: 0.4;
+    }
+
+    .fc-col-header-cell {
+        background-color: #f8fafc;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        color: #64748b;
+        padding: 0.75rem 0;
+    }
+
+    .fc-daygrid-day-number {
+        font-weight: 600;
+        color: #0f172a;
+    }
+
+    .fc-day-today {
+        background-color: rgba(79, 70, 229, 0.05) !important;
+    }
+
+    .fc-day-today .fc-daygrid-day-number {
+        background-color: #4f46e5;
+        color: white;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Badge dot for legend */
+    .badge-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    /* Glass card effect */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+    }
+
+    /* Gradient button */
+    .gradient-primary {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    }
+
+    .gradient-primary:hover {
+        background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
+    }
+
+    /* Status chips */
+    .status-chip {
+        transition: all 0.2s ease;
+    }
+
+    .status-chip:hover {
+        transform: translateY(-1px);
+    }
+
+    /* Active status chip */
+    .status-chip.bg-slate-900 {
+        background-color: #0f172a !important;
+        color: white !important;
+        border-color: #0f172a !important;
+    }
+</style>
+
 <div class="space-y-6">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -88,7 +259,7 @@
                         <button data-view="listWeek" class="calendar-view-btn px-4 py-2 text-sm hover:bg-slate-50 font-medium">Agenda</button>
                     </div>
                 </div>
-                <div id="calendar" class="bg-white border border-slate-200 rounded-xl shadow-inner"></div>
+                <div id="calendar" class="bg-white border border-slate-200 rounded-xl shadow-inner p-4"></div>
             </div>
 
             <div class="space-y-4">
@@ -269,177 +440,196 @@
     <input name="__RequestVerificationToken" type="hidden" value="@antiForgeryToken" />
 </form>
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" integrity="sha256-yjJ4RvV0mRcLDoU5f47a3Xd+MkMM7sN3Wq4lRjOD2fE=" crossorigin="anonymous">
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js" integrity="sha256-Vt0kHEocWyD+qUxLUIrbq3QhGDO6FJkZw1uW0CWcYgA=" crossorigin="anonymous"></script>
-<script>
-    const calendarEl = document.getElementById('calendar');
-    const antiForgeryToken = document.querySelector('input[name="__RequestVerificationToken"]').value;
-    const initialEvents = @Html.Raw(appointmentsJson);
-    const statusBadgeClasses = {
-        'Scheduled': 'bg-blue-100 text-blue-700 border-blue-100',
-        'Checked-in': 'bg-emerald-100 text-emerald-700 border-emerald-100',
-        'Confirmed': 'bg-teal-100 text-teal-700 border-teal-100',
-        'In Progress': 'bg-indigo-100 text-indigo-700 border-indigo-100',
-        'Completed': 'bg-slate-100 text-slate-700 border-slate-100',
-        'Pending Approval': 'bg-amber-100 text-amber-800 border-amber-100',
-        'Cancelled': 'bg-rose-100 text-rose-700 border-rose-100'
-    };
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js" integrity="sha256-Vt0kHEocWyD+qUxLUIrbq3QhGDO6FJkZw1uW0CWcYgA=" crossorigin="anonymous"></script>
+    <script>
+        // Wait for DOM and FullCalendar to be ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, FullCalendar available:', typeof FullCalendar !== 'undefined');
+            
+            const calendarEl = document.getElementById('calendar');
+            const antiForgeryToken = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            const initialEvents = @Html.Raw(appointmentsJson);
+            
+            console.log('Initial events:', initialEvents);
+            console.log('Number of events:', initialEvents.length);
+            
+            const statusBadgeClasses = {
+                'Scheduled': 'bg-blue-100 text-blue-700 border-blue-100',
+                'Checked-in': 'bg-emerald-100 text-emerald-700 border-emerald-100',
+                'Confirmed': 'bg-teal-100 text-teal-700 border-teal-100',
+                'In Progress': 'bg-indigo-100 text-indigo-700 border-indigo-100',
+                'Completed': 'bg-slate-100 text-slate-700 border-slate-100',
+                'Pending Approval': 'bg-amber-100 text-amber-800 border-amber-100',
+                'Cancelled': 'bg-rose-100 text-rose-700 border-rose-100'
+            };
 
-    let selectedEventId = null;
+            let selectedEventId = null;
 
-    function formatDateRange(start, end) {
-        const startDate = new Date(start);
-        const endDate = new Date(end);
-        const optionsDate = { month: 'short', day: 'numeric', year: 'numeric' };
-        const optionsTime = { hour: 'numeric', minute: '2-digit' };
-        return `${startDate.toLocaleDateString(undefined, optionsDate)} · ${startDate.toLocaleTimeString(undefined, optionsTime)} - ${endDate.toLocaleTimeString(undefined, optionsTime)}`;
-    }
-
-    function setSelectedEvent(event) {
-        selectedEventId = event.id;
-        document.getElementById('selected-title').textContent = event.title;
-        document.getElementById('selected-subtitle').textContent = event.extendedProps.reason || 'No reason provided';
-        document.getElementById('selected-patient').textContent = event.extendedProps.patient || '—';
-        document.getElementById('selected-medecin').textContent = event.extendedProps.medecin || '—';
-        document.getElementById('selected-time').textContent = formatDateRange(event.start, event.end);
-        document.getElementById('selected-location').textContent = event.extendedProps.location || 'Unassigned';
-
-        const status = event.extendedProps.status || 'Scheduled';
-        const badge = document.getElementById('selected-status');
-        badge.textContent = status;
-        badge.className = `px-3 py-1 text-xs font-semibold rounded-full ${statusBadgeClasses[status] || 'bg-slate-100 text-slate-700'}`;
-
-        document.getElementById('icsDownload').classList.remove('pointer-events-none', 'opacity-50');
-        document.getElementById('icsDownload').setAttribute('href', `@Url.Action("DownloadIcs", "Appointments")/${event.id}`);
-
-        document.getElementById('detailsLink').classList.remove('pointer-events-none', 'opacity-50');
-        document.getElementById('detailsLink').setAttribute('href', `@Url.Action("Details", "Appointments")/${event.id}`);
-
-        document.getElementById('editLink').classList.remove('pointer-events-none', 'opacity-50');
-        document.getElementById('editLink').setAttribute('href', `@Url.Action("Edit", "Appointments")/${event.id}`);
-
-        document.querySelectorAll('.status-chip').forEach(chip => {
-            chip.classList.toggle('bg-slate-900 text-white', chip.dataset.status === status);
-            chip.classList.toggle('border-slate-900', chip.dataset.status === status);
-        });
-    }
-
-    async function postJson(url, payload) {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'RequestVerificationToken': antiForgeryToken
-            },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-            const text = await response.text();
-            throw new Error(text || 'Request failed');
-        }
-
-        return response.json().catch(() => ({}));
-    }
-
-    async function updateStatus(eventId, status) {
-        await postJson('@Url.Action("UpdateStatus", "Appointments")', { id: eventId, status });
-
-        const event = calendar.getEventById(eventId);
-        if (event) {
-            event.setExtendedProp('status', status);
-            event.setProp('classNames', buildEventClasses(event));
-            if (selectedEventId === eventId) {
-                setSelectedEvent(event);
+            function formatDateRange(start, end) {
+                const startDate = new Date(start);
+                const endDate = new Date(end);
+                const optionsDate = { month: 'short', day: 'numeric', year: 'numeric' };
+                const optionsTime = { hour: 'numeric', minute: '2-digit' };
+                return `${startDate.toLocaleDateString(undefined, optionsDate)} · ${startDate.toLocaleTimeString(undefined, optionsTime)} - ${endDate.toLocaleTimeString(undefined, optionsTime)}`;
             }
-        }
-    }
 
-    async function reschedule(event) {
-        await postJson('@Url.Action("Reschedule", "Appointments")', {
-            id: event.id,
-            start: event.start.toISOString(),
-            end: event.end.toISOString()
-        });
+            function setSelectedEvent(event) {
+                selectedEventId = event.id;
+                document.getElementById('selected-title').textContent = event.title;
+                document.getElementById('selected-subtitle').textContent = event.extendedProps.reason || 'No reason provided';
+                document.getElementById('selected-patient').textContent = event.extendedProps.patient || '—';
+                document.getElementById('selected-medecin').textContent = event.extendedProps.medecin || '—';
+                document.getElementById('selected-time').textContent = formatDateRange(event.start, event.end);
+                document.getElementById('selected-location').textContent = event.extendedProps.location || 'Unassigned';
 
-        if (selectedEventId === event.id) {
-            setSelectedEvent(event);
-        }
-    }
+                const status = event.extendedProps.status || 'Scheduled';
+                const badge = document.getElementById('selected-status');
+                badge.textContent = status;
+                badge.className = `px-3 py-1 text-xs font-semibold rounded-full ${statusBadgeClasses[status] || 'bg-slate-100 text-slate-700'}`;
 
-    function buildEventClasses(event) {
-        const status = event.extendedProps.status || 'Scheduled';
-        const statusClass = status === 'Checked-in' ? 'fc-event-checked' :
-            status === 'Completed' ? 'fc-event-completed' :
-            status === 'Confirmed' ? 'fc-event-confirmed' :
-            status === 'In Progress' ? 'fc-event-inprogress' :
-            status === 'Pending Approval' ? 'fc-event-pending' :
-            status === 'Cancelled' ? 'fc-event-cancelled' :
-            'fc-event-scheduled';
-        return [statusClass, 'cursor-pointer'];
-    }
+                document.getElementById('icsDownload').classList.remove('pointer-events-none', 'opacity-50');
+                document.getElementById('icsDownload').setAttribute('href', `@Url.Action("DownloadIcs", "Appointments")/${event.id}`);
 
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'timeGridWeek',
-        editable: true,
-        selectable: true,
-        height: 'auto',
-        headerToolbar: {
-            left: 'prev,next',
-            center: 'title',
-            right: ''
-        },
-        events: initialEvents,
-        eventClassNames: buildEventClasses,
-        eventDrop: async function (info) {
-            try {
-                await reschedule(info.event);
-            } catch (error) {
-                info.revert();
-                alert('Unable to reschedule: ' + error.message);
+                document.getElementById('detailsLink').classList.remove('pointer-events-none', 'opacity-50');
+                document.getElementById('detailsLink').setAttribute('href', `@Url.Action("Details", "Appointments")/${event.id}`);
+
+                document.getElementById('editLink').classList.remove('pointer-events-none', 'opacity-50');
+                document.getElementById('editLink').setAttribute('href', `@Url.Action("Edit", "Appointments")/${event.id}`);
+
+                document.querySelectorAll('.status-chip').forEach(chip => {
+                    chip.classList.toggle('bg-slate-900', chip.dataset.status === status);
+                    chip.classList.toggle('text-white', chip.dataset.status === status);
+                    chip.classList.toggle('border-slate-900', chip.dataset.status === status);
+                });
             }
-        },
-        eventResize: async function (info) {
-            try {
-                await reschedule(info.event);
-            } catch (error) {
-                info.revert();
-                alert('Unable to reschedule: ' + error.message);
+
+            async function postJson(url, payload) {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': antiForgeryToken
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error(text || 'Request failed');
+                }
+
+                return response.json().catch(() => ({}));
             }
-        },
-        eventClick: function (info) {
-            setSelectedEvent(info.event);
-        }
-    });
 
-    calendar.render();
+            async function updateStatus(eventId, status) {
+                await postJson('@Url.Action("UpdateStatus", "Appointments")', { id: eventId, status });
 
-    document.querySelectorAll('.calendar-view-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            calendar.changeView(btn.dataset.view);
-        });
-    });
-
-    document.getElementById('calendarToday').addEventListener('click', () => {
-        calendar.today();
-    });
-
-    document.getElementById('appointmentSearch')?.addEventListener('input', function () {
-        const term = this.value.toLowerCase();
-        document.querySelectorAll('tbody tr').forEach(row => {
-            row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
-        });
-    });
-
-    document.querySelectorAll('.status-chip').forEach(chip => {
-        chip.addEventListener('click', async () => {
-            if (!selectedEventId) return;
-            const status = chip.dataset.status;
-            try {
-                await updateStatus(selectedEventId, status);
-            } catch (error) {
-                alert('Unable to update status: ' + error.message);
+                const event = calendar.getEventById(eventId);
+                if (event) {
+                    event.setExtendedProp('status', status);
+                    event.setProp('classNames', buildEventClasses(event));
+                    if (selectedEventId === eventId) {
+                        setSelectedEvent(event);
+                    }
+                }
             }
+
+            async function reschedule(event) {
+                await postJson('@Url.Action("Reschedule", "Appointments")', {
+                    id: event.id,
+                    start: event.start.toISOString(),
+                    end: event.end.toISOString()
+                });
+
+                if (selectedEventId === event.id) {
+                    setSelectedEvent(event);
+                }
+            }
+
+            function buildEventClasses(event) {
+                const status = event.extendedProps.status || 'Scheduled';
+                const statusClass = status === 'Checked-in' ? 'fc-event-checked' :
+                    status === 'Completed' ? 'fc-event-completed' :
+                    status === 'Confirmed' ? 'fc-event-confirmed' :
+                    status === 'In Progress' ? 'fc-event-inprogress' :
+                    status === 'Pending Approval' ? 'fc-event-pending' :
+                    status === 'Cancelled' ? 'fc-event-cancelled' :
+                    'fc-event-scheduled';
+                return [statusClass, 'cursor-pointer'];
+            }
+
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'timeGridWeek',
+                editable: true,
+                selectable: true,
+                height: 'auto',
+                headerToolbar: {
+                    left: 'prev,next',
+                    center: 'title',
+                    right: ''
+                },
+                slotMinTime: '08:00:00',
+                slotMaxTime: '20:00:00',
+                allDaySlot: false,
+                nowIndicator: true,
+                events: initialEvents,
+                eventClassNames: buildEventClasses,
+                eventDrop: async function (info) {
+                    try {
+                        await reschedule(info.event);
+                    } catch (error) {
+                        info.revert();
+                        alert('Unable to reschedule: ' + error.message);
+                    }
+                },
+                eventResize: async function (info) {
+                    try {
+                        await reschedule(info.event);
+                    } catch (error) {
+                        info.revert();
+                        alert('Unable to reschedule: ' + error.message);
+                    }
+                },
+                eventClick: function (info) {
+                    setSelectedEvent(info.event);
+                },
+                eventDidMount: function(info) {
+                    console.log('Event rendered:', info.event.title);
+                }
+            });
+
+            calendar.render();
+            console.log('Calendar rendered successfully');
+
+            document.querySelectorAll('.calendar-view-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    calendar.changeView(btn.dataset.view);
+                });
+            });
+
+            document.getElementById('calendarToday').addEventListener('click', () => {
+                calendar.today();
+            });
+
+            document.getElementById('appointmentSearch')?.addEventListener('input', function () {
+                const term = this.value.toLowerCase();
+                document.querySelectorAll('tbody tr').forEach(row => {
+                    row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
+                });
+            });
+
+            document.querySelectorAll('.status-chip').forEach(chip => {
+                chip.addEventListener('click', async () => {
+                    if (!selectedEventId) return;
+                    const status = chip.dataset.status;
+                    try {
+                        await updateStatus(selectedEventId, status);
+                    } catch (error) {
+                        alert('Unable to update status: ' + error.message);
+                    }
+                });
+            });
         });
-    });
-</script>
+    </script>
+}

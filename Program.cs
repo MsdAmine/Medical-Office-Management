@@ -3,6 +3,8 @@ using MedicalOfficeManagement.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MedicalOfficeManagement.Data.Seeders;
+using MedicalOfficeManagement.Models.Email;
+using MedicalOfficeManagement.Services.Email;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,9 @@ var connectionString = builder.Configuration.GetConnectionString("gestionCabinet
 
 builder.Services.AddDbContext<MedicalOfficeContext>(options =>
     options.UseSqlServer(connectionString));
+
+builder.Services.Configure<SmtpOptions>(
+    builder.Configuration.GetSection("Smtp"));
 
 
 // 2. Configuration Identity
@@ -38,6 +43,8 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddScoped<IDashboardMetricsService, DashboardMetricsService>();
+builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
+
 
 var app = builder.Build();
 

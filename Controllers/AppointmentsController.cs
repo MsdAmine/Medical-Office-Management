@@ -9,17 +9,22 @@ using Microsoft.EntityFrameworkCore;
 using MedicalOfficeManagement.Models.Security;
 using System.Security.Claims;
 using System.Text;
+using MedicalOfficeManagement.Services.Email;
 
 namespace MedicalOfficeManagement.Controllers
 {
+
+
     [Authorize(Roles = SystemRoles.SchedulingTeam)]
     public class AppointmentsController : Controller
     {
         private readonly MedicalOfficeContext _context;
+        private readonly IEmailSender _emailSender;
 
-        public AppointmentsController(MedicalOfficeContext context)
+        public AppointmentsController(MedicalOfficeContext context, IEmailSender emailSender)
         {
             _context = context;
+            _emailSender = emailSender;
         }
 
         [HttpGet]
@@ -396,6 +401,13 @@ namespace MedicalOfficeManagement.Controllers
             await _context.SaveChangesAsync();
 
             TempData["StatusMessage"] = "Appointment approved and scheduled.";
+            if (appointment.Patient?.Email != null)
+            {
+                await _emailSender.SendAsync(
+                appointment.Patient.Email,
+                "Appointment Approved",
+                EmailTemplates.AppointmentApproved(appointment));
+            }
             return RedirectToAction(nameof(PendingApproval));
         }
 
