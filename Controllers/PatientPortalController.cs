@@ -72,6 +72,79 @@ namespace MedicalOfficeManagement.Controllers
             return View(viewModel);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> AppointmentStatus(int id)
+        {
+            var patient = await GetCurrentPatientAsync();
+            if (patient == null)
+                return Forbid();
+
+            var appointment = await _context.RendezVous
+                .Include(r => r.Medecin)
+                .FirstOrDefaultAsync(r => r.Id == id && r.PatientId == patient.Id);
+
+            if (appointment == null)
+                return NotFound();
+
+            return Ok(MapAppointment(appointment));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> LabNotifications()
+        {
+            var patient = await GetCurrentPatientAsync();
+            if (patient == null)
+                return Forbid();
+
+            var labResults = await _context.LabResults
+                .Include(l => l.Medecin)
+                .Where(l => l.PatientId == patient.Id)
+                .OrderByDescending(l => l.CollectedOn)
+                .Select(l => new PatientResultViewModel
+                {
+                    Id = l.Id,
+                    Title = string.IsNullOrWhiteSpace(l.TestName) ? "Résultat de test" : l.TestName,
+                    Status = string.IsNullOrWhiteSpace(l.Status) ? "En attente" : l.Status,
+                    Date = l.CollectedOn,
+                    OrderedBy = l.Medecin?.NomPrenom ?? "Laboratoire",
+                    Notes = string.IsNullOrWhiteSpace(l.Notes) ? "Consultez votre médecin pour plus de détails." : l.Notes!
+                })
+                .ToListAsync();
+
+            return Ok(labResults);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RequestRefill(int prescriptionId)
+        {
+            var patient = await GetCurrentPatientAsync();
+            if (patient == null)
+                return Forbid();
+
+            var prescription = await _context.Prescriptions
+                .FirstOrDefaultAsync(p => p.Id == prescriptionId);
+
+            if (prescription == null || prescription.PatientId != patient.Id)
+                return NotFound();
+
+            if (prescription.RefillsRemaining <= 0)
+            {
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "Aucun renouvellement disponible",
+                    Detail = "Il n'y a plus de renouvellements disponibles pour cette ordonnance."
+                });
+            }
+
+            prescription.Status = "Refill Requested";
+            prescription.NextRefill ??= DateTime.UtcNow.AddDays(7);
+
+            _context.Prescriptions.Update(prescription);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Votre demande de renouvellement a été envoyée." });
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RequestAppointment(AppointmentRequestInput request)
@@ -80,7 +153,7 @@ namespace MedicalOfficeManagement.Controllers
 
             if (patient == null)
             {
-                ModelState.AddModelError(string.Empty, "Votre profil patient n'a pas été trouvé.");
+                return Forbid();
             }
 
             ValidateAppointmentRequest(request);
@@ -158,16 +231,20 @@ namespace MedicalOfficeManagement.Controllers
                 })
                 .ToList();
 
-            var labResults = consultations
-                .Select(c => new PatientResultViewModel
+            var labResults = await _context.LabResults
+                .Include(l => l.Medecin)
+                .Where(l => patient != null && l.PatientId == patient.Id)
+                .OrderByDescending(l => l.CollectedOn)
+                .Select(l => new PatientResultViewModel
                 {
-                    Title = string.IsNullOrWhiteSpace(c.Diagnostics) ? "Résultat de test" : c.Diagnostics,
-                    Status = "Disponible",
-                    Date = c.DateConsult,
-                    OrderedBy = c.Medecin?.NomPrenom ?? "Médecin",
-                    Notes = string.IsNullOrWhiteSpace(c.Observations) ? "Consultez votre médecin pour plus de détails." : c.Observations
+                    Id = l.Id,
+                    Title = string.IsNullOrWhiteSpace(l.TestName) ? "Résultat de test" : l.TestName,
+                    Status = string.IsNullOrWhiteSpace(l.Status) ? "En attente" : l.Status,
+                    Date = l.CollectedOn,
+                    OrderedBy = l.Medecin?.NomPrenom ?? "Laboratoire",
+                    Notes = string.IsNullOrWhiteSpace(l.Notes) ? "Consultez votre médecin pour plus de détails." : l.Notes!
                 })
-                .ToList();
+                .ToListAsync();
 
             var medecins = await _context.Medecins
                 .OrderBy(m => m.NomPrenom)
