@@ -4,7 +4,38 @@
 }
 
 <div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/50">
-    @await Html.PartialAsync("_PatientPortalHeader", Model)
+    <div class="bg-gradient-to-r from-emerald-600 to-green-700 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div>
+                    <div class="flex items-center space-x-3 mb-3">
+                        <div class="h-14 w-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                            <i class="fas fa-pills text-2xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-emerald-100 text-sm font-medium uppercase tracking-wider">Traitements</p>
+                            <h1 class="text-3xl md:text-4xl font-bold mt-1">Suivi de vos prescriptions</h1>
+                        </div>
+                    </div>
+                    <p class="text-emerald-100 max-w-2xl">
+                        Bonjour, @Model.PatientDisplayName. Retrouvez vos traitements actifs, leurs notes et les médecins prescripteurs.
+                    </p>
+                </div>
+
+                <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-5 border border-white/10">
+                    <div class="flex items-center space-x-4">
+                        <div>
+                            <div class="text-sm text-emerald-100 uppercase font-semibold tracking-wide">Prescriptions en cours</div>
+                            <div class="text-3xl font-bold">@Model.Treatments.Count()</div>
+                        </div>
+                        <div class="h-12 w-12 rounded-xl bg-white text-emerald-700 flex items-center justify-center shadow-inner">
+                            <i class="fas fa-notes-medical"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 -mt-6">
         <div class="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden">
