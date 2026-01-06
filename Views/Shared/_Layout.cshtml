@@ -321,6 +321,16 @@
                 }
                 @if (User.IsInRole(SystemRoles.Admin) || User.IsInRole(SystemRoles.Secretaire))
                 {
+                    <a href="/Appointments/PendingApproval" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
+                        <i class="fas fa-hourglass-half text-slate-500 w-5 text-center"></i>
+                        <span class="font-medium">Approval queue</span>
+                        <span class="ml-auto text-xs font-semibold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
+                            @(layoutModel?.PendingAppointmentApprovals ?? 0)
+                        </span>
+                    </a>
+                }
+                @if (User.IsInRole(SystemRoles.Admin) || User.IsInRole(SystemRoles.Secretaire))
+                {
                     <a href="/Patients" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
                         <i class="fas fa-user-injured text-slate-500 w-5 text-center"></i>
                         <span class="font-medium">Patients</span>

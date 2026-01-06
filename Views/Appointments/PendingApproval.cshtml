@@ -1,0 +1,122 @@
+@model PendingApprovalViewModel
+
+@{
+    ViewData["Title"] = "Pending Approvals";
+    ViewData["Breadcrumb"] = "Schedule";
+    var hasPending = Model.PendingAppointments.Any();
+}
+
+<div class="space-y-6">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl lg:text-3xl font-bold text-slate-900">Appointments waiting for approval</h1>
+            <p class="text-slate-600 mt-1">Review patient requests and approve or cancel them.</p>
+        </div>
+        <a asp-action="Index" class="text-blue-600 hover:text-blue-700">Back to schedule</a>
+    </div>
+
+    @if (TempData["StatusMessage"] is string statusMessage)
+    {
+        <div class="p-4 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-800 flex items-start gap-2">
+            <i class="fas fa-check-circle mt-0.5"></i>
+            <span>@statusMessage</span>
+        </div>
+    }
+
+    <div class="glass-card rounded-xl overflow-hidden">
+        <div class="p-6 border-b border-slate-200 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div>
+                <h2 class="text-lg font-semibold text-slate-900">Awaiting approval</h2>
+                <p class="text-sm text-slate-600">Showing @Model.PendingAppointments.Count() request(s)</p>
+            </div>
+            <div class="flex items-center gap-2 text-sm text-slate-600">
+                <span class="flex items-center gap-1"><span class="badge-dot bg-amber-500"></span> Pending approval</span>
+                <span class="flex items-center gap-1"><span class="badge-dot bg-blue-500"></span> Scheduled</span>
+                <span class="flex items-center gap-1"><span class="badge-dot bg-rose-500"></span> Cancelled</span>
+            </div>
+        </div>
+
+        @if (!hasPending)
+        {
+            <div class="p-10 text-center">
+                <div class="inline-flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-500 mb-4">
+                    <i class="far fa-clock text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-slate-900 mb-2">No approvals waiting</h3>
+                <p class="text-slate-600 mb-4">New patient appointment requests will appear here for review.</p>
+                <a asp-action="Index" class="gradient-primary text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-shadow inline-flex items-center">
+                    <i class="fas fa-calendar-alt mr-2"></i>
+                    Go to schedule
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200">
+                            <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">Patient</th>
+                            <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">Requested Provider</th>
+                            <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">Requested Time</th>
+                            <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">Reason</th>
+                            <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">Status</th>
+                            <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200">
+                        @foreach (var appointment in Model.PendingAppointments)
+                        {
+                            var badgeColor = appointment.Status switch
+                            {
+                                "Pending Approval" => "bg-amber-100 text-amber-800",
+                                "Cancelled" => "bg-rose-100 text-rose-700",
+                                "Scheduled" => "bg-blue-100 text-blue-700",
+                                _ => "bg-slate-100 text-slate-700"
+                            };
+
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="py-4 px-6">
+                                    <div class="font-semibold text-slate-900">@appointment.PatientName</div>
+                                    <div class="text-xs text-slate-500">Room: @appointment.Location</div>
+                                </td>
+                                <td class="py-4 px-6 text-slate-700">@appointment.MedecinName</td>
+                                <td class="py-4 px-6">
+                                    <div class="text-slate-900 font-medium">@appointment.StartTime.ToString("MMM dd, yyyy · h:mm tt")</div>
+                                    <div class="text-xs text-slate-500">Ends @appointment.EndTime.ToString("h:mm tt")</div>
+                                </td>
+                                <td class="py-4 px-6 text-slate-700">@appointment.Reason</td>
+                                <td class="py-4 px-6">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold @badgeColor">
+                                        @appointment.Status
+                                    </span>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <div class="flex items-center gap-2">
+                                        <form asp-action="ApprovePending" asp-route-id="@appointment.Id" method="post" class="inline">
+                                            <button type="submit" class="px-3 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition">
+                                                <i class="fas fa-check mr-1"></i> Approve
+                                            </button>
+                                        </form>
+                                        <form asp-action="DeclinePending" asp-route-id="@appointment.Id" method="post" class="inline">
+                                            <button type="submit" class="px-3 py-2 rounded-lg bg-rose-50 text-rose-700 text-sm font-semibold border border-rose-200 hover:bg-rose-100 transition">
+                                                <i class="fas fa-times mr-1"></i> Cancel
+                                            </button>
+                                        </form>
+                                        <a asp-action="Edit" asp-route-id="@appointment.Id" class="px-3 py-2 rounded-lg bg-white border border-slate-200 text-sm font-semibold text-slate-700 hover:border-slate-300 transition">
+                                            <i class="fas fa-pen mr-1"></i> Edit
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}
