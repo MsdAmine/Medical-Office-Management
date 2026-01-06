@@ -1,13 +1,24 @@
+@using System
 @using MedicalOfficeManagement.Services
 @using MedicalOfficeManagement.ViewModels
 @inject IDashboardMetricsService DashboardMetricsService
 @{
     LayoutViewModel? layoutModel = null;
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
 
     if (User.Identity?.IsAuthenticated == true)
     {
         layoutModel = await DashboardMetricsService.GetLayoutViewModelAsync(User);
     }
+
+    Func<string, string> patientLinkClass = action =>
+        string.Equals(currentController, "PatientPortal", StringComparison.OrdinalIgnoreCase)
+        && string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase)
+            ? "active"
+            : string.Empty;
+
+    bool isDashboard = string.Equals(currentController, "Home", StringComparison.OrdinalIgnoreCase);
 }
 <!DOCTYPE html>
 <html lang="en" class="h-full">
@@ -257,15 +268,32 @@
         <nav class="p-4 flex-1 overflow-y-auto" style="max-height: calc(100vh - 200px)">
             <div class="space-y-1">
                 <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-3 py-2">Main</div>
-                <a href="/" class="sidebar-link active flex items-center space-x-3 px-4 py-3 rounded-lg">
+                <a href="/" class="sidebar-link @(isDashboard ? "active" : string.Empty) flex items-center space-x-3 px-4 py-3 rounded-lg">
                     <i class="fas fa-home text-slate-500 w-5 text-center"></i>
                     <span class="font-medium">Dashboard</span>
                 </a>
                 @if (User.IsInRole(SystemRoles.Patient))
                 {
-                    <a href="/PatientPortal/Upcoming" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
-                        <i class="fas fa-user-injured text-slate-500 w-5 text-center"></i>
-                        <span class="font-medium">Espace Patient</span>
+                    <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-3 py-2 mt-6">Espace patient</div>
+                    <a href="/PatientPortal/Upcoming" class="sidebar-link @patientLinkClass('Upcoming') flex items-center space-x-3 px-4 py-3 rounded-lg">
+                        <i class="fas fa-calendar-check text-slate-500 w-5 text-center"></i>
+                        <span class="font-medium">Rendez-vous à venir</span>
+                    </a>
+                    <a href="/PatientPortal/History" class="sidebar-link @patientLinkClass('History') flex items-center space-x-3 px-4 py-3 rounded-lg">
+                        <i class="fas fa-history text-slate-500 w-5 text-center"></i>
+                        <span class="font-medium">Historique des visites</span>
+                    </a>
+                    <a href="/PatientPortal/Request" class="sidebar-link @patientLinkClass('Request') flex items-center space-x-3 px-4 py-3 rounded-lg">
+                        <i class="fas fa-calendar-plus text-slate-500 w-5 text-center"></i>
+                        <span class="font-medium">Demander un rendez-vous</span>
+                    </a>
+                    <a href="/PatientPortal/Treatments" class="sidebar-link @patientLinkClass('Treatments') flex items-center space-x-3 px-4 py-3 rounded-lg">
+                        <i class="fas fa-prescription-bottle-alt text-slate-500 w-5 text-center"></i>
+                        <span class="font-medium">Traitements</span>
+                    </a>
+                    <a href="/PatientPortal/Results" class="sidebar-link @patientLinkClass('Results') flex items-center space-x-3 px-4 py-3 rounded-lg">
+                        <i class="fas fa-flask text-slate-500 w-5 text-center"></i>
+                        <span class="font-medium">Résultats</span>
                     </a>
                 }
                 @if (User.IsInRole(SystemRoles.Admin) || User.IsInRole(SystemRoles.Secretaire) || User.IsInRole(SystemRoles.Medecin))
