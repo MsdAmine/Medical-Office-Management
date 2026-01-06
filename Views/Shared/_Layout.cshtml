@@ -274,28 +274,41 @@
                 </a>
                 @if (User.IsInRole(SystemRoles.Patient))
                 {
-                    <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-3 py-2 mt-6">Espace patient</div>
-                    <a href="/PatientPortal/Upcoming" class="sidebar-link @patientLinkClass('Upcoming') flex items-center space-x-3 px-4 py-3 rounded-lg">
+                    <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-3 py-2 mt-6">
+                        Espace patient
+                    </div>
+
+                    <a href="/PatientPortal/Upcoming"
+                    class="sidebar-link @patientLinkClass("Upcoming") flex items-center space-x-3 px-4 py-3 rounded-lg">
                         <i class="fas fa-calendar-check text-slate-500 w-5 text-center"></i>
                         <span class="font-medium">Rendez-vous à venir</span>
                     </a>
-                    <a href="/PatientPortal/History" class="sidebar-link @patientLinkClass('History') flex items-center space-x-3 px-4 py-3 rounded-lg">
+
+                    <a href="/PatientPortal/History"
+                    class="sidebar-link @patientLinkClass("History") flex items-center space-x-3 px-4 py-3 rounded-lg">
                         <i class="fas fa-history text-slate-500 w-5 text-center"></i>
                         <span class="font-medium">Historique des visites</span>
                     </a>
-                    <a href="/PatientPortal/Request" class="sidebar-link @patientLinkClass('Request') flex items-center space-x-3 px-4 py-3 rounded-lg">
+
+                    <a href="/PatientPortal/Request"
+                    class="sidebar-link @patientLinkClass("Request") flex items-center space-x-3 px-4 py-3 rounded-lg">
                         <i class="fas fa-calendar-plus text-slate-500 w-5 text-center"></i>
                         <span class="font-medium">Demander un rendez-vous</span>
                     </a>
-                    <a href="/PatientPortal/Treatments" class="sidebar-link @patientLinkClass('Treatments') flex items-center space-x-3 px-4 py-3 rounded-lg">
+
+                    <a href="/PatientPortal/Treatments"
+                    class="sidebar-link @patientLinkClass("Treatments") flex items-center space-x-3 px-4 py-3 rounded-lg">
                         <i class="fas fa-prescription-bottle-alt text-slate-500 w-5 text-center"></i>
                         <span class="font-medium">Traitements</span>
                     </a>
-                    <a href="/PatientPortal/Results" class="sidebar-link @patientLinkClass('Results') flex items-center space-x-3 px-4 py-3 rounded-lg">
+
+                    <a href="/PatientPortal/Results"
+                    class="sidebar-link @patientLinkClass("Results") flex items-center space-x-3 px-4 py-3 rounded-lg">
                         <i class="fas fa-flask text-slate-500 w-5 text-center"></i>
                         <span class="font-medium">Résultats</span>
                     </a>
                 }
+
                 @if (User.IsInRole(SystemRoles.Admin) || User.IsInRole(SystemRoles.Secretaire) || User.IsInRole(SystemRoles.Medecin))
                 {
                     <a href="/Appointments" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
