@@ -1,4 +1,5 @@
 using MedicalOfficeManagement.Models;
+using MedicalOfficeManagement.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MedicalOfficeManagement.Data.Seeders;
@@ -36,6 +37,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+builder.Services.AddScoped<IDashboardMetricsService, DashboardMetricsService>();
 
 var app = builder.Build();
 
