@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MedicalOfficeManagement.Models;
 using MedicalOfficeManagement.Models.Security;
+using System.Security.Claims;
 
 namespace MedicalOfficeManagement.Controllers
 {
@@ -31,7 +32,7 @@ namespace MedicalOfficeManagement.Controllers
         }
 
         // GET: /Patients/Details/5
-        [Authorize(Roles = SystemRoles.AdminOrSecretaire)]
+        [Authorize(Roles = SystemRoles.Admin + "," + SystemRoles.Secretaire + "," + SystemRoles.Medecin + "," + SystemRoles.Patient)]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -43,6 +44,9 @@ namespace MedicalOfficeManagement.Controllers
             if (patient == null)
                 return NotFound();
 
+            if (!await CanAccessPatientAsync(patient))
+                return Forbid();
+
             ViewData["Title"] = "Patient Details";
             ViewData["Breadcrumb"] = "Patients";
 
@@ -50,7 +54,7 @@ namespace MedicalOfficeManagement.Controllers
         }
 
         // GET: /Patients/Create
-        [Authorize(Roles = SystemRoles.Secretaire)]
+        [Authorize(Roles = SystemRoles.AdminOrSecretaire)]
         public IActionResult Create()
         {
             ViewData["Title"] = "New Patient";
@@ -62,7 +66,7 @@ namespace MedicalOfficeManagement.Controllers
         // POST: /Patients/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = SystemRoles.Secretaire)]
+        [Authorize(Roles = SystemRoles.AdminOrSecretaire)]
         public async Task<IActionResult> Create(Patient patient)
         {
             NormalizeContactFields(patient);
@@ -88,7 +92,7 @@ namespace MedicalOfficeManagement.Controllers
         }
 
         // GET: /Patients/Edit/5
-        [Authorize(Roles = SystemRoles.Secretaire)]
+        [Authorize(Roles = SystemRoles.AdminOrSecretaire)]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -97,6 +101,9 @@ namespace MedicalOfficeManagement.Controllers
             var patient = await _context.Patients.FindAsync(id);
             if (patient == null)
                 return NotFound();
+
+            if (!await CanAccessPatientAsync(patient))
+                return Forbid();
 
             ViewData["Title"] = "Edit Patient";
             ViewData["Breadcrumb"] = "Patients";
@@ -107,7 +114,7 @@ namespace MedicalOfficeManagement.Controllers
         // POST: /Patients/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = SystemRoles.Secretaire)]
+        [Authorize(Roles = SystemRoles.AdminOrSecretaire)]
         public async Task<IActionResult> Edit(int id, Patient patient)
         {
             if (id != patient.Id)
@@ -118,6 +125,9 @@ namespace MedicalOfficeManagement.Controllers
 
             if (existingPatient == null)
                 return NotFound();
+
+            if (!await CanAccessPatientAsync(existingPatient))
+                return Forbid();
 
             NormalizeContactFields(patient);
             ValidateNormalizedContact(patient);
@@ -153,7 +163,7 @@ namespace MedicalOfficeManagement.Controllers
         }
 
         // GET: /Patients/Delete/5
-        [Authorize(Roles = SystemRoles.Secretaire)]
+        [Authorize(Roles = SystemRoles.AdminOrSecretaire)]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -166,6 +176,9 @@ namespace MedicalOfficeManagement.Controllers
             if (patient == null || patient.IsDeleted)
                 return NotFound();
 
+            if (!await CanAccessPatientAsync(patient))
+                return Forbid();
+
             ViewData["Title"] = "Delete Patient";
             ViewData["Breadcrumb"] = "Patients";
 
@@ -175,7 +188,7 @@ namespace MedicalOfficeManagement.Controllers
         // POST: /Patients/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = SystemRoles.Secretaire)]
+        [Authorize(Roles = SystemRoles.AdminOrSecretaire)]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var patient = await _context.Patients
@@ -184,6 +197,9 @@ namespace MedicalOfficeManagement.Controllers
 
             if (patient == null)
                 return NotFound();
+
+            if (!await CanAccessPatientAsync(patient))
+                return Forbid();
 
             if (!patient.IsDeleted)
             {
@@ -275,6 +291,60 @@ namespace MedicalOfficeManagement.Controllers
                     ModelState.AddModelError(nameof(Patient.Telephone), "A patient with this phone number already exists.");
                 }
             }
+        }
+
+        private async Task<bool> CanAccessPatientAsync(Patient patient)
+        {
+            if (IsAdminOrSecretaire())
+                return true;
+
+            var userId = GetUserId();
+            if (string.IsNullOrWhiteSpace(userId))
+                return false;
+
+            if (User.IsInRole(SystemRoles.Patient))
+                return string.Equals(patient.ApplicationUserId, userId, StringComparison.Ordinal);
+
+            if (User.IsInRole(SystemRoles.Medecin))
+            {
+                var medecinId = await GetCurrentMedecinIdAsync();
+                if (!medecinId.HasValue)
+                    return false;
+
+                var hasAppointment = await _context.RendezVous
+                    .AnyAsync(r => r.PatientId == patient.Id && r.MedecinId == medecinId.Value);
+
+                if (hasAppointment)
+                    return true;
+
+                return await _context.Consultations
+                    .AnyAsync(c => c.PatientId == patient.Id && c.MedecinId == medecinId.Value);
+            }
+
+            return false;
+        }
+
+        private bool IsAdminOrSecretaire()
+        {
+            return User.IsInRole(SystemRoles.Admin) || User.IsInRole(SystemRoles.Secretaire);
+        }
+
+        private string? GetUserId()
+        {
+            return User.FindFirstValue(ClaimTypes.NameIdentifier);
+        }
+
+        private async Task<int?> GetCurrentMedecinIdAsync()
+        {
+            var userId = GetUserId();
+            if (string.IsNullOrWhiteSpace(userId))
+                return null;
+
+            var medecin = await _context.Medecins
+                .AsNoTracking()
+                .FirstOrDefaultAsync(m => m.ApplicationUserId == userId);
+
+            return medecin?.Id;
         }
     }
 }

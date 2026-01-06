@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Security.Claims;
 using MedicalOfficeManagement.Models;
 using MedicalOfficeManagement.Models.Security;
 using MedicalOfficeManagement.ViewModels;
@@ -108,12 +109,12 @@ namespace MedicalOfficeManagement.Controllers
 
         private async Task<Patient?> GetCurrentPatientAsync()
         {
-            var email = User.Identity?.Name;
-            if (string.IsNullOrWhiteSpace(email))
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(userId))
                 return null;
 
             return await _context.Patients
-                .FirstOrDefaultAsync(p => p.Email == email);
+                .FirstOrDefaultAsync(p => p.ApplicationUserId == userId);
         }
 
         private async Task<PatientPortalViewModel> BuildPortalViewModelAsync(

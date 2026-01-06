@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace MedicalOfficeManagement.Models;
 
@@ -57,6 +58,12 @@ public partial class Patient
 
     [StringLength(256)]
     public string? DeletedBy { get; set; }
+
+    [StringLength(450)]
+    public string? ApplicationUserId { get; set; }
+
+    [ValidateNever]
+    public ApplicationUser? ApplicationUser { get; set; }
 
     public virtual ICollection<Consultation> Consultations { get; set; } = new List<Consultation>();
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 // using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.General; <-- SUPPRIMÉ
 using System;
 using System.Collections.Generic;
@@ -49,9 +50,25 @@ public partial class MedicalOfficeContext : IdentityDbContext<ApplicationUser>
         modelBuilder.Entity<Patient>()
             .HasQueryFilter(p => !p.IsDeleted);
 
+        ConfigurePatient(modelBuilder.Entity<Patient>());
+
         // IMPORTANT : Vous devez avoir retiré le mappage de la table Utilisateur.
 
         OnModelCreatingPartial(modelBuilder);
+    }
+
+    private static void ConfigurePatient(EntityTypeBuilder<Patient> patient)
+    {
+        patient
+            .HasOne(p => p.ApplicationUser)
+            .WithMany()
+            .HasForeignKey(p => p.ApplicationUserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        patient
+            .HasIndex(p => p.ApplicationUserId)
+            .IsUnique()
+            .HasFilter("[ApplicationUserId] IS NOT NULL");
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
