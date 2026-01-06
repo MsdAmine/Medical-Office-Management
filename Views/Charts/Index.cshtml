@@ -1,4 +1,5 @@
 @model MedicalOfficeManagement.ViewModels.ChartIndexViewModel
+@using System.Linq
 @{
     ViewData["Title"] = "Medical Charts";
 }
@@ -70,34 +71,43 @@
         </div>
 
         <div class="divide-y divide-slate-100">
-            @foreach (var chart in Model.Charts)
+            @if (Model.Charts?.Any() == true)
             {
-                <div class="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                        <div class="flex items-center gap-3">
-                            <div class="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
-                                <i class="fas fa-user-injured"></i>
-                            </div>
-                            <div>
-                                <p class="text-sm text-slate-500 uppercase tracking-wide">@(chart.VisitReason)</p>
-                                <p class="text-lg font-semibold text-slate-900">@chart.PatientName</p>
-                                <p class="text-sm text-slate-500">Updated @chart.LastUpdated.ToString("MMM d, HH:mm")</p>
+                @foreach (var chart in Model.Charts)
+                {
+                    <div class="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <div class="flex items-center gap-3">
+                                <div class="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                                    <i class="fas fa-user-injured"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-slate-500 uppercase tracking-wide">@(chart.VisitReason)</p>
+                                    <p class="text-lg font-semibold text-slate-900">@chart.PatientName</p>
+                                    <p class="text-sm text-slate-500">Updated @chart.LastUpdated.ToString("MMM d, HH:mm")</p>
+                                </div>
                             </div>
                         </div>
+                        <div class="flex items-center gap-3">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-slate-800">
+                                <i class="fas fa-user-md mr-2 text-slate-500"></i>
+                                @chart.Provider
+                            </span>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium @GetStatusClasses(chart.Status)">
+                                <i class="fas fa-circle text-xs mr-2"></i>
+                                @chart.Status
+                            </span>
+                            <button class="inline-flex items-center px-3 py-2 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                                Review
+                            </button>
+                        </div>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-slate-800">
-                            <i class="fas fa-user-md mr-2 text-slate-500"></i>
-                            @chart.Provider
-                        </span>
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium @GetStatusClasses(chart.Status)">
-                            <i class="fas fa-circle text-xs mr-2"></i>
-                            @chart.Status
-                        </span>
-                        <button class="inline-flex items-center px-3 py-2 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-50">
-                            Review
-                        </button>
-                    </div>
+                }
+            }
+            else
+            {
+                <div class="p-6 text-center text-slate-500">
+                    <p class="text-sm font-medium">@Model.StatusMessage ?? "No charts available."</p>
                 </div>
             }
         </div>

@@ -1,57 +1,57 @@
+using System;
+using System.Linq;
+using MedicalOfficeManagement.Models;
 using MedicalOfficeManagement.Models.Security;
 using MedicalOfficeManagement.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace MedicalOfficeManagement.Controllers
 {
     [Authorize(Roles = SystemRoles.AdminOrMedecin)]
     public class ChartsController : Controller
     {
-        [HttpGet]
-        public IActionResult Index()
+        private readonly MedicalOfficeContext _context;
+        private readonly ILogger<ChartsController> _logger;
+
+        public ChartsController(MedicalOfficeContext context, ILogger<ChartsController> logger)
         {
-            var charts = new List<ChartViewModel>
-            {
-                new()
+            _context = context;
+            _logger = logger;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            var charts = await _context.Consultations
+                .AsNoTracking()
+                .Include(c => c.Patient)
+                .Include(c => c.Medecin)
+                .Include(c => c.RendezVous)
+                .OrderByDescending(c => c.DateConsult)
+                .Take(15)
+                .Select(c => new ChartViewModel
                 {
-                    PatientName = "Alice Martin",
-                    VisitReason = "Annual Physical",
-                    Status = "In Review",
-                    Provider = "Dr. Karim",
-                    LastUpdated = DateTime.Now.AddHours(-3)
-                },
-                new()
-                {
-                    PatientName = "Marc Dupont",
-                    VisitReason = "Diabetes Follow-up",
-                    Status = "Signed",
-                    Provider = "Dr. Chen",
-                    LastUpdated = DateTime.Now.AddHours(-8)
-                },
-                new()
-                {
-                    PatientName = "Fatima Zahra",
-                    VisitReason = "Post-op Check",
-                    Status = "Awaiting Signature",
-                    Provider = "Dr. Martin",
-                    LastUpdated = DateTime.Now.AddHours(-12)
-                },
-                new()
-                {
-                    PatientName = "Julien Bernard",
-                    VisitReason = "Cardiology Consult",
-                    Status = "In Progress",
-                    Provider = "Dr. Leroy",
-                    LastUpdated = DateTime.Now.AddHours(-1)
-                }
-            };
+                    PatientName = c.Patient == null
+                        ? "Unknown patient"
+                        : $"{c.Patient.Prenom} {c.Patient.Nom}".Trim(),
+                    VisitReason = string.IsNullOrWhiteSpace(c.RendezVous?.Motif) ? "Consultation" : c.RendezVous.Motif,
+                    Status = string.IsNullOrWhiteSpace(c.Diagnostics) ? "In Review" : "Signed",
+                    Provider = c.Medecin == null || string.IsNullOrWhiteSpace(c.Medecin.NomPrenom)
+                        ? "Unassigned"
+                        : c.Medecin.NomPrenom,
+                    LastUpdated = c.DateConsult
+                })
+                .ToListAsync();
 
             var viewModel = new ChartIndexViewModel
             {
-                ActiveCharts = 42,
-                PendingSignoffs = 6,
-                CriticalAlerts = 2,
+                ActiveCharts = charts.Count,
+                PendingSignoffs = charts.Count(c => !string.Equals(c.Status, "Signed", StringComparison.OrdinalIgnoreCase)),
+                CriticalAlerts = await _context.Consultations.AsNoTracking()
+                    .CountAsync(c => !string.IsNullOrWhiteSpace(c.Diagnostics) && EF.Functions.Like(c.Diagnostics!, "%critical%")),
+                StatusMessage = charts.Any() ? null : "No clinical documentation found in the system.",
                 Charts = charts
             };
 

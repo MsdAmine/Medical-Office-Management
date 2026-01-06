@@ -17,6 +17,7 @@ namespace MedicalOfficeManagement.ViewModels
         public int ActiveCharts { get; set; }
         public int PendingSignoffs { get; set; }
         public int CriticalAlerts { get; set; }
+        public string? StatusMessage { get; set; }
         public IEnumerable<ChartViewModel> Charts { get; set; } = Array.Empty<ChartViewModel>();
     }
 }
