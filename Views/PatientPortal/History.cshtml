@@ -1,97 +1,69 @@
 @model PatientPortalViewModel
 @{
-    ViewData["Title"] = "Historique des visites";
+    ViewData["Title"] = "Visit History";
 }
 
-<div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/50">
-    <div class="bg-gradient-to-r from-slate-700 via-slate-800 to-slate-900 text-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div>
-                    <div class="flex items-center space-x-3 mb-3">
-                        <div class="h-14 w-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                            <i class="fas fa-history text-2xl"></i>
-                        </div>
-                        <div>
-                            <p class="text-slate-200 text-sm font-medium uppercase tracking-wider">Historique</p>
-                            <h1 class="text-3xl md:text-4xl font-bold mt-1">Vos visites passées</h1>
-                        </div>
-                    </div>
-                    <p class="text-slate-200 max-w-2xl">
-                        Bonjour, @Model.PatientDisplayName. Retrouvez le détail de vos rendez-vous complétés et les notes associées.
-                    </p>
-                </div>
-
-                <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-5 border border-white/10">
-                    <div class="flex items-center space-x-4">
-                        <div>
-                            <div class="text-sm text-slate-200 uppercase font-semibold tracking-wide">Rendez-vous passés</div>
-                            <div class="text-3xl font-bold">@Model.PastAppointments.Count()</div>
-                        </div>
-                        <div class="h-12 w-12 rounded-xl bg-white text-slate-800 flex items-center justify-center shadow-inner">
-                            <i class="fas fa-clipboard-check"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl lg:text-3xl font-bold text-slate-900">Visit History</h1>
+            <p class="text-slate-600 mt-2">Hello, @Model.PatientDisplayName. View the details of your completed appointments.</p>
+        </div>
+        <div class="glass-card p-4 rounded-xl">
+            <div class="text-sm text-slate-500">Past Appointments</div>
+            <div class="text-3xl font-bold text-slate-900">@Model.PastAppointments.Count()</div>
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 -mt-6">
-        <div class="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden">
-            <div class="px-6 py-5 border-b border-slate-200">
-                <div class="flex items-center space-x-3">
-                    <div class="h-12 w-12 rounded-xl bg-gradient-to-r from-slate-600 to-slate-700 flex items-center justify-center">
-                        <i class="fas fa-history text-white"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-xl font-bold text-slate-900">Historique des visites</h2>
-                        <p class="text-sm text-slate-600">Vos rendez-vous passés</p>
-                    </div>
-                </div>
+    <div class="glass-card rounded-xl overflow-hidden">
+        <div class="p-6 border-b border-slate-200">
+            <div>
+                <h2 class="text-lg font-semibold text-slate-900">Visit History</h2>
+                <p class="text-sm text-slate-600">Your past appointments</p>
             </div>
+        </div>
 
-            <div class="p-6">
-                @if (!Model.PastAppointments.Any())
-                {
-                    <div class="text-center py-8">
-                        <div class="h-20 w-20 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
-                            <i class="fas fa-file-medical text-slate-400 text-2xl"></i>
-                        </div>
-                        <h3 class="text-lg font-semibold text-slate-900 mb-2">Aucun historique</h3>
-                        <p class="text-slate-600">Vos visites passées apparaîtront ici</p>
+        <div class="p-6">
+            @if (!Model.PastAppointments.Any())
+            {
+                <div class="text-center py-8">
+                    <div class="inline-flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-500 mb-4">
+                        <i class="fas fa-file-medical text-2xl"></i>
                     </div>
-                }
-                else
-                {
-                    <div class="space-y-3">
-                        @foreach (var appt in Model.PastAppointments)
-                        {
-                            <div class="border border-slate-200 rounded-xl p-4 hover:bg-slate-50 transition">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex-1">
-                                        <div class="flex items-center space-x-3">
-                                            <div class="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center">
-                                                <i class="fas fa-user-md text-slate-600 text-sm"></i>
-                                            </div>
-                                            <div>
-                                                <h4 class="font-medium text-slate-900">@appt.MedecinName</h4>
-                                                <p class="text-sm text-slate-600">@appt.Reason</p>
-                                            </div>
+                    <h3 class="text-lg font-semibold text-slate-900 mb-2">No History</h3>
+                    <p class="text-slate-600">Your past visits will appear here</p>
+                </div>
+            }
+            else
+            {
+                <div class="space-y-3">
+                    @foreach (var appt in Model.PastAppointments)
+                    {
+                        <div class="border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition-colors">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center">
+                                            <i class="fas fa-user-md text-slate-600 text-sm"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-medium text-slate-900">@appt.MedecinName</h4>
+                                            <p class="text-sm text-slate-600">@appt.Reason</p>
                                         </div>
                                     </div>
-                                    <div class="flex items-center space-x-4">
-                                        <span class="text-sm text-slate-500">@appt.ScheduledFor.ToString("dd MMM yyyy")</span>
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
-                                            @appt.Status
-                                        </span>
-                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-4">
+                                    <span class="text-sm text-slate-500">@appt.ScheduledFor.ToString("dd MMM yyyy")</span>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
+                                        @appt.Status
+                                    </span>
                                 </div>
                             </div>
-                        }
-                    </div>
-                }
-            </div>
+                        </div>
+                    }
+                </div>
+            }
         </div>
     </div>
 </div>

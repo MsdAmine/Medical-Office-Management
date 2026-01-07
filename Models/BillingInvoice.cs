@@ -41,8 +41,18 @@ public class BillingInvoice
     [StringLength(50)]
     public string PaymentMethod { get; set; } = string.Empty;
 
+    public int? ConsultationId { get; set; }
+
+    public int? RendezVousId { get; set; }
+
     [ValidateNever]
     public Patient? Patient { get; set; }
+
+    [ValidateNever]
+    public Consultation? Consultation { get; set; }
+
+    [ValidateNever]
+    public RendezVou? RendezVous { get; set; }
 
     // Helper property for enum conversion
     [NotMapped]

@@ -4,6 +4,7 @@ using MedicalOfficeManagement.Services.Email;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace MedicalOfficeManagement.Controllers;
 
@@ -121,10 +122,39 @@ public class AccountController : Controller
             return View(model);
         }
 
-        var user = await _userManager.GetUserAsync(User);
+        // Get the current user by ID from claims to ensure we're updating the correct user
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return NotFound();
+        }
+
+        var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
         {
             return NotFound();
+        }
+
+        // Validate email uniqueness if changed
+        if (user.Email != model.Email)
+        {
+            var existingUserByEmail = await _userManager.FindByEmailAsync(model.Email);
+            if (existingUserByEmail != null && existingUserByEmail.Id != user.Id)
+            {
+                ModelState.AddModelError(nameof(model.Email), "This email is already taken by another user.");
+                return View(model);
+            }
+        }
+
+        // Validate username uniqueness if changed
+        if (user.UserName != model.UserName)
+        {
+            var existingUserByUsername = await _userManager.FindByNameAsync(model.UserName);
+            if (existingUserByUsername != null && existingUserByUsername.Id != user.Id)
+            {
+                ModelState.AddModelError(nameof(model.UserName), "This username is already taken by another user.");
+                return View(model);
+            }
         }
 
         // Update user properties
@@ -161,7 +191,7 @@ public class AccountController : Controller
             }
         }
 
-        // Save changes
+        // Save changes - this updates the existing user, not creates a new one
         var updateResult = await _userManager.UpdateAsync(user);
         if (!updateResult.Succeeded)
         {

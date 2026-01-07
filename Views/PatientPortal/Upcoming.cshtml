@@ -1,124 +1,93 @@
 @model PatientPortalViewModel
 @{
-    ViewData["Title"] = "Rendez-vous à venir";
+    ViewData["Title"] = "Upcoming Appointments";
 }
 
-<div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/50">
-    <div class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div>
-                    <div class="flex items-center space-x-3 mb-3">
-                        <div class="h-14 w-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                            <i class="fas fa-calendar-check text-2xl"></i>
-                        </div>
-                        <div>
-                            <p class="text-blue-100 text-sm font-medium uppercase tracking-wider">Rendez-vous</p>
-                            <h1 class="text-3xl md:text-4xl font-bold mt-1">Vos rendez-vous à venir</h1>
-                        </div>
-                    </div>
-                    <p class="text-blue-100 max-w-2xl">
-                        Bonjour, @Model.PatientDisplayName. Consultez vos prochains créneaux confirmés ainsi que leur statut en un coup d'œil.
-                    </p>
-                </div>
-
-                <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-5 border border-white/20">
-                    <div class="flex items-center space-x-4">
-                        <div>
-                            <div class="text-sm text-blue-100 uppercase font-semibold tracking-wide">Total prévu</div>
-                            <div class="text-3xl font-bold">@Model.UpcomingAppointments.Count()</div>
-                        </div>
-                        <div class="h-12 w-12 rounded-xl bg-white text-blue-700 flex items-center justify-center shadow-inner">
-                            <i class="fas fa-bell"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl lg:text-3xl font-bold text-slate-900">Upcoming Appointments</h1>
+            <p class="text-slate-600 mt-2">Hello, @Model.PatientDisplayName. View your upcoming confirmed appointments.</p>
+        </div>
+        <div class="glass-card p-4 rounded-xl">
+            <div class="text-sm text-slate-500">Total Scheduled</div>
+            <div class="text-3xl font-bold text-slate-900">@Model.UpcomingAppointments.Count()</div>
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 -mt-6">
-        @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
-        {
-            <div class="mb-8 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-2xl p-5 shadow-lg">
-                <div class="flex items-center space-x-3">
-                    <i class="fas fa-check-circle text-xl"></i>
-                    <span class="font-medium">@Model.StatusMessage</span>
-                </div>
+    @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+    {
+        <div class="glass-card rounded-xl p-4 border-l-4 border-emerald-500 bg-emerald-50">
+            <div class="flex items-center space-x-3">
+                <i class="fas fa-check-circle text-emerald-600"></i>
+                <span class="font-medium text-emerald-900">@Model.StatusMessage</span>
             </div>
-        }
+        </div>
+    }
 
-        <div class="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden">
-            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-5 border-b border-slate-200">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <div class="h-12 w-12 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center">
-                            <i class="fas fa-calendar-alt text-white"></i>
-                        </div>
-                        <div>
-                            <h2 class="text-xl font-bold text-slate-900">Rendez-vous à venir</h2>
-                            <p class="text-sm text-slate-600">Vos créneaux prévus</p>
-                        </div>
-                    </div>
-                    <span class="text-xs font-semibold bg-blue-100 text-blue-800 px-3 py-1.5 rounded-full">
-                        @Model.UpcomingAppointments.Count()
-                    </span>
+    <div class="glass-card rounded-xl overflow-hidden">
+        <div class="p-6 border-b border-slate-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-semibold text-slate-900">Upcoming Appointments</h2>
+                    <p class="text-sm text-slate-600">Your scheduled appointments</p>
                 </div>
+                <span class="px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                    @Model.UpcomingAppointments.Count()
+                </span>
             </div>
+        </div>
 
-            <div class="p-6">
-                @if (!Model.UpcomingAppointments.Any())
-                {
-                    <div class="text-center py-8">
-                        <div class="h-20 w-20 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
-                            <i class="fas fa-calendar-plus text-slate-400 text-2xl"></i>
-                        </div>
-                        <h3 class="text-lg font-semibold text-slate-900 mb-2">Aucun rendez-vous planifié</h3>
-                        <p class="text-slate-600">Demandez un nouveau créneau via l'onglet dédié.</p>
+        <div class="p-6">
+            @if (!Model.UpcomingAppointments.Any())
+            {
+                <div class="text-center py-8">
+                    <div class="inline-flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-500 mb-4">
+                        <i class="fas fa-calendar-plus text-2xl"></i>
                     </div>
-                }
-                else
-                {
-                    <div class="space-y-4">
-                        @foreach (var appt in Model.UpcomingAppointments)
-                        {
-                            <div class="border border-slate-200 hover:border-blue-300 rounded-2xl p-5 transition-all duration-300 hover:shadow-lg">
-                                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                    <div class="flex-1">
-                                        <div class="flex items-center space-x-3 mb-3">
-                                            <div class="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center">
-                                                <i class="fas fa-user-md text-blue-600"></i>
-                                            </div>
-                                            <div>
-                                                <h3 class="font-bold text-slate-900">@appt.MedecinName</h3>
-                                                <p class="text-sm text-slate-600">@appt.Reason</p>
-                                            </div>
+                    <h3 class="text-lg font-semibold text-slate-900 mb-2">No Appointments Scheduled</h3>
+                    <p class="text-slate-600">Request a new appointment using the dedicated tab.</p>
+                </div>
+            }
+            else
+            {
+                <div class="space-y-3">
+                    @foreach (var appt in Model.UpcomingAppointments)
+                    {
+                        <div class="border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition-colors">
+                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-3 mb-2">
+                                        <div class="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center">
+                                            <i class="fas fa-user-md text-slate-600 text-sm"></i>
                                         </div>
-                                        <div class="flex items-center space-x-6 text-sm">
-                                            <span class="flex items-center text-slate-700">
-                                                <i class="far fa-calendar-alt text-blue-500 mr-2"></i>
-                                                @appt.ScheduledFor.ToString("dd MMM yyyy")
-                                            </span>
-                                            <span class="flex items-center text-slate-700">
-                                                <i class="far fa-clock text-blue-500 mr-2"></i>
-                                                @appt.ScheduledFor.ToString("HH:mm") - @appt.EndsAt.ToString("HH:mm")
-                                            </span>
+                                        <div>
+                                            <h3 class="font-semibold text-slate-900">@appt.MedecinName</h3>
+                                            <p class="text-sm text-slate-600">@appt.Reason</p>
                                         </div>
                                     </div>
-                                    <div class="flex items-center space-x-3">
-                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold @GetStatusBadgeClass(appt.Status)">
-                                            @appt.Status
+                                    <div class="flex items-center space-x-6 text-sm text-slate-600 ml-11">
+                                        <span class="flex items-center">
+                                            <i class="far fa-calendar-alt text-slate-400 mr-2"></i>
+                                            @appt.ScheduledFor.ToString("dd MMM yyyy")
                                         </span>
-                                        <button class="h-10 w-10 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center">
-                                            <i class="fas fa-ellipsis-h"></i>
-                                        </button>
+                                        <span class="flex items-center">
+                                            <i class="far fa-clock text-slate-400 mr-2"></i>
+                                            @appt.ScheduledFor.ToString("HH:mm") - @appt.EndsAt.ToString("HH:mm")
+                                        </span>
                                     </div>
                                 </div>
+                                <div class="flex items-center space-x-3">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium @GetStatusBadgeClass(appt.Status)">
+                                        @appt.Status
+                                    </span>
+                                </div>
                             </div>
-                        }
-                    </div>
-                }
-            </div>
+                        </div>
+                    }
+                </div>
+            }
         </div>
     </div>
 </div>
@@ -131,12 +100,12 @@
 
         return status.ToLowerInvariant() switch
         {
-            "pending approval" or "en attente" => "bg-amber-100 text-amber-700 border border-amber-200",
-            "completed" or "terminé" => "bg-emerald-100 text-emerald-700 border border-emerald-200",
-            "cancelled" or "annulé" => "bg-red-100 text-red-700 border border-red-200",
-            "confirmed" or "confirmé" => "bg-blue-100 text-blue-700 border border-blue-200",
-            "in progress" or "en cours" => "bg-indigo-100 text-indigo-700 border border-indigo-200",
-            _ => "bg-slate-100 text-slate-700 border border-slate-200"
+            "pending approval" => "bg-amber-100 text-amber-700",
+            "completed" => "bg-emerald-100 text-emerald-700",
+            "cancelled" => "bg-red-100 text-red-700",
+            "confirmed" => "bg-blue-100 text-blue-700",
+            "in progress" => "bg-indigo-100 text-indigo-700",
+            _ => "bg-slate-100 text-slate-700"
         };
     }
 }

@@ -1,94 +1,86 @@
 @model PatientPortalViewModel
 @{
-    ViewData["Title"] = "Demander un rendez-vous";
+    ViewData["Title"] = "Request an Appointment";
 }
 
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl lg:text-3xl font-bold text-slate-900">Request an Appointment</h1>
+            <p class="text-slate-600 mt-2">Submit an appointment request online</p>
+        </div>
+    </div>
 
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 -mt-6">
     @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
     {
-        <div class="mb-8 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-2xl p-5 shadow-lg">
+        <div class="glass-card rounded-xl p-4 border-l-4 border-emerald-500 bg-emerald-50">
             <div class="flex items-center space-x-3">
-                <i class="fas fa-check-circle text-xl"></i>
-                <span class="font-medium">@Model.StatusMessage</span>
+                <i class="fas fa-check-circle text-emerald-600"></i>
+                <span class="font-medium text-emerald-900">@Model.StatusMessage</span>
             </div>
         </div>
     }
 
-    <div class="bg-gradient-to-br from-white to-blue-50 rounded-3xl shadow-xl border border-blue-100 overflow-hidden">
-        <div class="bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-5">
-            <div class="flex items-center space-x-3">
-                <div class="h-12 w-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                    <i class="fas fa-calendar-plus text-white"></i>
-                </div>
-                <div>
-                    <h2 class="text-xl font-bold text-white">Demander un rendez-vous</h2>
-                    <p class="text-blue-100 text-sm">Soumettez un créneau en ligne</p>
-                </div>
+    <div class="glass-card rounded-xl overflow-hidden">
+        <div class="p-6 border-b border-slate-200">
+            <div>
+                <h2 class="text-lg font-semibold text-slate-900">Request an Appointment</h2>
+                <p class="text-sm text-slate-600">Submit an appointment request online</p>
             </div>
         </div>
 
         <div class="p-6">
-            <form asp-action="RequestAppointment" method="post" class="space-y-5">
+            <form asp-action="RequestAppointment" method="post" class="space-y-4">
                 <div asp-validation-summary="ModelOnly" class="text-red-600 text-sm"></div>
                 <div class="space-y-2">
-                    <label asp-for="Request.MedecinId" class="block text-sm font-semibold text-slate-900">
-                        <i class="fas fa-user-md text-blue-500 mr-2"></i>
-                        Médecin
+                    <label asp-for="Request.MedecinId" class="block text-sm font-medium text-slate-700">
+                        Doctor
                     </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-search text-slate-400"></i>
-                        </div>
-                        <select asp-for="Request.MedecinId" asp-items="Model.MedecinOptions"
-                            class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition appearance-none bg-white">
-                            <option value="">Choisissez un médecin</option>
-                        </select>
-                    </div>
+                    <select asp-for="Request.MedecinId" asp-items="Model.MedecinOptions"
+                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Select a doctor</option>
+                    </select>
                     <span asp-validation-for="Request.MedecinId" class="text-red-600 text-sm"></span>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="space-y-2">
-                        <label asp-for="Request.PreferredStart" class="block text-sm font-semibold text-slate-900">
-                            <i class="far fa-calendar text-blue-500 mr-2"></i>
-                            Début
+                        <label asp-for="Request.PreferredStart" class="block text-sm font-medium text-slate-700">
+                            Start
                         </label>
                         <input asp-for="Request.PreferredStart" type="datetime-local"
-                            class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" />
+                            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         <span asp-validation-for="Request.PreferredStart" class="text-red-600 text-sm"></span>
                     </div>
                     <div class="space-y-2">
-                        <label asp-for="Request.PreferredEnd" class="block text-sm font-semibold text-slate-900">
-                            <i class="far fa-calendar text-blue-500 mr-2"></i>
-                            Fin
+                        <label asp-for="Request.PreferredEnd" class="block text-sm font-medium text-slate-700">
+                            End
                         </label>
                         <input asp-for="Request.PreferredEnd" type="datetime-local"
-                            class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" />
+                            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         <span asp-validation-for="Request.PreferredEnd" class="text-red-600 text-sm"></span>
                     </div>
                 </div>
 
                 <div class="space-y-2">
-                    <label asp-for="Request.Reason" class="block text-sm font-semibold text-slate-900">
-                        <i class="fas fa-comment-medical text-blue-500 mr-2"></i>
-                        Motif de la visite
+                    <label asp-for="Request.Reason" class="block text-sm font-medium text-slate-700">
+                        Reason for visit
                     </label>
                     <textarea asp-for="Request.Reason" rows="3"
-                        class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                        placeholder="Décrivez le motif de votre visite"></textarea>
+                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Describe the reason for your visit"></textarea>
                     <span asp-validation-for="Request.Reason" class="text-red-600 text-sm"></span>
                 </div>
 
                 <button type="submit"
-                    class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3.5 rounded-xl transition duration-300 shadow-lg hover:shadow-xl flex items-center justify-center">
-                    <i class="fas fa-paper-plane mr-3"></i>
-                    Envoyer la demande
+                    class="w-full gradient-primary text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-shadow">
+                    <i class="fas fa-paper-plane mr-2"></i>
+                    Send Request
                 </button>
             </form>
         </div>
     </div>
-</div>
 </div>
 
 @section Scripts {

@@ -101,6 +101,29 @@
                 </div>
             }
         </div>
+        
+        @if (ViewData["PageNumber"] != null && Model.Results.Any())
+        {
+            <div class="p-4 border-t border-slate-200 flex items-center justify-between">
+                <p class="text-sm text-slate-600">
+                    Page @ViewData["PageNumber"] of @ViewData["PageCount"] (@ViewData["TotalItemCount"] total)
+                </p>
+                <div class="flex items-center space-x-2">
+                    @if ((bool)(ViewData["HasPreviousPage"] ?? false))
+                    {
+                        <a href="?page=@((int)(ViewData["PageNumber"] ?? 1) - 1)" class="px-3 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50">
+                            Previous
+                        </a>
+                    }
+                    @if ((bool)(ViewData["HasNextPage"] ?? false))
+                    {
+                        <a href="?page=@((int)(ViewData["PageNumber"] ?? 1) + 1)" class="px-3 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50">
+                            Next
+                        </a>
+                    }
+                </div>
+            </div>
+        }
     </div>
 </div>
 

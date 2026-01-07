@@ -47,3 +47,11 @@ public enum InventoryStatus
     OutOfStock = 2,
     Discontinued = 3
 }
+
+public enum PrescriptionStatus
+{
+    Pending = 0,
+    Active = 1,
+    Completed = 2,
+    Cancelled = 3
+}

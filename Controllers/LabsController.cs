@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Text;
 using MedicalOfficeManagement.Models;
 using Microsoft.Extensions.Logging;
+using X.PagedList;
 
 namespace MedicalOfficeManagement.Controllers
 {
@@ -27,20 +28,29 @@ namespace MedicalOfficeManagement.Controllers
         [HttpGet]
         public async Task<IActionResult> Index(int page = 1)
         {
+            _logger.LogInformation("Lab Results Index accessed by user {UserId}, page {Page}", User.Identity?.Name, page);
+
             var query = _context.LabResults
                 .AsNoTracking()
                 .Include(l => l.Patient)
                 .Include(l => l.Medecin)
                 .OrderByDescending(l => l.CollectedOn);
 
-            var paginatedResults = await PaginatedList<LabResult>.CreateAsync(query, page, PageSize);
+            // Get total count
+            var totalCount = await query.CountAsync();
+            
+            // Get items for current page
+            var items = await query
+                .Skip((page - 1) * PageSize)
+                .Take(PageSize)
+                .ToListAsync();
 
             // Get all results for summary statistics
             var allResults = await _context.LabResults
                 .AsNoTracking()
                 .ToListAsync();
 
-            var mapped = paginatedResults.Select(r => new LabResultViewModel
+            var mapped = items.Select(r => new LabResultViewModel
             {
                 Id = r.Id,
                 TestName = r.TestName,
@@ -50,18 +60,26 @@ namespace MedicalOfficeManagement.Controllers
                 CollectedOn = r.CollectedOn
             }).ToList();
 
+            // Create IPagedList manually
+            var pagedResults = new StaticPagedList<LabResultViewModel>(
+                mapped,
+                page,
+                PageSize,
+                totalCount);
+
             var viewModel = new LabIndexViewModel
             {
-                PendingResults = allResults.Count(r => string.Equals(r.Status, "Pending", StringComparison.OrdinalIgnoreCase) || string.Equals(r.Status, "Pending Review", StringComparison.OrdinalIgnoreCase)),
-                CriticalFindings = allResults.Count(r => string.Equals(r.Priority, "STAT", StringComparison.OrdinalIgnoreCase)),
-                CompletedToday = allResults.Count(r => r.CollectedOn.Date == DateTime.UtcNow.Date && string.Equals(r.Status, "Completed", StringComparison.OrdinalIgnoreCase)),
+                PendingResults = allResults.Count(r => r.StatusEnum == LabResultStatus.Pending || r.StatusEnum == LabResultStatus.InProgress),
+                CriticalFindings = allResults.Count(r => r.PriorityEnum == LabResultPriority.Stat),
+                CompletedToday = allResults.Count(r => r.CollectedOn.Date == DateTime.UtcNow.Date && r.StatusEnum == LabResultStatus.Completed),
                 Results = mapped
             };
 
-            ViewData["PageIndex"] = paginatedResults.PageIndex;
-            ViewData["TotalPages"] = paginatedResults.TotalPages;
-            ViewData["HasPreviousPage"] = paginatedResults.HasPreviousPage;
-            ViewData["HasNextPage"] = paginatedResults.HasNextPage;
+            ViewData["PageNumber"] = pagedResults.PageNumber;
+            ViewData["PageCount"] = pagedResults.PageCount;
+            ViewData["TotalItemCount"] = pagedResults.TotalItemCount;
+            ViewData["HasPreviousPage"] = pagedResults.HasPreviousPage;
+            ViewData["HasNextPage"] = pagedResults.HasNextPage;
 
             ViewData["Title"] = "Lab Results";
             ViewData["Breadcrumb"] = "Clinical";
@@ -101,6 +119,8 @@ namespace MedicalOfficeManagement.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(LabResult labResult)
         {
+            _logger.LogInformation("Creating lab result for patient {PatientId} by user {UserId}", labResult.PatientId, User.Identity?.Name);
+
             // Validate foreign keys exist
             if (labResult.PatientId > 0 && !await _context.Patients.AnyAsync(p => p.Id == labResult.PatientId))
             {
@@ -112,15 +132,38 @@ namespace MedicalOfficeManagement.Controllers
                 ModelState.AddModelError(nameof(LabResult.MedecinId), "Selected provider does not exist.");
             }
 
+            // Ensure default values if not set
+            if (string.IsNullOrWhiteSpace(labResult.Status))
+            {
+                labResult.StatusEnum = LabResultStatus.Pending;
+            }
+            if (string.IsNullOrWhiteSpace(labResult.Priority))
+            {
+                labResult.PriorityEnum = LabResultPriority.Routine;
+            }
+
             if (!ModelState.IsValid)
             {
+                _logger.LogWarning("Lab result creation validation failed");
                 await PopulateLookupsAsync();
                 return View(labResult);
             }
 
-            _context.LabResults.Add(labResult);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                _context.LabResults.Add(labResult);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Lab result {LabResultId} created successfully", labResult.Id);
+                TempData["StatusMessage"] = "Lab result created successfully.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating lab result");
+                ModelState.AddModelError(string.Empty, "An error occurred while creating the lab result. Please try again.");
+                await PopulateLookupsAsync();
+                return View(labResult);
+            }
         }
 
         [HttpGet]
@@ -145,6 +188,8 @@ namespace MedicalOfficeManagement.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, LabResult labResult)
         {
+            _logger.LogInformation("Editing lab result {LabResultId} by user {UserId}", id, User.Identity?.Name);
+
             if (id != labResult.Id)
             {
                 return NotFound();
@@ -163,6 +208,7 @@ namespace MedicalOfficeManagement.Controllers
 
             if (!ModelState.IsValid)
             {
+                _logger.LogWarning("Lab result {LabResultId} edit validation failed", id);
                 await PopulateLookupsAsync();
                 return View(labResult);
             }
@@ -171,14 +217,18 @@ namespace MedicalOfficeManagement.Controllers
             {
                 _context.Update(labResult);
                 await _context.SaveChangesAsync();
+                _logger.LogInformation("Lab result {LabResultId} updated successfully", id);
+                TempData["StatusMessage"] = "Lab result updated successfully.";
             }
             catch (DbUpdateConcurrencyException)
             {
                 if (!await LabResultExists(labResult.Id))
                 {
+                    _logger.LogWarning("Lab result {LabResultId} not found during edit", id);
                     return NotFound();
                 }
 
+                _logger.LogError("Concurrency exception while editing lab result {LabResultId}", id);
                 throw;
             }
 

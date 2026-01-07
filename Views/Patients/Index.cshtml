@@ -94,7 +94,7 @@
                     <tr class="bg-slate-50 border-b border-slate-200">
                         <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">
                             <a href="?sortBy=Nom&sortOrder=@(ViewData["SortBy"]?.ToString() == "Nom" && ViewData["SortOrder"]?.ToString() == "asc" ? "desc" : "asc")" class="hover:text-blue-600">
-                                Nom complet
+                                Full Name
                                 @if (ViewData["SortBy"]?.ToString() == "Nom")
                                 {
                                     <i class="fas fa-sort-@(ViewData["SortOrder"]?.ToString() == "desc" ? "down" : "up") ml-1"></i>
@@ -102,17 +102,17 @@
                             </a>
                         </th>
                         <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">
-                            Date de naissance
+                            Date of Birth
                         </th>
                         <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">
                             Contact
                         </th>
                         <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">
-                            Adresse
+                            Address
                         </th>
                         <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">
                             <a href="?sortBy=Date&sortOrder=@(ViewData["SortBy"]?.ToString() == "Date" && ViewData["SortOrder"]?.ToString() == "asc" ? "desc" : "asc")" class="hover:text-blue-600">
-                                Créé le
+                                Created On
                                 @if (ViewData["SortBy"]?.ToString() == "Date")
                                 {
                                     <i class="fas fa-sort-@(ViewData["SortOrder"]?.ToString() == "desc" ? "down" : "up") ml-1"></i>

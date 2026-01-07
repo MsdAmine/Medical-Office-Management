@@ -1,15 +1,15 @@
-/* --- Styles Thématiques pour MedicalOfficeManagement (Index.cshtml) --- */
+/* --- Thematic Styles for MedicalOfficeManagement (Index.cshtml) --- */
 
-/* 1. Couleurs et Variables de Thème Médical (Palette plus douce) */
+/* 1. Medical Theme Colors and Variables (Softer Palette) */
 :root {
-    --medical-blue: #0077b6; /* Bleu plus profond, plus sérieux */
-    --accent-green: #48b045; /* Vert pour les actions (bouton) */
+    --medical-blue: #0077b6; /* Deeper, more serious blue */
+    --accent-green: #48b045; /* Green for actions (buttons) */
     --text-dark: #333333;
     --background-light: #ffffff;
     --shadow-color: rgba(0, 0, 0, 0.15);
 }
 
-/* 2. Styles de la Section d'Accueil */
+/* 2. Home Section Styles */
 .landing-page .home-container {
     padding: 100px 30px;
     background-color: var(--background-light);
@@ -21,7 +21,7 @@
     margin-right: auto;
 }
 
-/* 3. Styles des Titres et Textes */
+/* 3. Title and Text Styles */
 .landing-page .home-container h1 {
     color: var(--medical-blue);
     font-weight: 800;
@@ -35,7 +35,7 @@
     margin-bottom: 45px;
 }
 
-/* 4. Styles des Boutons */
+/* 4. Button Styles */
 .landing-page .btn-login {
     background-color: var(--accent-green);
     border-color: var(--accent-green);
@@ -55,14 +55,14 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-/* 5. Style de l'Icône */
+/* 5. Icon Style */
 .landing-page .icon-medical {
     color: var(--medical-blue);
     margin-bottom: 30px;
     animation: pulse 1.5s infinite;
 }
 
-/* Définition de l'animation avec tous les préfixes */
+/* Animation definition with all prefixes */
 @keyframes pulse {
     0% { transform: scale(1); }
     50% { transform: scale(1.05); }

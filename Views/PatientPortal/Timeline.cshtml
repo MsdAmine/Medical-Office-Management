@@ -1,0 +1,180 @@
+@model TimelineViewModel
+@{
+    ViewData["Title"] = "Medical Timeline";
+}
+
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl lg:text-3xl font-bold text-slate-900">Medical Timeline</h1>
+            <p class="text-slate-600 mt-2">Hello, @(Model.PatientProfile != null ? $"{Model.PatientProfile.Prenom} {Model.PatientProfile.Nom}".Trim() : "Patient"). View your complete medical history.</p>
+        </div>
+        <div class="glass-card p-4 rounded-xl">
+            <div class="text-sm text-slate-500">Total Events</div>
+            <div class="text-3xl font-bold text-slate-900">@Model.TimelineItems.Count()</div>
+        </div>
+    </div>
+
+    @if (!Model.TimelineItems.Any())
+    {
+        <div class="glass-card rounded-xl p-10 text-center">
+            <div class="inline-flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-500 mb-4">
+                <i class="fas fa-history text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-slate-900 mb-2">No Timeline Events</h3>
+            <p class="text-slate-600">Your medical timeline will appear here as events are added.</p>
+        </div>
+    }
+    else
+    {
+        <div class="glass-card rounded-xl overflow-hidden">
+            <div class="p-6 border-b border-slate-200">
+                <h2 class="text-lg font-semibold text-slate-900">Complete Medical History</h2>
+                <p class="text-sm text-slate-600">Chronological view of all your medical events</p>
+            </div>
+
+            <div class="p-6">
+                <div class="relative">
+                    <!-- Timeline line -->
+                    <div class="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-200 via-purple-200 to-slate-200"></div>
+
+                    <div class="space-y-8">
+                        @{
+                            DateTime? lastDate = null;
+                        }
+                        @foreach (var item in Model.TimelineItems)
+                        {
+                            var showDateHeader = lastDate == null || lastDate.Value.Date != item.Date.Date;
+                            if (showDateHeader)
+                            {
+                                <div class="relative flex items-center">
+                                    <div class="absolute left-0 w-16 flex justify-center">
+                                        <div class="h-3 w-3 rounded-full bg-blue-500 ring-4 ring-white border-2 border-blue-500"></div>
+                                    </div>
+                                    <div class="ml-20">
+                                        <div class="text-sm font-semibold text-slate-900 uppercase tracking-wide">
+                                            @item.Date.ToString("MMMM dd, yyyy")
+                                        </div>
+                                    </div>
+                                </div>
+                                lastDate = item.Date;
+                            }
+
+                            <div class="relative flex items-start group">
+                                <!-- Timeline dot -->
+                                <div class="absolute left-0 w-16 flex justify-center z-10">
+                                    <div class="h-10 w-10 rounded-full @GetTypeColorClass(item.Color) flex items-center justify-center shadow-lg ring-4 ring-white border-2 border-white group-hover:scale-110 transition-transform">
+                                        <i class="@item.Icon text-white text-sm"></i>
+                                    </div>
+                                </div>
+
+                                <!-- Content card -->
+                                <div class="ml-20 flex-1">
+                                    <div class="glass-card rounded-xl p-5 hover:shadow-lg transition-all border-l-4 @GetTypeBorderClass(item.Color)">
+                                        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+                                            <div class="flex-1">
+                                                <div class="flex items-center space-x-3 mb-2">
+                                                    <h3 class="text-lg font-semibold text-slate-900">@item.Title</h3>
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium @GetStatusBadgeClass(item.Status)">
+                                                        @item.Status
+                                                    </span>
+                                                </div>
+                                                <p class="text-slate-600 text-sm mb-3">@item.Description</p>
+                                                <div class="flex items-center space-x-4 text-xs text-slate-500">
+                                                    <span class="flex items-center">
+                                                        <i class="far fa-clock mr-1.5"></i>
+                                                        @item.Date.ToString("HH:mm")
+                                                    </span>
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md @GetTypeBadgeClass(item.Type)">
+                                                        @GetTypeLabel(item.Type)
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@functions {
+    private string GetTypeColorClass(string color)
+    {
+        return color switch
+        {
+            "blue" => "bg-blue-500",
+            "emerald" => "bg-emerald-500",
+            "purple" => "bg-purple-500",
+            "amber" => "bg-amber-500",
+            "rose" => "bg-rose-500",
+            "slate" => "bg-slate-500",
+            _ => "bg-slate-500"
+        };
+    }
+
+    private string GetTypeBorderClass(string color)
+    {
+        return color switch
+        {
+            "blue" => "border-blue-500",
+            "emerald" => "border-emerald-500",
+            "purple" => "border-purple-500",
+            "amber" => "border-amber-500",
+            "rose" => "border-rose-500",
+            "slate" => "border-slate-500",
+            _ => "border-slate-500"
+        };
+    }
+
+    private string GetTypeBadgeClass(string type)
+    {
+        return type switch
+        {
+            "appointment" => "bg-blue-100 text-blue-700",
+            "consultation" => "bg-emerald-100 text-emerald-700",
+            "lab" => "bg-purple-100 text-purple-700",
+            "prescription" => "bg-amber-100 text-amber-700",
+            "billing" => "bg-rose-100 text-rose-700",
+            _ => "bg-slate-100 text-slate-700"
+        };
+    }
+
+    private string GetTypeLabel(string type)
+    {
+        return type switch
+        {
+            "appointment" => "Appointment",
+            "consultation" => "Consultation",
+            "lab" => "Lab Result",
+            "prescription" => "Prescription",
+            "billing" => "Invoice",
+            _ => type
+        };
+    }
+
+    private string GetStatusBadgeClass(string status)
+    {
+        if (string.IsNullOrWhiteSpace(status))
+            return "bg-slate-100 text-slate-700";
+
+        var statusLower = status.ToLowerInvariant();
+        return statusLower switch
+        {
+            "pending approval" or "pending" => "bg-amber-100 text-amber-700",
+            "completed" => "bg-emerald-100 text-emerald-700",
+            "cancelled" => "bg-red-100 text-red-700",
+            "confirmed" or "scheduled" => "bg-blue-100 text-blue-700",
+            "active" => "bg-indigo-100 text-indigo-700",
+            "draft" => "bg-slate-100 text-slate-700",
+            "paid" => "bg-emerald-100 text-emerald-700",
+            "unpaid" => "bg-red-100 text-red-700",
+            _ => "bg-slate-100 text-slate-700"
+        };
+    }
+}

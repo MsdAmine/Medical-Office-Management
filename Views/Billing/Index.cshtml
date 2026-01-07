@@ -12,9 +12,9 @@
             <p class="text-slate-600 mt-2">Review invoices, balances, and payment status</p>
         </div>
         <div class="flex items-center gap-3">
-            <a asp-action="Index" class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 transition flex items-center">
+            <a asp-action="ExportCsv" class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 transition flex items-center">
                 <i class="fas fa-file-export mr-2"></i>
-                Export
+                Export CSV
             </a>
             <a asp-action="Create" class="gradient-primary text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-shadow flex items-center">
                 <i class="fas fa-plus mr-2"></i>
@@ -42,79 +42,113 @@
     </div>
 
     <div class="glass-card rounded-xl overflow-hidden">
-        <div class="p-6 border-b border-slate-200 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-            <div>
-                <h2 class="text-lg font-semibold text-slate-900">Invoices</h2>
-                <p class="text-sm text-slate-600">Showing @Model.Invoices.Count() record(s)</p>
+        <form id="bulkActionForm" method="post" asp-action="BulkDelete">
+            @Html.AntiForgeryToken()
+            <div class="p-6 border-b border-slate-200 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div>
+                    <h2 class="text-lg font-semibold text-slate-900">Invoices</h2>
+                    <p class="text-sm text-slate-600">Showing @Model.Invoices.Count() record(s)</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div id="bulkActions" class="hidden flex items-center gap-2">
+                        <span id="selectedCount" class="text-sm text-slate-600 font-medium"></span>
+                        <select id="bulkStatusSelect" class="px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                            <option value="">Change Status To...</option>
+                            <option value="Draft">Draft</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Paid">Paid</option>
+                            <option value="Overdue">Overdue</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                        <button type="button" id="bulkUpdateStatusBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">
+                            Update Status
+                        </button>
+                        <button type="button" id="bulkExportBtn" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition">
+                            Export Selected
+                        </button>
+                        <button type="button" id="bulkDeleteBtn" class="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition">
+                            Delete Selected
+                        </button>
+                        <button type="button" id="clearSelectionBtn" class="px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-700 hover:bg-slate-50 transition">
+                            Clear
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-2 text-sm text-slate-600">
+                        <span class="flex items-center gap-1"><span class="badge-dot bg-emerald-500"></span> Paid</span>
+                        <span class="flex items-center gap-1"><span class="badge-dot bg-amber-500"></span> Pending</span>
+                        <span class="flex items-center gap-1"><span class="badge-dot bg-red-500"></span> Overdue</span>
+                        <span class="flex items-center gap-1"><span class="badge-dot bg-slate-400"></span> Draft</span>
+                    </div>
+                </div>
             </div>
-            <div class="flex items-center gap-2 text-sm text-slate-600">
-                <span class="flex items-center gap-1"><span class="badge-dot bg-emerald-500"></span> Paid</span>
-                <span class="flex items-center gap-1"><span class="badge-dot bg-amber-500"></span> Pending</span>
-                <span class="flex items-center gap-1"><span class="badge-dot bg-red-500"></span> Overdue</span>
-                <span class="flex items-center gap-1"><span class="badge-dot bg-slate-400"></span> Draft</span>
-            </div>
-        </div>
 
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead>
-                    <tr class="bg-slate-50 border-b border-slate-200">
-                        <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">Invoice</th>
-                        <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">Patient</th>
-                        <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">Service</th>
-                        <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">Amount</th>
-                        <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">Due</th>
-                        <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">Status</th>
-                        <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-200">
-                    @foreach (var invoice in Model.Invoices)
-                    {
-                        var statusBadge = invoice.Status switch
-                        {
-                            "Paid" => "bg-emerald-100 text-emerald-700",
-                            "Pending" => "bg-amber-100 text-amber-700",
-                            "Overdue" => "bg-red-100 text-red-700",
-                            "Draft" => "bg-slate-100 text-slate-700",
-                            _ => "bg-slate-100 text-slate-700"
-                        };
-
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="py-4 px-6">
-                                <div class="font-semibold text-slate-900">@invoice.InvoiceNumber</div>
-                                <div class="text-xs text-slate-500">Issued @invoice.IssuedOn.ToString("MMM dd, yyyy")</div>
-                            </td>
-                            <td class="py-4 px-6 text-slate-700">@invoice.PatientName</td>
-                            <td class="py-4 px-6 text-slate-700">@invoice.Service</td>
-                            <td class="py-4 px-6 font-semibold text-slate-900">@invoice.Amount.ToString("C")</td>
-                            <td class="py-4 px-6">
-                                <div class="text-slate-700">@invoice.DueDate.ToString("MMM dd, yyyy")</div>
-                                <div class="text-xs text-slate-500">@invoice.PaymentMethod</div>
-                            </td>
-                            <td class="py-4 px-6">
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold @statusBadge">
-                                    @invoice.Status
-                                </span>
-                            </td>
-                            <td class="py-4 px-6">
-                                <div class="flex items-center space-x-2">
-                                    <a asp-action="Details" asp-route-id="@invoice.Id" class="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg" title="View">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a asp-action="Edit" asp-route-id="@invoice.Id" class="p-2 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <a asp-action="Delete" asp-route-id="@invoice.Id" class="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg" title="Delete">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </a>
-                                </div>
-                            </td>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200">
+                            <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">
+                                <input type="checkbox" id="selectAll" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                            </th>
+                            <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">Invoice</th>
+                            <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">Patient</th>
+                            <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">Service</th>
+                            <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">Amount</th>
+                            <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">Due</th>
+                            <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">Status</th>
+                            <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">Actions</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200">
+                        @foreach (var invoice in Model.Invoices)
+                        {
+                            var statusBadge = invoice.Status switch
+                            {
+                                "Paid" => "bg-emerald-100 text-emerald-700",
+                                "Pending" => "bg-amber-100 text-amber-700",
+                                "Overdue" => "bg-red-100 text-red-700",
+                                "Draft" => "bg-slate-100 text-slate-700",
+                                _ => "bg-slate-100 text-slate-700"
+                            };
+
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="py-4 px-6">
+                                    <input type="checkbox" name="invoiceIds" value="@invoice.Id" class="invoice-checkbox rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                                </td>
+                                <td class="py-4 px-6">
+                                    <div class="font-semibold text-slate-900">@invoice.InvoiceNumber</div>
+                                    <div class="text-xs text-slate-500">Issued @invoice.IssuedOn.ToString("MMM dd, yyyy")</div>
+                                </td>
+                                <td class="py-4 px-6 text-slate-700">@invoice.PatientName</td>
+                                <td class="py-4 px-6 text-slate-700">@invoice.Service</td>
+                                <td class="py-4 px-6 font-semibold text-slate-900">@invoice.Amount.ToString("C")</td>
+                                <td class="py-4 px-6">
+                                    <div class="text-slate-700">@invoice.DueDate.ToString("MMM dd, yyyy")</div>
+                                    <div class="text-xs text-slate-500">@invoice.PaymentMethod</div>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold @statusBadge">
+                                        @invoice.Status
+                                    </span>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <div class="flex items-center space-x-2">
+                                        <a asp-action="Details" asp-route-id="@invoice.Id" class="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@invoice.Id" class="p-2 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@invoice.Id" class="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg" title="Delete">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </form>
 
         @if (!Model.Invoices.Any())
         {
@@ -130,5 +164,193 @@
                 </a>
             </div>
         }
+        else
+        {
+            <div class="p-4 border-t border-slate-200 flex items-center justify-between">
+                <p class="text-sm text-slate-600">
+                    Showing @((Model.Invoices.PageNumber - 1) * Model.Invoices.PageSize + 1) to @(Math.Min(Model.Invoices.PageNumber * Model.Invoices.PageSize, Model.Invoices.TotalItemCount)) of @Model.Invoices.TotalItemCount invoice(s)
+                </p>
+                <div>
+                    @Html.PagedListPager(Model.Invoices, page => Url.Action("Index", new { page }),
+                        new PagedListRenderOptions {
+                            DisplayLinkToFirstPage = PagedListDisplayMode.IfNeeded,
+                            DisplayLinkToLastPage = PagedListDisplayMode.IfNeeded,
+                            DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
+                            DisplayLinkToNextPage = PagedListDisplayMode.Always,
+                            UlElementClasses = new[] { "flex", "items-center", "space-x-2" },
+                            LiElementClasses = new[] { "px-3", "py-2", "border", "border-slate-300", "rounded-lg" },
+                            ActiveLiElementClass = "bg-blue-600 text-white border-blue-600",
+                            PageClasses = new[] { "text-sm", "font-medium" }
+                        })
+                </div>
+            </div>
+        }
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const selectAllCheckbox = document.getElementById('selectAll');
+            const invoiceCheckboxes = document.querySelectorAll('.invoice-checkbox');
+            const bulkActions = document.getElementById('bulkActions');
+            const selectedCount = document.getElementById('selectedCount');
+            const bulkUpdateStatusBtn = document.getElementById('bulkUpdateStatusBtn');
+            const bulkExportBtn = document.getElementById('bulkExportBtn');
+            const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+            const clearSelectionBtn = document.getElementById('clearSelectionBtn');
+            const bulkStatusSelect = document.getElementById('bulkStatusSelect');
+            const bulkActionForm = document.getElementById('bulkActionForm');
+
+            function updateBulkActions() {
+                const selected = Array.from(invoiceCheckboxes).filter(cb => cb.checked);
+                const count = selected.length;
+                
+                if (count > 0) {
+                    bulkActions.classList.remove('hidden');
+                    selectedCount.textContent = `${count} selected`;
+                } else {
+                    bulkActions.classList.add('hidden');
+                }
+                
+                selectAllCheckbox.checked = count === invoiceCheckboxes.length && invoiceCheckboxes.length > 0;
+            }
+
+            selectAllCheckbox.addEventListener('change', function() {
+                invoiceCheckboxes.forEach(cb => cb.checked = this.checked);
+                updateBulkActions();
+            });
+
+            invoiceCheckboxes.forEach(cb => {
+                cb.addEventListener('change', updateBulkActions);
+            });
+
+            bulkUpdateStatusBtn.addEventListener('click', function() {
+                const status = bulkStatusSelect.value;
+                if (!status) {
+                    alert('Please select a status');
+                    return;
+                }
+
+                const selected = Array.from(invoiceCheckboxes)
+                    .filter(cb => cb.checked)
+                    .map(cb => cb.value);
+
+                if (selected.length === 0) {
+                    alert('Please select at least one invoice');
+                    return;
+                }
+
+                if (!confirm(`Update ${selected.length} invoice(s) to ${status}?`)) {
+                    return;
+                }
+
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '@Url.Action("BulkUpdateStatus")';
+                
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                const tokenInput = document.createElement('input');
+                tokenInput.type = 'hidden';
+                tokenInput.name = '__RequestVerificationToken';
+                tokenInput.value = token;
+                form.appendChild(tokenInput);
+
+                selected.forEach(id => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'invoiceIds';
+                    input.value = id;
+                    form.appendChild(input);
+                });
+
+                const statusInput = document.createElement('input');
+                statusInput.type = 'hidden';
+                statusInput.name = 'status';
+                statusInput.value = status;
+                form.appendChild(statusInput);
+
+                document.body.appendChild(form);
+                form.submit();
+            });
+
+            bulkExportBtn.addEventListener('click', function() {
+                const selected = Array.from(invoiceCheckboxes)
+                    .filter(cb => cb.checked)
+                    .map(cb => cb.value);
+
+                if (selected.length === 0) {
+                    alert('Please select at least one invoice');
+                    return;
+                }
+
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '@Url.Action("BulkExport")';
+                
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                const tokenInput = document.createElement('input');
+                tokenInput.type = 'hidden';
+                tokenInput.name = '__RequestVerificationToken';
+                tokenInput.value = token;
+                form.appendChild(tokenInput);
+
+                selected.forEach(id => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'invoiceIds';
+                    input.value = id;
+                    form.appendChild(input);
+                });
+
+                document.body.appendChild(form);
+                form.submit();
+            });
+
+            bulkDeleteBtn.addEventListener('click', function() {
+                const selected = Array.from(invoiceCheckboxes)
+                    .filter(cb => cb.checked)
+                    .map(cb => cb.value);
+
+                if (selected.length === 0) {
+                    alert('Please select at least one invoice');
+                    return;
+                }
+
+                if (!confirm(`Are you sure you want to delete ${selected.length} invoice(s)? This action cannot be undone.`)) {
+                    return;
+                }
+
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '@Url.Action("BulkDelete")';
+                
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                const tokenInput = document.createElement('input');
+                tokenInput.type = 'hidden';
+                tokenInput.name = '__RequestVerificationToken';
+                tokenInput.value = token;
+                form.appendChild(tokenInput);
+
+                selected.forEach(id => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'invoiceIds';
+                    input.value = id;
+                    form.appendChild(input);
+                });
+
+                document.body.appendChild(form);
+                form.submit();
+            });
+
+            clearSelectionBtn.addEventListener('click', function() {
+                invoiceCheckboxes.forEach(cb => cb.checked = false);
+                selectAllCheckbox.checked = false;
+                updateBulkActions();
+            });
+
+            updateBulkActions();
+        });
+    </script>
+}

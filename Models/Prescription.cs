@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace MedicalOfficeManagement.Models;
@@ -43,4 +44,12 @@ public class Prescription
 
     [ValidateNever]
     public Medecin? Medecin { get; set; }
+
+    // Helper property for enum conversion
+    [NotMapped]
+    public PrescriptionStatus StatusEnum
+    {
+        get => Enum.TryParse<PrescriptionStatus>(Status, true, out var result) ? result : PrescriptionStatus.Pending;
+        set => Status = value.ToString();
+    }
 }

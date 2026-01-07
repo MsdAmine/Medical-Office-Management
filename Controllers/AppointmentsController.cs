@@ -11,6 +11,7 @@ using System.Security.Claims;
 using System.Text;
 using MedicalOfficeManagement.Services.Email;
 using Microsoft.Extensions.Logging;
+using X.PagedList;
 
 namespace MedicalOfficeManagement.Controllers
 {
@@ -31,11 +32,17 @@ namespace MedicalOfficeManagement.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index(string? statusFilter, int? medecinFilter, DateTime? dateFromFilter, DateTime? dateToFilter, string? searchTerm)
+        public async Task<IActionResult> Index(string? statusFilter, int? medecinFilter, DateTime? dateFromFilter, DateTime? dateToFilter, string? searchTerm, int page = 1)
         {
+            const int pageSize = 20;
+
+            _logger.LogInformation("Appointments Index accessed by user {UserId} with filters: Status={StatusFilter}, Medecin={MedecinFilter}, DateFrom={DateFrom}, DateTo={DateTo}, Search={SearchTerm}, Page={Page}",
+                GetUserId(), statusFilter, medecinFilter, dateFromFilter, dateToFilter, searchTerm, page);
+
             var medecinId = await GetCurrentMedecinIdAsync();
             if (User.IsInRole(SystemRoles.Medecin) && !medecinId.HasValue)
             {
+                _logger.LogWarning("Medecin user {UserId} attempted to access appointments without valid medecin profile", GetUserId());
                 return Forbid();
             }
 
@@ -44,7 +51,17 @@ namespace MedicalOfficeManagement.Controllers
             // Apply filters
             if (!string.IsNullOrWhiteSpace(statusFilter))
             {
-                query = query.Where(r => r.Statut == statusFilter);
+                // Support both enum names and legacy string values
+                if (Enum.TryParse<AppointmentStatus>(statusFilter, true, out var statusEnum))
+                {
+                    var statusString = statusEnum.ToString();
+                    query = query.Where(r => r.Statut == statusString || 
+                        (statusEnum == AppointmentStatus.Scheduled && (r.Statut == "Scheduled" || r.Statut == "Confirmed")));
+                }
+                else
+                {
+                    query = query.Where(r => r.Statut == statusFilter);
+                }
             }
 
             if (medecinFilter.HasValue && (IsAdminOrSecretaire() || medecinFilter.Value == medecinId))
@@ -72,13 +89,27 @@ namespace MedicalOfficeManagement.Controllers
                     (r.Motif != null && r.Motif.ToLower().Contains(searchLower)));
             }
 
-            var appointments = await query
-                .OrderBy(r => r.DateDebut)
+            var orderedQuery = query.OrderBy(r => r.DateDebut);
+
+            // Get total count
+            var totalCount = await orderedQuery.CountAsync();
+            
+            // Get items for current page
+            var items = await orderedQuery
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
-            var appointmentViewModels = appointments
+            var appointmentViewModels = items
                 .Select(MapToViewModel)
                 .ToList();
+
+            // Create IPagedList manually
+            var pagedAppointments = new StaticPagedList<AppointmentViewModel>(
+                appointmentViewModels,
+                page,
+                pageSize,
+                totalCount);
 
             var startOfWeek = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek);
             var endOfWeek = startOfWeek.AddDays(7);
@@ -94,7 +125,9 @@ namespace MedicalOfficeManagement.Controllers
                     IsCompleted(a) &&
                     a.DateDebut >= startOfWeek &&
                     a.DateDebut < endOfWeek),
-                PendingApprovalCount = allAppointments.Count(a => a.Statut == "Pending Approval"),
+                PendingApprovalCount = allAppointments.Count(a => 
+                    a.StatusEnum == AppointmentStatus.PendingApproval || 
+                    a.Statut.Equals("Pending Approval", StringComparison.OrdinalIgnoreCase)),
                 Appointments = appointmentViewModels,
                 StatusFilter = statusFilter,
                 MedecinFilter = medecinFilter,
@@ -104,6 +137,13 @@ namespace MedicalOfficeManagement.Controllers
                 StatusOptions = GetAllowedStatusesSelectList(statusFilter),
                 MedecinOptions = await GetMedecinsSelectListAsync(medecinFilter, medecinId)
             };
+
+            // Set pagination view data
+            ViewData["PageNumber"] = pagedAppointments.PageNumber;
+            ViewData["PageCount"] = pagedAppointments.PageCount;
+            ViewData["TotalItemCount"] = pagedAppointments.TotalItemCount;
+            ViewData["HasPreviousPage"] = pagedAppointments.HasPreviousPage;
+            ViewData["HasNextPage"] = pagedAppointments.HasNextPage;
 
             SetSchedulePageMetadata("Schedule");
 
@@ -117,6 +157,7 @@ namespace MedicalOfficeManagement.Controllers
                 return NotFound();
 
             var appointment = await BuildAppointmentQuery()
+                .Include(r => r.Consultations)
                 .FirstOrDefaultAsync(r => r.Id == id);
 
             if (appointment == null)
@@ -127,6 +168,34 @@ namespace MedicalOfficeManagement.Controllers
 
             SetSchedulePageMetadata("Appointment Details");
             return View(appointment);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> CreateConsultation(int? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            var appointment = await BuildAppointmentQuery()
+                .FirstOrDefaultAsync(r => r.Id == id);
+
+            if (appointment == null)
+                return NotFound();
+
+            if (!await CanAccessAppointmentAsync(appointment))
+                return Forbid();
+
+            // Check if consultation already exists for this appointment
+            var existingConsultation = await _context.Consultations
+                .FirstOrDefaultAsync(c => c.RendezVousId == id);
+
+            if (existingConsultation != null)
+            {
+                TempData["StatusMessage"] = "A consultation already exists for this appointment.";
+                return RedirectToAction("Details", "Consultations", new { id = existingConsultation.Id });
+            }
+
+            return RedirectToAction("Create", "Consultations", new { rendezVousId = id });
         }
 
         [HttpGet]
@@ -144,7 +213,7 @@ namespace MedicalOfficeManagement.Controllers
                 {
                     DateDebut = DateTime.Today.AddHours(9),
                     DateFin = DateTime.Today.AddHours(10),
-                    Statut = "Scheduled"
+                    StatusEnum = AppointmentStatus.Scheduled
                 },
                 Patients = await GetPatientsSelectListAsync(selectedId: patientId, medecinId),
                 Medecins = await GetMedecinsSelectListAsync(selectedId: medecinId, medecinId: medecinId)
@@ -168,9 +237,13 @@ namespace MedicalOfficeManagement.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ScheduleFormViewModel viewModel)
         {
+            _logger.LogInformation("Creating new appointment for patient {PatientId} with doctor {MedecinId} by user {UserId}",
+                viewModel.Appointment.PatientId, viewModel.Appointment.MedecinId, GetUserId());
+
             var medecinId = await GetCurrentMedecinIdAsync();
             if (User.IsInRole(SystemRoles.Medecin) && !medecinId.HasValue)
             {
+                _logger.LogWarning("Medecin user {UserId} attempted to create appointment without valid medecin profile", GetUserId());
                 return Forbid();
             }
 
@@ -178,15 +251,32 @@ namespace MedicalOfficeManagement.Controllers
 
             if (!ModelState.IsValid)
             {
+                _logger.LogWarning("Appointment creation validation failed. Errors: {Errors}",
+                    string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
                 await PopulateDropdownsAsync(viewModel, medecinId);
                 SetSchedulePageMetadata("New Appointment");
                 return View(viewModel);
             }
 
-            _context.RendezVous.Add(viewModel.Appointment);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.RendezVous.Add(viewModel.Appointment);
+                await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Index));
+                _logger.LogInformation("Appointment {AppointmentId} created successfully for patient {PatientId}",
+                    viewModel.Appointment.Id, viewModel.Appointment.PatientId);
+
+                TempData["StatusMessage"] = "Appointment created successfully.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating appointment for patient {PatientId}", viewModel.Appointment.PatientId);
+                ModelState.AddModelError(string.Empty, "An error occurred while creating the appointment. Please try again.");
+                await PopulateDropdownsAsync(viewModel, medecinId);
+                SetSchedulePageMetadata("New Appointment");
+                return View(viewModel);
+            }
         }
 
         [HttpGet]
@@ -246,7 +336,7 @@ namespace MedicalOfficeManagement.Controllers
                 viewModel.Appointment.MedecinId = medecinId.Value;
             }
 
-            var previousStatus = appointment.Statut;
+            var previousStatus = appointment.StatusEnum;
             appointment.PatientId = viewModel.Appointment.PatientId;
             appointment.MedecinId = viewModel.Appointment.MedecinId;
             appointment.DateDebut = viewModel.Appointment.DateDebut;
@@ -255,10 +345,15 @@ namespace MedicalOfficeManagement.Controllers
             appointment.Statut = viewModel.Appointment.Statut;
             appointment.Motif = viewModel.Appointment.Motif;
 
+            _logger.LogInformation("Editing appointment {AppointmentId} by user {UserId}. Status change: {PreviousStatus} -> {NewStatus}",
+                appointment.Id, GetUserId(), previousStatus, appointment.StatusEnum);
+
             await ValidateAppointmentAsync(appointment, medecinId);
 
             if (!ModelState.IsValid)
             {
+                _logger.LogWarning("Appointment {AppointmentId} edit validation failed. Errors: {Errors}",
+                    appointment.Id, string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
                 viewModel.Appointment = appointment;
                 await PopulateDropdownsAsync(viewModel, medecinId);
                 SetSchedulePageMetadata("Edit Appointment");
@@ -273,8 +368,11 @@ namespace MedicalOfficeManagement.Controllers
             {
                 await _context.SaveChangesAsync();
 
+                _logger.LogInformation("Appointment {AppointmentId} updated successfully", appointment.Id);
+
                 // Send email if appointment was approved (status changed to "Scheduled")
-                if (previousStatus != "Scheduled" && appointment.Statut.Equals("Scheduled", StringComparison.OrdinalIgnoreCase))
+                var newStatus = appointment.StatusEnum;
+                if (previousStatus != AppointmentStatus.Scheduled && newStatus == AppointmentStatus.Scheduled)
                 {
                     if (!string.IsNullOrWhiteSpace(appointment.Patient?.Email))
                     {
@@ -285,6 +383,8 @@ namespace MedicalOfficeManagement.Controllers
                                 "Appointment Confirmation",
                                 AppointmentEmailTemplates.AppointmentApproved(appointment)
                             );
+                            _logger.LogInformation("Approval email sent successfully to {Email} for appointment {AppointmentId}",
+                                appointment.Patient.Email, appointment.Id);
                         }
                         catch (Exception ex)
                         {
@@ -297,11 +397,16 @@ namespace MedicalOfficeManagement.Controllers
             catch (DbUpdateConcurrencyException)
             {
                 if (!await AppointmentExists(viewModel.Appointment.Id))
+                {
+                    _logger.LogWarning("Appointment {AppointmentId} not found during edit", viewModel.Appointment.Id);
                     return NotFound();
+                }
 
+                _logger.LogError("Concurrency exception while editing appointment {AppointmentId}", viewModel.Appointment.Id);
                 throw;
             }
 
+            TempData["StatusMessage"] = "Appointment updated successfully.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -328,16 +433,35 @@ namespace MedicalOfficeManagement.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            _logger.LogInformation("Deleting appointment {AppointmentId} by user {UserId}", id, GetUserId());
+
             var appointment = await _context.RendezVous.FindAsync(id);
 
             if (appointment == null)
+            {
+                _logger.LogWarning("Attempted to delete non-existent appointment {AppointmentId}", id);
                 return NotFound();
+            }
 
             if (!await CanAccessAppointmentAsync(appointment))
+            {
+                _logger.LogWarning("User {UserId} attempted to delete appointment {AppointmentId} without access", GetUserId(), id);
                 return Forbid();
+            }
 
-            _context.RendezVous.Remove(appointment);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.RendezVous.Remove(appointment);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Appointment {AppointmentId} deleted successfully", id);
+                TempData["StatusMessage"] = "Appointment deleted successfully.";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting appointment {AppointmentId}", id);
+                TempData["StatusMessage"] = "Error: Failed to delete appointment. Please try again.";
+            }
 
             return RedirectToAction(nameof(Index));
         }
@@ -435,17 +559,23 @@ namespace MedicalOfficeManagement.Controllers
             if (!await CanAccessAppointmentAsync(appointment))
                 return Forbid();
 
-            if (!AllowedStatuses.Contains(request.Status, StringComparer.OrdinalIgnoreCase))
+            // Validate status using enum
+            if (!Enum.TryParse<AppointmentStatus>(request.Status, true, out var newStatusEnum))
             {
+                _logger.LogWarning("Invalid status value {Status} provided for appointment {AppointmentId}", request.Status, request.Id);
                 return BadRequest("Unsupported status value.");
             }
 
-            var previousStatus = appointment.Statut;
-            appointment.Statut = request.Status;
+            var previousStatus = appointment.StatusEnum;
+            appointment.StatusEnum = newStatusEnum;
+            
+            _logger.LogInformation("Updating status of appointment {AppointmentId} from {PreviousStatus} to {NewStatus} by user {UserId}",
+                appointment.Id, previousStatus, newStatusEnum, GetUserId());
+
             await _context.SaveChangesAsync();
 
             // Send email if appointment was approved (status changed to "Scheduled")
-            if (previousStatus != "Scheduled" && request.Status.Equals("Scheduled", StringComparison.OrdinalIgnoreCase))
+            if (previousStatus != AppointmentStatus.Scheduled && newStatusEnum == AppointmentStatus.Scheduled)
             {
                 if (!string.IsNullOrWhiteSpace(appointment.Patient?.Email))
                 {
@@ -456,6 +586,8 @@ namespace MedicalOfficeManagement.Controllers
                             "Appointment Confirmation",
                             AppointmentEmailTemplates.AppointmentApproved(appointment)
                         );
+                        _logger.LogInformation("Approval email sent successfully to {Email} for appointment {AppointmentId}",
+                            appointment.Patient.Email, appointment.Id);
                     }
                     catch (Exception ex)
                     {
@@ -477,7 +609,8 @@ namespace MedicalOfficeManagement.Controllers
             }
 
             var query = BuildAppointmentQuery()
-                .Where(r => r.Statut == "Pending Approval");
+                .Where(r => r.StatusEnum == AppointmentStatus.PendingApproval || 
+                    r.Statut.Equals("Pending Approval", StringComparison.OrdinalIgnoreCase));
 
             // Apply filters
             if (medecinFilter.HasValue)
@@ -554,9 +687,14 @@ namespace MedicalOfficeManagement.Controllers
                 return NotFound();
             }
 
-            appointment.Statut = "Scheduled";
+            _logger.LogInformation("Approving appointment {AppointmentId} with room {RoomNumber} by user {UserId}",
+                appointment.Id, roomNumber, GetUserId());
+
+            appointment.StatusEnum = AppointmentStatus.Scheduled;
             appointment.SalleId = roomNumber;
             await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Appointment {AppointmentId} approved successfully", appointment.Id);
 
             if (!string.IsNullOrWhiteSpace(appointment.Patient?.Email))
             {
@@ -602,9 +740,12 @@ namespace MedicalOfficeManagement.Controllers
                 return NotFound();
             }
 
-            appointment.Statut = "Cancelled";
+            _logger.LogInformation("Declining appointment {AppointmentId} by user {UserId}", appointment.Id, GetUserId());
+
+            appointment.StatusEnum = AppointmentStatus.Cancelled;
             await _context.SaveChangesAsync();
 
+            _logger.LogInformation("Appointment {AppointmentId} marked as cancelled", appointment.Id);
             TempData["StatusMessage"] = "Appointment marked as cancelled.";
             return RedirectToAction(nameof(PendingApproval));
         }
@@ -652,8 +793,12 @@ namespace MedicalOfficeManagement.Controllers
             var appointments = await _context.RendezVous
                 .Include(r => r.Patient)
                 .Include(r => r.Medecin)
-                .Where(r => ids.Contains(r.Id) && r.Statut == "Pending Approval")
+                .Where(r => ids.Contains(r.Id) && 
+                    (r.StatusEnum == AppointmentStatus.PendingApproval || 
+                     r.Statut.Equals("Pending Approval", StringComparison.OrdinalIgnoreCase)))
                 .ToListAsync();
+
+            _logger.LogInformation("Bulk approving {Count} appointments by user {UserId}", appointments.Count, GetUserId());
 
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -664,9 +809,11 @@ namespace MedicalOfficeManagement.Controllers
                 for (int i = 0; i < appointments.Count && i < roomNumbers.Length; i++)
                 {
                     var appointment = appointments[i];
-                    appointment.Statut = "Scheduled";
+                    appointment.StatusEnum = AppointmentStatus.Scheduled;
                     appointment.SalleId = roomNumbers[i];
                     approvedCount++;
+                    
+                    _logger.LogDebug("Approving appointment {AppointmentId} with room {RoomNumber}", appointment.Id, roomNumbers[i]);
 
                     if (!string.IsNullOrWhiteSpace(appointment.Patient?.Email))
                     {
@@ -741,12 +888,16 @@ namespace MedicalOfficeManagement.Controllers
             }
 
             var appointments = await _context.RendezVous
-                .Where(r => ids.Contains(r.Id) && r.Statut == "Pending Approval")
+                .Where(r => ids.Contains(r.Id) && 
+                    (r.StatusEnum == AppointmentStatus.PendingApproval || 
+                     r.Statut.Equals("Pending Approval", StringComparison.OrdinalIgnoreCase)))
                 .ToListAsync();
+
+            _logger.LogInformation("Bulk declining {Count} appointments by user {UserId}", appointments.Count, GetUserId());
 
             foreach (var appointment in appointments)
             {
-                appointment.Statut = "Cancelled";
+                appointment.StatusEnum = AppointmentStatus.Cancelled;
             }
 
             await _context.SaveChangesAsync();
@@ -772,6 +923,84 @@ namespace MedicalOfficeManagement.Controllers
             var fileName = $"appointment-{appointment.Id}.ics";
 
             return File(bytes, "text/calendar", fileName);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ExportCsv(string? statusFilter, int? medecinFilter, DateTime? dateFromFilter, DateTime? dateToFilter, string? searchTerm)
+        {
+            _logger.LogInformation("CSV export requested by user {UserId} with filters: Status={StatusFilter}, Medecin={MedecinFilter}, DateFrom={DateFrom}, DateTo={DateTo}, Search={SearchTerm}",
+                GetUserId(), statusFilter, medecinFilter, dateFromFilter, dateToFilter, searchTerm);
+
+            var medecinId = await GetCurrentMedecinIdAsync();
+            if (User.IsInRole(SystemRoles.Medecin) && !medecinId.HasValue)
+            {
+                return Forbid();
+            }
+
+            var query = GetScopedAppointmentsQueryable(medecinId);
+
+            // Apply same filters as Index
+            if (!string.IsNullOrWhiteSpace(statusFilter))
+            {
+                if (Enum.TryParse<AppointmentStatus>(statusFilter, true, out var statusEnum))
+                {
+                    var statusString = statusEnum.ToString();
+                    query = query.Where(r => r.Statut == statusString || 
+                        (statusEnum == AppointmentStatus.Scheduled && (r.Statut == "Scheduled" || r.Statut == "Confirmed")));
+                }
+                else
+                {
+                    query = query.Where(r => r.Statut == statusFilter);
+                }
+            }
+
+            if (medecinFilter.HasValue && (IsAdminOrSecretaire() || medecinFilter.Value == medecinId))
+            {
+                query = query.Where(r => r.MedecinId == medecinFilter.Value);
+            }
+
+            if (dateFromFilter.HasValue)
+            {
+                query = query.Where(r => r.DateDebut >= dateFromFilter.Value);
+            }
+
+            if (dateToFilter.HasValue)
+            {
+                query = query.Where(r => r.DateDebut <= dateToFilter.Value.AddDays(1).AddTicks(-1));
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var searchLower = searchTerm.ToLower();
+                query = query.Where(r =>
+                    (r.Patient.Nom != null && r.Patient.Nom.ToLower().Contains(searchLower)) ||
+                    (r.Patient.Prenom != null && r.Patient.Prenom.ToLower().Contains(searchLower)) ||
+                    (r.Medecin.NomPrenom != null && r.Medecin.NomPrenom.ToLower().Contains(searchLower)) ||
+                    (r.Motif != null && r.Motif.ToLower().Contains(searchLower)));
+            }
+
+            var appointments = await query
+                .OrderBy(r => r.DateDebut)
+                .ToListAsync();
+
+            var builder = new StringBuilder();
+            builder.AppendLine("Id,Patient Name,Doctor,Start Time,End Time,Room,Status,Reason");
+
+            foreach (var appointment in appointments)
+            {
+                var patientName = BuildPatientName(appointment.Patient);
+                var doctorName = appointment.Medecin?.NomPrenom ?? "Unassigned";
+                var room = appointment.SalleId.HasValue ? appointment.SalleId.ToString() : "Unassigned";
+                var status = appointment.StatusEnum.ToString();
+                var reason = appointment.Motif ?? "Not specified";
+
+                builder.AppendLine($"{appointment.Id},\"{patientName}\",\"{doctorName}\",{appointment.DateDebut:yyyy-MM-dd HH:mm:ss},{appointment.DateFin:yyyy-MM-dd HH:mm:ss},{room},{status},\"{reason}\"");
+            }
+
+            var fileName = $"appointments-{DateTime.Now:yyyyMMdd-HHmmss}.csv";
+            _logger.LogInformation("CSV export completed. {Count} appointments exported", appointments.Count);
+
+            return File(Encoding.UTF8.GetBytes(builder.ToString()), "text/csv", fileName);
         }
 
         private IQueryable<RendezVou> BuildAppointmentQuery()
@@ -906,7 +1135,7 @@ namespace MedicalOfficeManagement.Controllers
 
         private static bool IsCompleted(RendezVou appointment)
         {
-            return appointment.Statut?.Equals("Completed", StringComparison.OrdinalIgnoreCase) == true;
+            return appointment.StatusEnum == AppointmentStatus.Completed;
         }
 
         private async Task<IEnumerable<SelectListItem>> GetPatientsSelectListAsync(int? selectedId = null, int? medecinId = null)
@@ -932,7 +1161,7 @@ namespace MedicalOfficeManagement.Controllers
                 return medecins.Select(m => new SelectListItem
                 {
                     Value = m.Id.ToString(),
-                    Text = string.IsNullOrWhiteSpace(m.NomPrenom) ? "Unnamed provider" : m.NomPrenom,
+                    Text = FormatDoctorNameWithSpecialty(m.NomPrenom, m.Specialite),
                     Selected = selectedId.HasValue && m.Id == selectedId
                 });
             }
@@ -948,7 +1177,7 @@ namespace MedicalOfficeManagement.Controllers
                         new SelectListItem
                         {
                             Value = medecin.Id.ToString(),
-                            Text = string.IsNullOrWhiteSpace(medecin.NomPrenom) ? "Médecin assigné" : medecin.NomPrenom,
+                            Text = FormatDoctorNameWithSpecialty(medecin.NomPrenom, medecin.Specialite),
                             Selected = true
                         }
                     };
@@ -966,16 +1195,23 @@ namespace MedicalOfficeManagement.Controllers
 
         private static IEnumerable<SelectListItem> GetAllowedStatusesSelectList(string? selectedStatus = null)
         {
-            var statuses = new[] { "Scheduled", "Confirmed", "Checked-in", "In Progress", "Completed", "Pending Approval", "Cancelled" };
+            var statuses = Enum.GetValues<AppointmentStatus>().Select(e => new
+            {
+                Value = e.ToString(),
+                Text = e.ToString().Replace("PendingApproval", "Pending Approval")
+            }).ToList();
+
             return statuses.Select(s => new SelectListItem
             {
-                Value = s,
-                Text = s,
-                Selected = !string.IsNullOrWhiteSpace(selectedStatus) && s.Equals(selectedStatus, StringComparison.OrdinalIgnoreCase)
+                Value = s.Value,
+                Text = s.Text,
+                Selected = !string.IsNullOrWhiteSpace(selectedStatus) && 
+                    (s.Value.Equals(selectedStatus, StringComparison.OrdinalIgnoreCase) ||
+                     s.Text.Equals(selectedStatus, StringComparison.OrdinalIgnoreCase))
             }).Prepend(new SelectListItem { Value = "", Text = "All Statuses", Selected = string.IsNullOrWhiteSpace(selectedStatus) });
         }
 
-        private static readonly string[] AllowedStatuses = new[] { "Scheduled", "Confirmed", "Checked-in", "In Progress", "Completed", "Pending Approval", "Cancelled" };
+        private static readonly AppointmentStatus[] AllowedStatuses = Enum.GetValues<AppointmentStatus>();
 
         private async Task ValidateAppointmentAsync(RendezVou appointment, int? medecinId)
         {
@@ -986,14 +1222,29 @@ namespace MedicalOfficeManagement.Controllers
 
             if (string.IsNullOrWhiteSpace(appointment.Statut))
             {
-                appointment.Statut = "Scheduled";
+                appointment.StatusEnum = AppointmentStatus.Scheduled;
             }
             else
             {
                 appointment.Statut = appointment.Statut.Trim();
+                // Ensure status is valid enum
+                if (!Enum.TryParse<AppointmentStatus>(appointment.Statut, true, out _))
+                {
+                    // Try to map legacy values
+                    var statusLower = appointment.Statut.ToLowerInvariant();
+                    appointment.StatusEnum = statusLower switch
+                    {
+                        "scheduled" or "confirmed" => AppointmentStatus.Scheduled,
+                        "completed" => AppointmentStatus.Completed,
+                        "cancelled" => AppointmentStatus.Cancelled,
+                        "pending approval" or "pendingapproval" => AppointmentStatus.PendingApproval,
+                        "noshow" or "no show" => AppointmentStatus.NoShow,
+                        _ => AppointmentStatus.Scheduled
+                    };
+                }
             }
 
-            if (!AllowedStatuses.Contains(appointment.Statut, StringComparer.OrdinalIgnoreCase))
+            if (!AllowedStatuses.Contains(appointment.StatusEnum))
             {
                 ModelState.AddModelError("Appointment.Statut", "Please select a supported status value.");
             }
@@ -1045,18 +1296,26 @@ namespace MedicalOfficeManagement.Controllers
 
         private async Task CheckAppointmentConflictsAsync(RendezVou appointment)
         {
+            // Statuses that don't count as conflicts (appointments that are finished/cancelled)
+            var nonConflictStatuses = new[] 
+            { 
+                AppointmentStatus.Cancelled, 
+                AppointmentStatus.Completed, 
+                AppointmentStatus.NoShow 
+            };
+
             // Check for conflicts with the same patient
             var patientConflicts = await _context.RendezVous
                 .Where(r => r.Id != appointment.Id && // Exclude current appointment if editing
                            r.PatientId == appointment.PatientId &&
-                           r.Statut != "Cancelled" &&
-                           r.Statut != "Completed" &&
-                           r.Statut != "NoShow" &&
+                           !nonConflictStatuses.Contains(r.StatusEnum) &&
                            ((r.DateDebut < appointment.DateFin && r.DateFin > appointment.DateDebut)))
                 .AnyAsync();
 
             if (patientConflicts)
             {
+                _logger.LogWarning("Patient conflict detected for appointment {AppointmentId}, patient {PatientId} already has appointment during {StartTime}-{EndTime}",
+                    appointment.Id, appointment.PatientId, appointment.DateDebut, appointment.DateFin);
                 ModelState.AddModelError("Appointment.DateDebut", "This patient already has an appointment scheduled during this time.");
             }
 
@@ -1064,14 +1323,14 @@ namespace MedicalOfficeManagement.Controllers
             var doctorConflicts = await _context.RendezVous
                 .Where(r => r.Id != appointment.Id && // Exclude current appointment if editing
                            r.MedecinId == appointment.MedecinId &&
-                           r.Statut != "Cancelled" &&
-                           r.Statut != "Completed" &&
-                           r.Statut != "NoShow" &&
+                           !nonConflictStatuses.Contains(r.StatusEnum) &&
                            ((r.DateDebut < appointment.DateFin && r.DateFin > appointment.DateDebut)))
                 .AnyAsync();
 
             if (doctorConflicts)
             {
+                _logger.LogWarning("Doctor conflict detected for appointment {AppointmentId}, doctor {MedecinId} already has appointment during {StartTime}-{EndTime}",
+                    appointment.Id, appointment.MedecinId, appointment.DateDebut, appointment.DateFin);
                 ModelState.AddModelError("Appointment.DateDebut", "This doctor already has an appointment scheduled during this time.");
             }
 
@@ -1081,14 +1340,14 @@ namespace MedicalOfficeManagement.Controllers
                 var roomConflicts = await _context.RendezVous
                     .Where(r => r.Id != appointment.Id && // Exclude current appointment if editing
                                r.SalleId == appointment.SalleId &&
-                               r.Statut != "Cancelled" &&
-                               r.Statut != "Completed" &&
-                               r.Statut != "NoShow" &&
+                               !nonConflictStatuses.Contains(r.StatusEnum) &&
                                ((r.DateDebut < appointment.DateFin && r.DateFin > appointment.DateDebut)))
                     .AnyAsync();
 
                 if (roomConflicts)
                 {
+                    _logger.LogWarning("Room conflict detected for appointment {AppointmentId}, room {SalleId} already booked during {StartTime}-{EndTime}",
+                        appointment.Id, appointment.SalleId, appointment.DateDebut, appointment.DateFin);
                     ModelState.AddModelError("Appointment.SalleId", "This room is already booked during this time.");
                 }
             }
@@ -1103,6 +1362,27 @@ namespace MedicalOfficeManagement.Controllers
         {
             ViewData["Title"] = title;
             ViewData["Breadcrumb"] = "Schedule";
+        }
+
+        private static string FormatDoctorNameWithSpecialty(string? nomPrenom, string? specialite)
+        {
+            var name = string.IsNullOrWhiteSpace(nomPrenom) ? "Unnamed provider" : nomPrenom.Trim();
+            var specialty = string.IsNullOrWhiteSpace(specialite) ? null : specialite.Trim();
+            
+            // Add "Dr" prefix if not already present
+            if (!name.StartsWith("Dr", StringComparison.OrdinalIgnoreCase) && 
+                !name.StartsWith("Dr.", StringComparison.OrdinalIgnoreCase))
+            {
+                name = $"Dr {name}";
+            }
+            
+            // Append specialty in parentheses if available
+            if (!string.IsNullOrWhiteSpace(specialty))
+            {
+                return $"{name} ({specialty})";
+            }
+            
+            return name;
         }
 
         private static string BuildIcsContent(RendezVou appointment)

@@ -40,6 +40,9 @@ public partial class MedicalOfficeContext : IdentityDbContext<ApplicationUser>
 
     public virtual DbSet<LabResult> LabResults { get; set; } = null!;
 
+    public virtual DbSet<UserPreference> UserPreferences { get; set; } = null!;
+
+    public virtual DbSet<SystemSetting> SystemSettings { get; set; } = null!;
 
     // public virtual DbSet<Utilisateur> Utilisateurs { get; set; } // Ligne retirée
 
@@ -56,12 +59,31 @@ public partial class MedicalOfficeContext : IdentityDbContext<ApplicationUser>
 
         ConfigurePatient(modelBuilder.Entity<Patient>());
 
-        // Configure BillingInvoice PatientId foreign key
+        // Configure BillingInvoice foreign keys
+        // Note: Patient has a global query filter for soft deletes.
+        // This warning is expected - soft-deleted patients won't be accessible via navigation property.
         modelBuilder.Entity<BillingInvoice>()
             .HasOne(b => b.Patient)
             .WithMany()
             .HasForeignKey(b => b.PatientId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<BillingInvoice>()
+            .HasOne(b => b.Consultation)
+            .WithMany(c => c.BillingInvoices)
+            .HasForeignKey(b => b.ConsultationId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        modelBuilder.Entity<BillingInvoice>()
+            .HasOne(b => b.RendezVous)
+            .WithMany(r => r.BillingInvoices)
+            .HasForeignKey(b => b.RendezVousId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        // Configure SystemSetting unique index on Key
+        modelBuilder.Entity<SystemSetting>()
+            .HasIndex(s => s.Key)
+            .IsUnique();
 
         // IMPORTANT : Vous devez avoir retiré le mappage de la table Utilisateur.
 

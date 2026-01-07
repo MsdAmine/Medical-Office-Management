@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MedicalOfficeManagement.Models;
 using Microsoft.Extensions.Logging;
+using X.PagedList;
 
 
 namespace MedicalOfficeManagement.Controllers
@@ -27,20 +28,29 @@ namespace MedicalOfficeManagement.Controllers
         [HttpGet]
         public async Task<IActionResult> Index(int page = 1)
         {
+            _logger.LogInformation("Prescriptions Index accessed by user {UserId}, page {Page}", User.Identity?.Name, page);
+
             var query = _context.Prescriptions
                 .AsNoTracking()
                 .Include(p => p.Patient)
                 .Include(p => p.Medecin)
                 .OrderByDescending(p => p.IssuedOn);
 
-            var paginatedPrescriptions = await PaginatedList<Prescription>.CreateAsync(query, page, PageSize);
+            // Get total count
+            var totalCount = await query.CountAsync();
+            
+            // Get items for current page
+            var items = await query
+                .Skip((page - 1) * PageSize)
+                .Take(PageSize)
+                .ToListAsync();
 
             // Get all prescriptions for summary statistics
             var allPrescriptions = await _context.Prescriptions
                 .AsNoTracking()
                 .ToListAsync();
 
-            var mapped = paginatedPrescriptions.Select(p => new PrescriptionViewModel
+            var mapped = items.Select(p => new PrescriptionViewModel
             {
                 Id = p.Id,
                 PatientName = p.Patient == null ? "Unknown patient" : $"{p.Patient.Prenom} {p.Patient.Nom}".Trim(),
@@ -55,18 +65,26 @@ namespace MedicalOfficeManagement.Controllers
                 Notes = p.Notes ?? string.Empty
             }).ToList();
 
+            // Create IPagedList manually
+            var pagedPrescriptions = new StaticPagedList<PrescriptionViewModel>(
+                mapped,
+                page,
+                PageSize,
+                totalCount);
+
             var viewModel = new PrescriptionIndexViewModel
             {
-                ActiveCount = allPrescriptions.Count(p => string.Equals(p.Status, "Active", StringComparison.OrdinalIgnoreCase)),
-                PendingCount = allPrescriptions.Count(p => string.Equals(p.Status, "Pending", StringComparison.OrdinalIgnoreCase)),
-                CompletedCount = allPrescriptions.Count(p => string.Equals(p.Status, "Completed", StringComparison.OrdinalIgnoreCase)),
+                ActiveCount = allPrescriptions.Count(p => p.StatusEnum == PrescriptionStatus.Active),
+                PendingCount = allPrescriptions.Count(p => p.StatusEnum == PrescriptionStatus.Pending),
+                CompletedCount = allPrescriptions.Count(p => p.StatusEnum == PrescriptionStatus.Completed),
                 Prescriptions = mapped
             };
 
-            ViewData["PageIndex"] = paginatedPrescriptions.PageIndex;
-            ViewData["TotalPages"] = paginatedPrescriptions.TotalPages;
-            ViewData["HasPreviousPage"] = paginatedPrescriptions.HasPreviousPage;
-            ViewData["HasNextPage"] = paginatedPrescriptions.HasNextPage;
+            ViewData["PageNumber"] = pagedPrescriptions.PageNumber;
+            ViewData["PageCount"] = pagedPrescriptions.PageCount;
+            ViewData["TotalItemCount"] = pagedPrescriptions.TotalItemCount;
+            ViewData["HasPreviousPage"] = pagedPrescriptions.HasPreviousPage;
+            ViewData["HasNextPage"] = pagedPrescriptions.HasNextPage;
 
             ViewData["Title"] = "Prescriptions";
             ViewData["Breadcrumb"] = "Prescriptions";
@@ -106,6 +124,8 @@ namespace MedicalOfficeManagement.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Prescription prescription)
         {
+            _logger.LogInformation("Creating prescription for patient {PatientId} by user {UserId}", prescription.PatientId, User.Identity?.Name);
+
             // Validate foreign keys exist
             if (prescription.PatientId > 0 && !await _context.Patients.AnyAsync(p => p.Id == prescription.PatientId))
             {
@@ -117,15 +137,34 @@ namespace MedicalOfficeManagement.Controllers
                 ModelState.AddModelError(nameof(Prescription.MedecinId), "Selected provider does not exist.");
             }
 
+            // Ensure default status if not set
+            if (string.IsNullOrWhiteSpace(prescription.Status))
+            {
+                prescription.StatusEnum = PrescriptionStatus.Pending;
+            }
+
             if (!ModelState.IsValid)
             {
+                _logger.LogWarning("Prescription creation validation failed");
                 await PopulateLookupsAsync();
                 return View(prescription);
             }
 
-            _context.Prescriptions.Add(prescription);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                _context.Prescriptions.Add(prescription);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Prescription {PrescriptionId} created successfully", prescription.Id);
+                TempData["StatusMessage"] = "Prescription created successfully.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating prescription");
+                ModelState.AddModelError(string.Empty, "An error occurred while creating the prescription. Please try again.");
+                await PopulateLookupsAsync();
+                return View(prescription);
+            }
         }
 
         [HttpGet]
@@ -150,6 +189,8 @@ namespace MedicalOfficeManagement.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Prescription prescription)
         {
+            _logger.LogInformation("Editing prescription {PrescriptionId} by user {UserId}", id, User.Identity?.Name);
+
             if (id != prescription.Id)
             {
                 return NotFound();
@@ -168,6 +209,7 @@ namespace MedicalOfficeManagement.Controllers
 
             if (!ModelState.IsValid)
             {
+                _logger.LogWarning("Prescription {PrescriptionId} edit validation failed", id);
                 await PopulateLookupsAsync();
                 return View(prescription);
             }
@@ -176,14 +218,18 @@ namespace MedicalOfficeManagement.Controllers
             {
                 _context.Update(prescription);
                 await _context.SaveChangesAsync();
+                _logger.LogInformation("Prescription {PrescriptionId} updated successfully", id);
+                TempData["StatusMessage"] = "Prescription updated successfully.";
             }
             catch (DbUpdateConcurrencyException)
             {
                 if (!await PrescriptionExists(prescription.Id))
                 {
+                    _logger.LogWarning("Prescription {PrescriptionId} not found during edit", id);
                     return NotFound();
                 }
 
+                _logger.LogError("Concurrency exception while editing prescription {PrescriptionId}", id);
                 throw;
             }
 

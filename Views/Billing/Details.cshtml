@@ -12,6 +12,10 @@
             <p class="text-slate-600 mt-1">Review billing information for this invoice.</p>
         </div>
         <div class="flex items-center gap-2">
+            <a asp-action="ExportPdf" asp-route-id="@Model.Id" class="inline-flex items-center px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700">
+                <i class="fas fa-file-pdf mr-2"></i>
+                Export PDF
+            </a>
             <a asp-action="Edit" asp-route-id="@Model.Id" class="inline-flex items-center px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700">
                 <i class="fas fa-edit mr-2"></i>
                 Edit
@@ -57,5 +61,28 @@
                 <p class="text-lg font-semibold text-slate-900">@Model.PaymentMethod</p>
             </div>
         </div>
+
+        @if (Model.ConsultationId.HasValue || Model.RendezVousId.HasValue)
+        {
+            <div class="mt-4 pt-4 border-t border-slate-200">
+                <p class="text-sm text-slate-500 mb-2">Related Records</p>
+                <div class="flex flex-wrap gap-3">
+                    @if (Model.ConsultationId.HasValue)
+                    {
+                        <a asp-controller="Consultations" asp-action="Details" asp-route-id="@Model.ConsultationId" 
+                           class="text-blue-600 hover:text-blue-700 font-medium">
+                            View Consultation
+                        </a>
+                    }
+                    @if (Model.RendezVousId.HasValue)
+                    {
+                        <a asp-controller="Appointments" asp-action="Details" asp-route-id="@Model.RendezVousId" 
+                           class="text-blue-600 hover:text-blue-700 font-medium">
+                            View Appointment
+                        </a>
+                    }
+                </div>
+            </div>
+        }
     </div>
 </div>

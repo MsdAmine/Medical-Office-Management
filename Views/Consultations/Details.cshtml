@@ -1,0 +1,95 @@
+@model MedicalOfficeManagement.Models.Consultation
+
+@{
+    ViewData["Title"] = ViewData["Title"] ?? "Consultation Details";
+    ViewData["Breadcrumb"] = "Consultations";
+    
+    string patientName = Model.Patient != null 
+        ? $"{Model.Patient.Prenom} {Model.Patient.Nom}".Trim() 
+        : "Unknown Patient";
+    string doctorName = Model.Medecin?.NomPrenom ?? "Unassigned";
+}
+
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900">Consultation Details</h1>
+            <p class="text-slate-600">Review consultation information.</p>
+        </div>
+        <a asp-action="Index" class="text-blue-600 hover:text-blue-700">Back to consultations</a>
+    </div>
+
+    <div class="glass-card rounded-xl p-6 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <p class="text-sm text-slate-500">Patient</p>
+                <p class="text-lg font-semibold text-slate-900">@patientName</p>
+            </div>
+            <div>
+                <p class="text-sm text-slate-500">Doctor</p>
+                <p class="text-lg font-semibold text-slate-900">@doctorName</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <p class="text-sm text-slate-500">Date</p>
+                <p class="text-slate-900 font-medium">@Model.DateConsult.ToString("f")</p>
+            </div>
+            @if (Model.RendezVousId.HasValue)
+            {
+                <div>
+                    <p class="text-sm text-slate-500">Related Appointment</p>
+                    <a asp-controller="Appointments" asp-action="Details" asp-route-id="@Model.RendezVousId" 
+                       class="text-blue-600 hover:text-blue-700 font-medium">
+                        View Appointment #@Model.RendezVousId
+                    </a>
+                </div>
+            }
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Observations))
+        {
+            <div>
+                <p class="text-sm text-slate-500 mb-2">Observations</p>
+                <p class="text-slate-900 whitespace-pre-wrap">@Model.Observations</p>
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Model.Diagnostics))
+        {
+            <div>
+                <p class="text-sm text-slate-500 mb-2">Diagnostics</p>
+                <p class="text-slate-900 whitespace-pre-wrap">@Model.Diagnostics</p>
+            </div>
+        }
+
+        @{
+            var existingInvoice = ViewBag.ExistingInvoice as MedicalOfficeManagement.Models.BillingInvoice;
+        }
+        
+        @if (existingInvoice != null)
+        {
+            <div class="mt-4 pt-4 border-t border-slate-200">
+                <p class="text-sm text-slate-500 mb-2">Related Invoice</p>
+                <a asp-controller="Billing" asp-action="Details" asp-route-id="@existingInvoice.Id" 
+                   class="text-blue-600 hover:text-blue-700 font-medium">
+                    View Invoice @existingInvoice.InvoiceNumber
+                </a>
+            </div>
+        }
+
+        <div class="flex items-center gap-3 pt-4">
+            @if (existingInvoice == null)
+            {
+                <a asp-action="GenerateInvoice" asp-route-id="@Model.Id" 
+                   class="gradient-primary text-white px-5 py-2 rounded-lg font-medium hover:shadow-lg transition-shadow">
+                    Generate Invoice
+                </a>
+            }
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="gradient-primary text-white px-5 py-2 rounded-lg font-medium hover:shadow-lg transition-shadow">
+                Edit Consultation
+            </a>
+        </div>
+    </div>
+</div>

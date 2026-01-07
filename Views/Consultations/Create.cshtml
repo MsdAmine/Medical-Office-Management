@@ -1,0 +1,85 @@
+@model MedicalOfficeManagement.Models.Consultation
+
+@{
+    ViewData["Title"] = ViewData["Title"] ?? "New Consultation";
+    ViewData["Breadcrumb"] = "Consultations";
+}
+
+<div class="max-w-4xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <p class="text-sm text-indigo-600 font-semibold uppercase tracking-wide">Consultations</p>
+            <h1 class="text-2xl font-bold text-slate-900">New Consultation</h1>
+            <p class="text-slate-600 mt-1">Create a new consultation record.</p>
+        </div>
+        <a asp-action="Index" class="inline-flex items-center px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Back to list
+        </a>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
+        <form asp-action="Create" method="post" class="space-y-6">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-red-600 text-sm"></div>
+
+            @if (ViewBag.RendezVousId != null)
+            {
+                <input type="hidden" asp-for="RendezVousId" value="@ViewBag.RendezVousId" />
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <p class="text-sm text-blue-800">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        Creating consultation from appointment. Patient and doctor are pre-filled.
+                    </p>
+                </div>
+            }
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label asp-for="PatientId" class="block text-sm font-medium text-slate-900 mb-2">Patient</label>
+                    <select asp-for="PatientId" asp-items="ViewBag.Patients" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">-- Select Patient --</option>
+                    </select>
+                    <span asp-validation-for="PatientId" class="text-red-600 text-sm"></span>
+                </div>
+                <div>
+                    <label asp-for="MedecinId" class="block text-sm font-medium text-slate-900 mb-2">Doctor</label>
+                    <select asp-for="MedecinId" asp-items="ViewBag.Medecins" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">-- Select Doctor --</option>
+                    </select>
+                    <span asp-validation-for="MedecinId" class="text-red-600 text-sm"></span>
+                </div>
+            </div>
+
+            <div>
+                <label asp-for="DateConsult" class="block text-sm font-medium text-slate-900 mb-2">Consultation Date</label>
+                <input asp-for="DateConsult" type="datetime-local" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                <span asp-validation-for="DateConsult" class="text-red-600 text-sm"></span>
+            </div>
+
+            <div>
+                <label asp-for="Observations" class="block text-sm font-medium text-slate-900 mb-2">Observations</label>
+                <textarea asp-for="Observations" rows="4" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                <span asp-validation-for="Observations" class="text-red-600 text-sm"></span>
+            </div>
+
+            <div>
+                <label asp-for="Diagnostics" class="block text-sm font-medium text-slate-900 mb-2">Diagnostics</label>
+                <textarea asp-for="Diagnostics" rows="4" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                <span asp-validation-for="Diagnostics" class="text-red-600 text-sm"></span>
+            </div>
+
+            <div class="flex items-center justify-end gap-3">
+                <a asp-action="Index" class="inline-flex items-center px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">Cancel</a>
+                <button type="submit" class="inline-flex items-center px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700">
+                    <i class="fas fa-save mr-2"></i>
+                    Save Consultation
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

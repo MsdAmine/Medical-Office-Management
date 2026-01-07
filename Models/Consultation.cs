@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace MedicalOfficeManagement.Models;
@@ -24,4 +24,6 @@ public partial class Consultation
     public virtual Patient Patient { get; set; } = null!;
 
     public virtual RendezVou? RendezVous { get; set; }
+
+    public virtual ICollection<BillingInvoice> BillingInvoices { get; set; } = new List<BillingInvoice>();
 }

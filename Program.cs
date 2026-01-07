@@ -1,5 +1,6 @@
 using MedicalOfficeManagement.Models;
 using MedicalOfficeManagement.Services;
+using MedicalOfficeManagement.Hubs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MedicalOfficeManagement.Data.Seeders;
@@ -62,6 +63,13 @@ builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Smtp")
 builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 builder.Services.AddScoped<AppointmentEmailService>();
 
+// SignalR
+builder.Services.AddSignalR();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+
+// Background services
+builder.Services.AddHostedService<AppointmentReminderService>();
+
 
 var app = builder.Build();
 
@@ -117,6 +125,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorPages();
+
+// SignalR Hub
+app.MapHub<NotificationHub>("/notificationHub");
 
 // --- LOGIQUE DE DÉMARRAGE ---
 app.MapGet("/", context =>

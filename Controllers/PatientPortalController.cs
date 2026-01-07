@@ -79,6 +79,144 @@ namespace MedicalOfficeManagement.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> Timeline()
+        {
+            var patient = await GetCurrentPatientAsync();
+            if (patient == null) return Forbid();
+
+            var patientId = patient.Id;
+            var timelineItems = new List<TimelineItemViewModel>();
+
+            // Get appointments
+            var appointments = await _context.RendezVous
+                .AsNoTracking()
+                .Include(r => r.Medecin)
+                .Where(r => r.PatientId == patientId)
+                .ToListAsync();
+
+            foreach (var appointment in appointments)
+            {
+                var isUpcoming = appointment.DateDebut >= DateTime.UtcNow;
+                timelineItems.Add(new TimelineItemViewModel
+                {
+                    Id = $"appt-{appointment.Id}",
+                    Date = appointment.DateDebut,
+                    Type = "appointment",
+                    Title = $"Appointment with {appointment.Medecin?.NomPrenom ?? "Doctor"}",
+                    Description = string.IsNullOrWhiteSpace(appointment.Motif) ? "Medical appointment" : appointment.Motif,
+                    Icon = isUpcoming ? "fa-calendar-check" : "fa-calendar",
+                    Color = isUpcoming ? "blue" : "slate",
+                    Status = appointment.Statut ?? "Scheduled",
+                    LinkUrl = null
+                });
+            }
+
+            // Get consultations
+            var consultations = await _context.Consultations
+                .AsNoTracking()
+                .Include(c => c.Medecin)
+                .Where(c => c.PatientId == patientId)
+                .ToListAsync();
+
+            foreach (var consultation in consultations)
+            {
+                timelineItems.Add(new TimelineItemViewModel
+                {
+                    Id = $"consult-{consultation.Id}",
+                    Date = consultation.DateConsult,
+                    Type = "consultation",
+                    Title = $"Consultation with {consultation.Medecin?.NomPrenom ?? "Doctor"}",
+                    Description = string.IsNullOrWhiteSpace(consultation.Diagnostics) 
+                        ? (string.IsNullOrWhiteSpace(consultation.Observations) ? "Medical consultation" : consultation.Observations)
+                        : consultation.Diagnostics,
+                    Icon = "fa-stethoscope",
+                    Color = "emerald",
+                    Status = "Completed",
+                    LinkUrl = null
+                });
+            }
+
+            // Get lab results
+            var labResults = await _context.LabResults
+                .AsNoTracking()
+                .Include(l => l.Medecin)
+                .Where(l => l.PatientId == patientId)
+                .ToListAsync();
+
+            foreach (var lab in labResults)
+            {
+                timelineItems.Add(new TimelineItemViewModel
+                {
+                    Id = $"lab-{lab.Id}",
+                    Date = lab.CollectedOn,
+                    Type = "lab",
+                    Title = string.IsNullOrWhiteSpace(lab.TestName) ? "Lab Test" : lab.TestName,
+                    Description = string.IsNullOrWhiteSpace(lab.Notes) ? "Laboratory test results" : lab.Notes,
+                    Icon = "fa-flask",
+                    Color = "purple",
+                    Status = lab.Status ?? "Pending",
+                    LinkUrl = null
+                });
+            }
+
+            // Get prescriptions
+            var prescriptions = await _context.Prescriptions
+                .AsNoTracking()
+                .Include(p => p.Medecin)
+                .Where(p => p.PatientId == patientId)
+                .ToListAsync();
+
+            foreach (var prescription in prescriptions)
+            {
+                timelineItems.Add(new TimelineItemViewModel
+                {
+                    Id = $"presc-{prescription.Id}",
+                    Date = prescription.IssuedOn,
+                    Type = "prescription",
+                    Title = $"Prescription: {prescription.Medication}",
+                    Description = $"Dosage: {prescription.Dosage ?? "N/A"}, Frequency: {prescription.Frequency ?? "N/A"}. {(string.IsNullOrWhiteSpace(prescription.Notes) ? "" : prescription.Notes)}",
+                    Icon = "fa-prescription-bottle-alt",
+                    Color = "amber",
+                    Status = prescription.Status ?? "Active",
+                    LinkUrl = null
+                });
+            }
+
+            // Get billing invoices
+            var invoices = await _context.BillingInvoices
+                .AsNoTracking()
+                .Where(i => i.PatientId == patientId)
+                .ToListAsync();
+
+            foreach (var invoice in invoices)
+            {
+                timelineItems.Add(new TimelineItemViewModel
+                {
+                    Id = $"invoice-{invoice.Id}",
+                    Date = invoice.IssuedOn,
+                    Type = "billing",
+                    Title = $"Invoice #{invoice.InvoiceNumber}",
+                    Description = $"{invoice.Service} - {invoice.Amount:C}",
+                    Icon = "fa-file-invoice-dollar",
+                    Color = "rose",
+                    Status = invoice.Status ?? "Draft",
+                    LinkUrl = null
+                });
+            }
+
+            // Sort by date descending (most recent first)
+            timelineItems = timelineItems.OrderByDescending(t => t.Date).ToList();
+
+            var viewModel = new TimelineViewModel
+            {
+                PatientProfile = patient,
+                TimelineItems = timelineItems
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpGet]
         public async Task<IActionResult> AppointmentStatus(int id)
         {
             var patient = await GetCurrentPatientAsync();
@@ -266,16 +404,19 @@ namespace MedicalOfficeManagement.Controllers
                 })
                 .ToListAsync();
 
-            var medecins = await _context.Medecins
+            var medecinsList = await _context.Medecins
                 .AsNoTracking()
                 .OrderBy(m => m.NomPrenom)
+                .ToListAsync();
+
+            var medecins = medecinsList
                 .Select(m => new SelectListItem
                 {
                     Value = m.Id.ToString(),
-                    Text = string.IsNullOrWhiteSpace(m.NomPrenom) ? "Médecin" : m.NomPrenom,
+                    Text = FormatDoctorNameWithSpecialty(m.NomPrenom, m.Specialite),
                     Selected = request != null && request.MedecinId == m.Id
                 })
-                .ToListAsync();
+                .ToList();
 
             return new PatientPortalViewModel
             {
@@ -328,6 +469,27 @@ namespace MedicalOfficeManagement.Controllers
                 ModelState.AddModelError(nameof(request.PreferredStart),
                     "La date de début doit être dans le futur.");
             }
+        }
+
+        private static string FormatDoctorNameWithSpecialty(string? nomPrenom, string? specialite)
+        {
+            var name = string.IsNullOrWhiteSpace(nomPrenom) ? "Médecin" : nomPrenom.Trim();
+            var specialty = string.IsNullOrWhiteSpace(specialite) ? null : specialite.Trim();
+            
+            // Add "Dr" prefix if not already present
+            if (!name.StartsWith("Dr", StringComparison.OrdinalIgnoreCase) && 
+                !name.StartsWith("Dr.", StringComparison.OrdinalIgnoreCase))
+            {
+                name = $"Dr {name}";
+            }
+            
+            // Append specialty in parentheses if available
+            if (!string.IsNullOrWhiteSpace(specialty))
+            {
+                return $"{name} ({specialty})";
+            }
+            
+            return name;
         }
     }
 }

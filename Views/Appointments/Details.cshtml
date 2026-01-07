@@ -58,7 +58,28 @@
             </div>
         </div>
 
+        @if (Model.Consultations != null && Model.Consultations.Any())
+        {
+            <div class="mt-4 pt-4 border-t border-slate-200">
+                <p class="text-sm text-slate-500 mb-2">Related Consultation</p>
+                @foreach (var consultation in Model.Consultations)
+                {
+                    <a asp-controller="Consultations" asp-action="Details" asp-route-id="@consultation.Id" 
+                       class="text-blue-600 hover:text-blue-700 font-medium">
+                        View Consultation (@consultation.DateConsult.ToString("MMM dd, yyyy"))
+                    </a>
+                }
+            </div>
+        }
+
         <div class="flex items-center gap-3 pt-4">
+            @if (!(Model.Consultations != null && Model.Consultations.Any()))
+            {
+                <a asp-action="CreateConsultation" asp-route-id="@Model.Id" 
+                   class="gradient-primary text-white px-5 py-2 rounded-lg font-medium hover:shadow-lg transition-shadow">
+                    Create Consultation
+                </a>
+            }
             <a asp-action="Edit" asp-route-id="@Model.Id" class="gradient-primary text-white px-5 py-2 rounded-lg font-medium hover:shadow-lg transition-shadow">
                 Edit appointment
             </a>

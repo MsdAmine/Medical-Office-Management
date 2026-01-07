@@ -100,4 +100,23 @@ namespace MedicalOfficeManagement.ViewModels
             }
         }
     }
+
+    public class TimelineItemViewModel
+    {
+        public string Id { get; set; } = string.Empty;
+        public DateTime Date { get; set; }
+        public string Type { get; set; } = string.Empty; // "appointment", "consultation", "lab", "prescription", "billing"
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Icon { get; set; } = string.Empty;
+        public string Color { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public string? LinkUrl { get; set; }
+    }
+
+    public class TimelineViewModel
+    {
+        public Patient? PatientProfile { get; set; }
+        public IEnumerable<TimelineItemViewModel> TimelineItems { get; set; } = Array.Empty<TimelineItemViewModel>();
+    }
 }
