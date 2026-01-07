@@ -1,11 +1,13 @@
 using MedicalOfficeManagement.Models.Security;
 using MedicalOfficeManagement.ViewModels;
+using MedicalOfficeManagement.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
 using MedicalOfficeManagement.Models;
+using Microsoft.Extensions.Logging;
 
 namespace MedicalOfficeManagement.Controllers
 {
@@ -13,23 +15,32 @@ namespace MedicalOfficeManagement.Controllers
     public class LabsController : Controller
     {
         private readonly MedicalOfficeContext _context;
+        private readonly ILogger<LabsController> _logger;
+        private const int PageSize = 20;
 
-        public LabsController(MedicalOfficeContext context)
+        public LabsController(MedicalOfficeContext context, ILogger<LabsController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1)
         {
-            var results = await _context.LabResults
+            var query = _context.LabResults
                 .AsNoTracking()
                 .Include(l => l.Patient)
                 .Include(l => l.Medecin)
-                .OrderByDescending(l => l.CollectedOn)
+                .OrderByDescending(l => l.CollectedOn);
+
+            var paginatedResults = await PaginatedList<LabResult>.CreateAsync(query, page, PageSize);
+
+            // Get all results for summary statistics
+            var allResults = await _context.LabResults
+                .AsNoTracking()
                 .ToListAsync();
 
-            var mapped = results.Select(r => new LabResultViewModel
+            var mapped = paginatedResults.Select(r => new LabResultViewModel
             {
                 Id = r.Id,
                 TestName = r.TestName,
@@ -41,11 +52,16 @@ namespace MedicalOfficeManagement.Controllers
 
             var viewModel = new LabIndexViewModel
             {
-                PendingResults = mapped.Count(r => string.Equals(r.Status, "Pending", StringComparison.OrdinalIgnoreCase) || string.Equals(r.Status, "Pending Review", StringComparison.OrdinalIgnoreCase)),
-                CriticalFindings = mapped.Count(r => string.Equals(r.Priority, "STAT", StringComparison.OrdinalIgnoreCase)),
-                CompletedToday = mapped.Count(r => r.CollectedOn.Date == DateTime.UtcNow.Date && string.Equals(r.Status, "Completed", StringComparison.OrdinalIgnoreCase)),
+                PendingResults = allResults.Count(r => string.Equals(r.Status, "Pending", StringComparison.OrdinalIgnoreCase) || string.Equals(r.Status, "Pending Review", StringComparison.OrdinalIgnoreCase)),
+                CriticalFindings = allResults.Count(r => string.Equals(r.Priority, "STAT", StringComparison.OrdinalIgnoreCase)),
+                CompletedToday = allResults.Count(r => r.CollectedOn.Date == DateTime.UtcNow.Date && string.Equals(r.Status, "Completed", StringComparison.OrdinalIgnoreCase)),
                 Results = mapped
             };
+
+            ViewData["PageIndex"] = paginatedResults.PageIndex;
+            ViewData["TotalPages"] = paginatedResults.TotalPages;
+            ViewData["HasPreviousPage"] = paginatedResults.HasPreviousPage;
+            ViewData["HasNextPage"] = paginatedResults.HasNextPage;
 
             ViewData["Title"] = "Lab Results";
             ViewData["Breadcrumb"] = "Clinical";
@@ -195,10 +211,23 @@ namespace MedicalOfficeManagement.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var labResult = await _context.LabResults.FindAsync(id);
-            if (labResult != null)
+            if (labResult == null)
+            {
+                _logger.LogWarning("Attempted to delete non-existent lab result with ID {LabResultId}", id);
+                return NotFound();
+            }
+
+            try
             {
                 _context.LabResults.Remove(labResult);
                 await _context.SaveChangesAsync();
+                _logger.LogInformation("Lab result {LabResultId} deleted successfully", id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting lab result {LabResultId}", id);
+                TempData["StatusMessage"] = "Error: Failed to delete lab result. Please try again.";
+                return RedirectToAction(nameof(Index));
             }
 
             return RedirectToAction(nameof(Index));

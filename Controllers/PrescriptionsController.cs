@@ -1,10 +1,12 @@
 using MedicalOfficeManagement.Models.Security;
 using MedicalOfficeManagement.ViewModels;
+using MedicalOfficeManagement.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MedicalOfficeManagement.Models;
+using Microsoft.Extensions.Logging;
 
 
 namespace MedicalOfficeManagement.Controllers
@@ -13,23 +15,32 @@ namespace MedicalOfficeManagement.Controllers
     public class PrescriptionsController : Controller
     {
         private readonly MedicalOfficeContext _context;
+        private readonly ILogger<PrescriptionsController> _logger;
+        private const int PageSize = 20;
 
-        public PrescriptionsController(MedicalOfficeContext context)
+        public PrescriptionsController(MedicalOfficeContext context, ILogger<PrescriptionsController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1)
         {
-            var prescriptions = await _context.Prescriptions
+            var query = _context.Prescriptions
                 .AsNoTracking()
                 .Include(p => p.Patient)
                 .Include(p => p.Medecin)
-                .OrderByDescending(p => p.IssuedOn)
+                .OrderByDescending(p => p.IssuedOn);
+
+            var paginatedPrescriptions = await PaginatedList<Prescription>.CreateAsync(query, page, PageSize);
+
+            // Get all prescriptions for summary statistics
+            var allPrescriptions = await _context.Prescriptions
+                .AsNoTracking()
                 .ToListAsync();
 
-            var mapped = prescriptions.Select(p => new PrescriptionViewModel
+            var mapped = paginatedPrescriptions.Select(p => new PrescriptionViewModel
             {
                 Id = p.Id,
                 PatientName = p.Patient == null ? "Unknown patient" : $"{p.Patient.Prenom} {p.Patient.Nom}".Trim(),
@@ -46,11 +57,16 @@ namespace MedicalOfficeManagement.Controllers
 
             var viewModel = new PrescriptionIndexViewModel
             {
-                ActiveCount = mapped.Count(p => string.Equals(p.Status, "Active", StringComparison.OrdinalIgnoreCase)),
-                PendingCount = mapped.Count(p => string.Equals(p.Status, "Pending", StringComparison.OrdinalIgnoreCase)),
-                CompletedCount = mapped.Count(p => string.Equals(p.Status, "Completed", StringComparison.OrdinalIgnoreCase)),
+                ActiveCount = allPrescriptions.Count(p => string.Equals(p.Status, "Active", StringComparison.OrdinalIgnoreCase)),
+                PendingCount = allPrescriptions.Count(p => string.Equals(p.Status, "Pending", StringComparison.OrdinalIgnoreCase)),
+                CompletedCount = allPrescriptions.Count(p => string.Equals(p.Status, "Completed", StringComparison.OrdinalIgnoreCase)),
                 Prescriptions = mapped
             };
+
+            ViewData["PageIndex"] = paginatedPrescriptions.PageIndex;
+            ViewData["TotalPages"] = paginatedPrescriptions.TotalPages;
+            ViewData["HasPreviousPage"] = paginatedPrescriptions.HasPreviousPage;
+            ViewData["HasNextPage"] = paginatedPrescriptions.HasNextPage;
 
             ViewData["Title"] = "Prescriptions";
             ViewData["Breadcrumb"] = "Prescriptions";
@@ -200,10 +216,23 @@ namespace MedicalOfficeManagement.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var prescription = await _context.Prescriptions.FindAsync(id);
-            if (prescription != null)
+            if (prescription == null)
+            {
+                _logger.LogWarning("Attempted to delete non-existent prescription with ID {PrescriptionId}", id);
+                return NotFound();
+            }
+
+            try
             {
                 _context.Prescriptions.Remove(prescription);
                 await _context.SaveChangesAsync();
+                _logger.LogInformation("Prescription {PrescriptionId} deleted successfully", id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting prescription {PrescriptionId}", id);
+                TempData["StatusMessage"] = "Error: Failed to delete prescription. Please try again.";
+                return RedirectToAction(nameof(Index));
             }
 
             return RedirectToAction(nameof(Index));

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -55,6 +55,13 @@ public partial class MedicalOfficeContext : IdentityDbContext<ApplicationUser>
             .HasQueryFilter(p => !p.IsDeleted);
 
         ConfigurePatient(modelBuilder.Entity<Patient>());
+
+        // Configure BillingInvoice PatientId foreign key
+        modelBuilder.Entity<BillingInvoice>()
+            .HasOne(b => b.Patient)
+            .WithMany()
+            .HasForeignKey(b => b.PatientId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         // IMPORTANT : Vous devez avoir retiré le mappage de la table Utilisateur.
 

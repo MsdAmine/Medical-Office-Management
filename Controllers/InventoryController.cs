@@ -4,6 +4,7 @@ using MedicalOfficeManagement.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace MedicalOfficeManagement.Controllers
 {
@@ -11,10 +12,12 @@ namespace MedicalOfficeManagement.Controllers
     public class InventoryController : Controller
     {
         private readonly MedicalOfficeContext _context;
+        private readonly ILogger<InventoryController> _logger;
 
-        public InventoryController(MedicalOfficeContext context)
+        public InventoryController(MedicalOfficeContext context, ILogger<InventoryController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -153,10 +156,23 @@ namespace MedicalOfficeManagement.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var item = await _context.InventoryItems.FindAsync(id);
-            if (item != null)
+            if (item == null)
+            {
+                _logger.LogWarning("Attempted to delete non-existent inventory item with ID {ItemId}", id);
+                return NotFound();
+            }
+
+            try
             {
                 _context.InventoryItems.Remove(item);
                 await _context.SaveChangesAsync();
+                _logger.LogInformation("Inventory item {ItemId} deleted successfully", id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting inventory item {ItemId}", id);
+                TempData["StatusMessage"] = "Error: Failed to delete inventory item. Please try again.";
+                return RedirectToAction(nameof(Index));
             }
 
             return RedirectToAction(nameof(Index));

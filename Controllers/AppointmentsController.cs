@@ -10,6 +10,7 @@ using MedicalOfficeManagement.Models.Security;
 using System.Security.Claims;
 using System.Text;
 using MedicalOfficeManagement.Services.Email;
+using Microsoft.Extensions.Logging;
 
 namespace MedicalOfficeManagement.Controllers
 {
@@ -20,11 +21,13 @@ namespace MedicalOfficeManagement.Controllers
     {
         private readonly MedicalOfficeContext _context;
         private readonly IEmailSender _emailSender;
+        private readonly ILogger<AppointmentsController> _logger;
 
-        public AppointmentsController(MedicalOfficeContext context, IEmailSender emailSender)
+        public AppointmentsController(MedicalOfficeContext context, IEmailSender emailSender, ILogger<AppointmentsController> logger)
         {
             _context = context;
             _emailSender = emailSender;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -285,8 +288,8 @@ namespace MedicalOfficeManagement.Controllers
                         }
                         catch (Exception ex)
                         {
-                            // Log error but don't fail the request
-                            System.Diagnostics.Debug.WriteLine($"Failed to send approval email: {ex.Message}");
+                            _logger.LogError(ex, "Failed to send approval email to {Email} for appointment {AppointmentId}", 
+                                appointment.Patient?.Email, appointment.Id);
                         }
                     }
                 }
@@ -456,9 +459,8 @@ namespace MedicalOfficeManagement.Controllers
                     }
                     catch (Exception ex)
                     {
-                        // Log error but don't fail the request
-                        // You might want to add proper logging here
-                        System.Diagnostics.Debug.WriteLine($"Failed to send approval email: {ex.Message}");
+                        _logger.LogError(ex, "Failed to send approval email to {Email} for appointment {AppointmentId}", 
+                            appointment.Patient?.Email, appointment.Id);
                     }
                 }
             }
@@ -558,14 +560,29 @@ namespace MedicalOfficeManagement.Controllers
 
             if (!string.IsNullOrWhiteSpace(appointment.Patient?.Email))
             {
-                await _emailSender.SendAsync(
-                    appointment.Patient.Email,
-                    "Appointment Confirmation",
-                    AppointmentEmailTemplates.AppointmentApproved(appointment)
-                );
+                try
+                {
+                    await _emailSender.SendAsync(
+                        appointment.Patient.Email,
+                        "Appointment Confirmation",
+                        AppointmentEmailTemplates.AppointmentApproved(appointment)
+                    );
+                    _logger.LogInformation("Confirmation email sent successfully to {Email} for appointment {AppointmentId}", 
+                        appointment.Patient.Email, appointment.Id);
+                    TempData["StatusMessage"] = "Appointment approved with room assignment and confirmation email sent.";
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to send confirmation email to {Email} for appointment {AppointmentId}", 
+                        appointment.Patient.Email, appointment.Id);
+                    TempData["StatusMessage"] = "Appointment approved with room assignment. Warning: Failed to send confirmation email.";
+                }
+            }
+            else
+            {
+                TempData["StatusMessage"] = "Appointment approved with room assignment.";
             }
 
-            TempData["StatusMessage"] = "Appointment approved with room assignment and confirmation email sent.";
             return RedirectToAction(nameof(PendingApproval));
         }
 
@@ -638,27 +655,61 @@ namespace MedicalOfficeManagement.Controllers
                 .Where(r => ids.Contains(r.Id) && r.Statut == "Pending Approval")
                 .ToListAsync();
 
-            var approvedCount = 0;
-            for (int i = 0; i < appointments.Count && i < roomNumbers.Length; i++)
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                var appointment = appointments[i];
-                appointment.Statut = "Scheduled";
-                appointment.SalleId = roomNumbers[i];
-                approvedCount++;
+                var approvedCount = 0;
+                var emailFailures = new List<string>();
 
-                if (!string.IsNullOrWhiteSpace(appointment.Patient?.Email))
+                for (int i = 0; i < appointments.Count && i < roomNumbers.Length; i++)
                 {
-                    await _emailSender.SendAsync(
-                        appointment.Patient.Email,
-                        "Appointment Confirmation",
-                        AppointmentEmailTemplates.AppointmentApproved(appointment)
-                    );
+                    var appointment = appointments[i];
+                    appointment.Statut = "Scheduled";
+                    appointment.SalleId = roomNumbers[i];
+                    approvedCount++;
+
+                    if (!string.IsNullOrWhiteSpace(appointment.Patient?.Email))
+                    {
+                        try
+                        {
+                            await _emailSender.SendAsync(
+                                appointment.Patient.Email,
+                                "Appointment Confirmation",
+                                AppointmentEmailTemplates.AppointmentApproved(appointment)
+                            );
+                            _logger.LogInformation("Confirmation email sent successfully to {Email} for appointment {AppointmentId}", 
+                                appointment.Patient.Email, appointment.Id);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Failed to send confirmation email to {Email} for appointment {AppointmentId}", 
+                                appointment.Patient.Email, appointment.Id);
+                            emailFailures.Add(appointment.Patient.Email ?? "Unknown");
+                        }
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                if (emailFailures.Any())
+                {
+                    TempData["StatusMessage"] = $"{approvedCount} appointment(s) approved with room assignments. " +
+                        $"Warning: Failed to send confirmation emails to {emailFailures.Count} recipient(s).";
+                }
+                else
+                {
+                    TempData["StatusMessage"] = $"{approvedCount} appointment(s) approved with room assignments and confirmation emails sent.";
                 }
             }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Error during bulk appointment approval");
+                TempData["StatusMessage"] = "Error: Failed to approve appointments. Please try again.";
+                return RedirectToAction(nameof(PendingApproval));
+            }
 
-            await _context.SaveChangesAsync();
-
-            TempData["StatusMessage"] = $"{approvedCount} appointment(s) approved with room assignments and confirmation emails sent.";
             return RedirectToAction(nameof(PendingApproval));
         }
 
@@ -959,6 +1010,9 @@ namespace MedicalOfficeManagement.Controllers
                     ModelState.AddModelError("Appointment.MedecinId", "Please select an existing provider.");
                 }
 
+                // Check for appointment conflicts
+                await CheckAppointmentConflictsAsync(appointment);
+
                 return;
             }
 
@@ -982,6 +1036,60 @@ namespace MedicalOfficeManagement.Controllers
                 if (!allowedPatientIds.Contains(appointment.PatientId))
                 {
                     ModelState.AddModelError("Appointment.PatientId", "You can only manage appointments for patients assigned to you.");
+                }
+
+                // Check for appointment conflicts
+                await CheckAppointmentConflictsAsync(appointment);
+            }
+        }
+
+        private async Task CheckAppointmentConflictsAsync(RendezVou appointment)
+        {
+            // Check for conflicts with the same patient
+            var patientConflicts = await _context.RendezVous
+                .Where(r => r.Id != appointment.Id && // Exclude current appointment if editing
+                           r.PatientId == appointment.PatientId &&
+                           r.Statut != "Cancelled" &&
+                           r.Statut != "Completed" &&
+                           r.Statut != "NoShow" &&
+                           ((r.DateDebut < appointment.DateFin && r.DateFin > appointment.DateDebut)))
+                .AnyAsync();
+
+            if (patientConflicts)
+            {
+                ModelState.AddModelError("Appointment.DateDebut", "This patient already has an appointment scheduled during this time.");
+            }
+
+            // Check for conflicts with the same doctor
+            var doctorConflicts = await _context.RendezVous
+                .Where(r => r.Id != appointment.Id && // Exclude current appointment if editing
+                           r.MedecinId == appointment.MedecinId &&
+                           r.Statut != "Cancelled" &&
+                           r.Statut != "Completed" &&
+                           r.Statut != "NoShow" &&
+                           ((r.DateDebut < appointment.DateFin && r.DateFin > appointment.DateDebut)))
+                .AnyAsync();
+
+            if (doctorConflicts)
+            {
+                ModelState.AddModelError("Appointment.DateDebut", "This doctor already has an appointment scheduled during this time.");
+            }
+
+            // Check for room conflicts if room is assigned
+            if (appointment.SalleId.HasValue)
+            {
+                var roomConflicts = await _context.RendezVous
+                    .Where(r => r.Id != appointment.Id && // Exclude current appointment if editing
+                               r.SalleId == appointment.SalleId &&
+                               r.Statut != "Cancelled" &&
+                               r.Statut != "Completed" &&
+                               r.Statut != "NoShow" &&
+                               ((r.DateDebut < appointment.DateFin && r.DateFin > appointment.DateDebut)))
+                    .AnyAsync();
+
+                if (roomConflicts)
+                {
+                    ModelState.AddModelError("Appointment.SalleId", "This room is already booked during this time.");
                 }
             }
         }

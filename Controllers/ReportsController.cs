@@ -4,6 +4,7 @@ using MedicalOfficeManagement.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace MedicalOfficeManagement.Controllers
 {
@@ -11,10 +12,12 @@ namespace MedicalOfficeManagement.Controllers
     public class ReportsController : Controller
     {
         private readonly MedicalOfficeContext _context;
+        private readonly ILogger<ReportsController> _logger;
 
-        public ReportsController(MedicalOfficeContext context)
+        public ReportsController(MedicalOfficeContext context, ILogger<ReportsController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -155,10 +158,23 @@ namespace MedicalOfficeManagement.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var report = await _context.ReportArtifacts.FindAsync(id);
-            if (report != null)
+            if (report == null)
+            {
+                _logger.LogWarning("Attempted to delete non-existent report with ID {ReportId}", id);
+                return NotFound();
+            }
+
+            try
             {
                 _context.ReportArtifacts.Remove(report);
                 await _context.SaveChangesAsync();
+                _logger.LogInformation("Report {ReportId} deleted successfully", id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting report {ReportId}", id);
+                TempData["StatusMessage"] = "Error: Failed to delete report. Please try again.";
+                return RedirectToAction(nameof(Index));
             }
 
             return RedirectToAction(nameof(Index));

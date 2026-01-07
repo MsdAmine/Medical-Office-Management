@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace MedicalOfficeManagement.Models;
 
@@ -11,6 +12,9 @@ public class BillingInvoice
     [Required]
     [StringLength(20)]
     public string InvoiceNumber { get; set; } = string.Empty;
+
+    [Required]
+    public int PatientId { get; set; }
 
     [Required]
     [StringLength(100)]
@@ -36,4 +40,15 @@ public class BillingInvoice
     [Required]
     [StringLength(50)]
     public string PaymentMethod { get; set; } = string.Empty;
+
+    [ValidateNever]
+    public Patient? Patient { get; set; }
+
+    // Helper property for enum conversion
+    [NotMapped]
+    public InvoiceStatus StatusEnum
+    {
+        get => Enum.TryParse<InvoiceStatus>(Status, true, out var result) ? result : InvoiceStatus.Draft;
+        set => Status = value.ToString();
+    }
 }
