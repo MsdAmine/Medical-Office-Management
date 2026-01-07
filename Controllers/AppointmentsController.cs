@@ -529,11 +529,17 @@ namespace MedicalOfficeManagement.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ApprovePending(int id)
+        public async Task<IActionResult> ApprovePending(int id, int roomNumber)
         {
             if (!IsAdminOrSecretaire())
             {
                 return Forbid();
+            }
+
+            if (roomNumber < 1)
+            {
+                TempData["StatusMessage"] = "Error: Room number must be provided and must be greater than 0.";
+                return RedirectToAction(nameof(PendingApproval));
             }
 
             var appointment = await _context.RendezVous
@@ -547,6 +553,7 @@ namespace MedicalOfficeManagement.Controllers
             }
 
             appointment.Statut = "Scheduled";
+            appointment.SalleId = roomNumber;
             await _context.SaveChangesAsync();
 
             if (!string.IsNullOrWhiteSpace(appointment.Patient?.Email))
@@ -558,7 +565,7 @@ namespace MedicalOfficeManagement.Controllers
                 );
             }
 
-            TempData["StatusMessage"] = "Appointment approved and confirmation email sent.";
+            TempData["StatusMessage"] = "Appointment approved with room assignment and confirmation email sent.";
             return RedirectToAction(nameof(PendingApproval));
         }
 
@@ -587,20 +594,26 @@ namespace MedicalOfficeManagement.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> BulkApprove([FromForm] string appointmentIds)
+        public async Task<IActionResult> BulkApprove([FromForm] string[] appointmentIds, [FromForm] int[] roomNumbers)
         {
             if (!IsAdminOrSecretaire())
             {
                 return Forbid();
             }
 
-            if (string.IsNullOrWhiteSpace(appointmentIds))
+            if (appointmentIds == null || appointmentIds.Length == 0)
             {
                 TempData["StatusMessage"] = "No appointments selected.";
                 return RedirectToAction(nameof(PendingApproval));
             }
 
-            var ids = appointmentIds.Split(',', StringSplitOptions.RemoveEmptyEntries)
+            if (roomNumbers == null || roomNumbers.Length != appointmentIds.Length)
+            {
+                TempData["StatusMessage"] = "Error: Room number must be provided for each appointment.";
+                return RedirectToAction(nameof(PendingApproval));
+            }
+
+            var ids = appointmentIds
                 .Select(id => int.TryParse(id, out var parsedId) ? parsedId : (int?)null)
                 .Where(id => id.HasValue)
                 .Select(id => id!.Value)
@@ -612,6 +625,13 @@ namespace MedicalOfficeManagement.Controllers
                 return RedirectToAction(nameof(PendingApproval));
             }
 
+            // Validate room numbers
+            if (roomNumbers.Any(r => r < 1))
+            {
+                TempData["StatusMessage"] = "Error: All room numbers must be greater than 0.";
+                return RedirectToAction(nameof(PendingApproval));
+            }
+
             var appointments = await _context.RendezVous
                 .Include(r => r.Patient)
                 .Include(r => r.Medecin)
@@ -619,9 +639,11 @@ namespace MedicalOfficeManagement.Controllers
                 .ToListAsync();
 
             var approvedCount = 0;
-            foreach (var appointment in appointments)
+            for (int i = 0; i < appointments.Count && i < roomNumbers.Length; i++)
             {
+                var appointment = appointments[i];
                 appointment.Statut = "Scheduled";
+                appointment.SalleId = roomNumbers[i];
                 approvedCount++;
 
                 if (!string.IsNullOrWhiteSpace(appointment.Patient?.Email))
@@ -636,7 +658,7 @@ namespace MedicalOfficeManagement.Controllers
 
             await _context.SaveChangesAsync();
 
-            TempData["StatusMessage"] = $"{approvedCount} appointment(s) approved and confirmation emails sent.";
+            TempData["StatusMessage"] = $"{approvedCount} appointment(s) approved with room assignments and confirmation emails sent.";
             return RedirectToAction(nameof(PendingApproval));
         }
 

@@ -27,7 +27,7 @@
             </div>
             <div>
                 <dt class="text-sm font-medium text-slate-500">Prescriber</dt>
-                <dd class="text-lg font-semibold text-slate-900">@Model.Medecin?.NomPrenom ?? "Unassigned"</dd>
+                <dd class="text-lg font-semibold text-slate-900">@(Model.Medecin?.NomPrenom ?? "Unassigned")</dd>
             </div>
             <div>
                 <dt class="text-sm font-medium text-slate-500">Medication</dt>
@@ -51,7 +51,7 @@
             </div>
             <div>
                 <dt class="text-sm font-medium text-slate-500">Next Refill</dt>
-                <dd class="text-lg text-slate-900">@Model.NextRefill?.ToString("d") ?? "N/A"</dd>
+                <dd class="text-lg text-slate-900">@(Model.NextRefill?.ToString("d") ?? "N/A")</dd>
             </div>
             <div>
                 <dt class="text-sm font-medium text-slate-500">Refills Remaining</dt>

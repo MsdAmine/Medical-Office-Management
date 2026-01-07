@@ -29,7 +29,7 @@
             </div>
             <div>
                 <dt class="text-sm font-medium text-slate-500">Provider</dt>
-                <dd class="text-lg font-semibold text-slate-900">@Model.Medecin?.NomPrenom ?? "Unassigned"</dd>
+                <dd class="text-lg font-semibold text-slate-900">@(Model.Medecin?.NomPrenom ?? "Unassigned")</dd>
             </div>
             <div>
                 <dt class="text-sm font-medium text-slate-500">Date</dt>
@@ -37,7 +37,7 @@
             </div>
             <div>
                 <dt class="text-sm font-medium text-slate-500">Appointment Id</dt>
-                <dd class="text-lg font-semibold text-slate-900">@Model.RendezVousId?.ToString() ?? "N/A"</dd>
+                <dd class="text-lg font-semibold text-slate-900">@(Model.RendezVousId?.ToString() ?? "N/A")</dd>
             </div>
         </dl>
         <div>
