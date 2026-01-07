@@ -19,14 +19,42 @@ namespace MedicalOfficeManagement.Controllers
 
         // GET: /Patients
         [Authorize(Roles = SystemRoles.AdminOrSecretaire)]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? searchTerm, string? sortBy, string? sortOrder)
         {
             ViewData["Title"] = "Patients";
             ViewData["Breadcrumb"] = "Patients";
 
-            var patients = await _context.Patients
-                .OrderBy(p => p.Nom)
-                .ToListAsync();
+            var query = _context.Patients.AsQueryable();
+
+            // Apply search filter
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var searchLower = searchTerm.ToLower();
+                query = query.Where(p =>
+                    (p.Nom != null && p.Nom.ToLower().Contains(searchLower)) ||
+                    (p.Prenom != null && p.Prenom.ToLower().Contains(searchLower)) ||
+                    (p.Email != null && p.Email.ToLower().Contains(searchLower)) ||
+                    (p.Telephone != null && p.Telephone.Contains(searchTerm)));
+            }
+
+            // Apply sorting
+            sortBy = string.IsNullOrWhiteSpace(sortBy) ? "Nom" : sortBy;
+            sortOrder = string.IsNullOrWhiteSpace(sortOrder) ? "asc" : sortOrder.ToLower();
+
+            query = sortBy.ToLower() switch
+            {
+                "nom" => sortOrder == "desc" ? query.OrderByDescending(p => p.Nom) : query.OrderBy(p => p.Nom),
+                "prenom" => sortOrder == "desc" ? query.OrderByDescending(p => p.Prenom) : query.OrderBy(p => p.Prenom),
+                "date" => sortOrder == "desc" ? query.OrderByDescending(p => p.CreatedAt) : query.OrderBy(p => p.CreatedAt),
+                "email" => sortOrder == "desc" ? query.OrderByDescending(p => p.Email) : query.OrderBy(p => p.Email),
+                _ => query.OrderBy(p => p.Nom)
+            };
+
+            var patients = await query.ToListAsync();
+
+            ViewData["SearchTerm"] = searchTerm;
+            ViewData["SortBy"] = sortBy;
+            ViewData["SortOrder"] = sortOrder;
 
             return View(patients);
         }

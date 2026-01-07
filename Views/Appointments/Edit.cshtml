@@ -1,252 +1,266 @@
 @model ScheduleFormViewModel
-
 @{
     ViewData["Title"] = "Edit Appointment";
+    ViewData["Breadcrumb"] = "Appointment Management";
 }
-
-<div class="min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-indigo-50/30">
-
-    <!-- Header -->
-    <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white">
-        <div class="max-w-7xl mx-auto px-6 py-8">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
-
-                <div>
-                    <nav class="flex items-center space-x-3 mb-4 text-sm">
-                        <a asp-action="Index" class="text-blue-100 hover:text-white font-medium">
-                            <i class="fas fa-arrow-left mr-2"></i> Back to Schedule
-                        </a>
-                        <span class="text-blue-200">/</span>
-                        <span class="font-medium">Edit Appointment</span>
-                    </nav>
-
-                    <div class="flex items-center space-x-4">
-                        <div class="h-14 w-14 rounded-2xl bg-white/20 flex items-center justify-center">
-                            <i class="fas fa-calendar-edit text-2xl"></i>
-                        </div>
-                        <div>
-                            <h1 class="text-4xl font-bold">Edit Appointment</h1>
-                            <p class="text-blue-100">Update appointment details and scheduling</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white/10 rounded-2xl p-4 border border-white/20">
-                    <div class="flex items-center space-x-3">
-                        <div class="h-10 w-10 rounded-xl bg-white flex items-center justify-center">
-                            <i class="fas fa-clock text-blue-600"></i>
-                        </div>
-                        <div>
-                            <div class="text-xs text-blue-100">Appointment ID</div>
-                            <div class="font-bold">#@Model.Appointment.Id</div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
+<div class="max-w-4xl mx-auto">
+    <!-- Page Header -->
+    <div class="mb-8">
+        <h1 class="text-2xl lg:text-3xl font-bold text-slate-900">Edit Appointment</h1>
+        <p class="text-slate-600 mt-2">Update appointment details and scheduling</p>
     </div>
-
-    <!-- Content -->
-    <div class="max-w-6xl mx-auto px-6 py-8 -mt-6">
-
-        <!-- Status Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            @foreach (var card in new[]
-            {
-                new { Label = "Status", Value = Model.Appointment.Statut ?? "Unknown", Icon = "fa-flag", Bg="blue" },
-                new { Label = "Room", Value = Model.Appointment.SalleId > 0 ? $"Room {Model.Appointment.SalleId}" : "Not Assigned", Icon = "fa-door-open", Bg="emerald" },
-                new { Label = "Start Time", Value = Model.Appointment.DateDebut.ToString("h:mm tt"), Icon = "fa-play", Bg="amber" },
-                new { Label = "End Time", Value = Model.Appointment.DateFin.ToString("h:mm tt"), Icon = "fa-stop", Bg="purple" }
-            })
-            {
-                <div class="bg-white rounded-2xl p-5 shadow border">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <div class="text-sm text-slate-500">@card.Label</div>
-                            <div class="font-bold text-lg">@card.Value</div>
-                        </div>
-                        <div class="h-10 w-10 rounded-xl bg-@card.Bg-100 flex items-center justify-center">
-                            <i class="fas @card.Icon text-@card.Bg-600"></i>
-                        </div>
+    <form
+        asp-action="Edit"
+        asp-route-id="@Model.Appointment.Id"
+        method="post"
+        class="space-y-8">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Appointment.Id" />
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <!-- Validation Summary -->
+            <div asp-validation-summary="ModelOnly" class="bg-red-50 border border-red-200 rounded-xl p-5">
+                <div class="flex items-start">
+                    <div class="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center mr-4 flex-shrink-0">
+                        <i class="fas fa-exclamation-circle text-red-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-red-900 mb-1">Please correct the following:</h3>
+                        <ul class="text-red-700 text-sm space-y-1">
+                            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                            {
+                                <li class="flex items-start">
+                                    <i class="fas fa-circle text-xs mt-1 mr-2"></i>
+                                    <span>
+                                        @error.ErrorMessage
+                                    </span>
+                                </li>
+                            }
+                        </ul>
                     </div>
                 </div>
-            }
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-            <!-- FORM -->
-            <div class="lg:col-span-2 bg-white rounded-3xl shadow border overflow-hidden">
-
-                <div class="bg-slate-900 px-8 py-6 text-white">
-                    <h2 class="text-xl font-bold">Appointment Details</h2>
-                    <p class="text-slate-300 text-sm">Update the information below</p>
+            </div>
+        }
+        <!-- Patient & Provider Card -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-7 shadow-sm">
+            <h2 class="text-lg font-semibold text-slate-900 mb-6 flex items-center">
+                <i class="fas fa-user-md text-blue-600 mr-3"></i>
+                Patient & Provider
+            </h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Patient Selection -->
+                <div class="space-y-2">
+                    <label asp-for="Appointment.PatientId" class="block text-sm font-medium text-slate-900 flex items-center">
+                        <i class="fas fa-user-injured text-slate-500 mr-2"></i>
+                        Patient
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-slate-400"></i>
+                        </div>
+                        <select
+                            asp-for="Appointment.PatientId"
+                            asp-items="Model.Patients"
+                            class="w-full pl-10 pr-4 py-3.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition appearance-none bg-white"
+                            required>
+                            <option value="">Select a patient...</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <i class="fas fa-chevron-down text-slate-400"></i>
+                        </div>
+                    </div>
+                    <span asp-validation-for="Appointment.PatientId" class="text-red-600 text-sm mt-1 block"></span>
                 </div>
-
-                <form asp-action="Edit" asp-route-id="@Model.Appointment.Id" method="post" class="p-8 space-y-8">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" asp-for="Appointment.Id" />
-
-                    <!-- Assignment -->
-                    <section>
-                        <h3 class="font-semibold mb-4 flex items-center">
-                            <i class="fas fa-user-md mr-2 text-blue-600"></i> Patient & Provider
-                        </h3>
-
-                        <div class="grid md:grid-cols-2 gap-6">
-
-                            <!-- Patient -->
-                            <div>
-                                <label asp-for="Appointment.PatientId" class="font-semibold">Patient</label>
-                                <select asp-for="Appointment.PatientId" asp-items="Model.Patients" class="input">
-                                    <option value="">Select patient</option>
-                                </select>
-                                <div class="validation">
-                                    <i class="fas fa-exclamation-circle mr-1"></i>
-                                    <span asp-validation-for="Appointment.PatientId"></span>
-                                </div>
-                            </div>
-
-                            <!-- Doctor -->
-                            <div>
-                                <label asp-for="Appointment.MedecinId" class="font-semibold">Provider</label>
-                                <select asp-for="Appointment.MedecinId" asp-items="Model.Medecins" class="input">
-                                    <option value="">Select provider</option>
-                                </select>
-                                <div class="validation">
-                                    <i class="fas fa-exclamation-circle mr-1"></i>
-                                    <span asp-validation-for="Appointment.MedecinId"></span>
-                                </div>
-                            </div>
-
+                <!-- Provider Selection -->
+                <div class="space-y-2">
+                    <label asp-for="Appointment.MedecinId" class="block text-sm font-medium text-slate-900 flex items-center">
+                        <i class="fas fa-user-md text-slate-500 mr-2"></i>
+                        Healthcare Provider
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-stethoscope text-slate-400"></i>
                         </div>
-                    </section>
-
-                    <!-- Schedule -->
-                    <section>
-                        <h3 class="font-semibold mb-4 flex items-center">
-                            <i class="fas fa-clock mr-2 text-emerald-600"></i> Scheduling
-                        </h3>
-
-                        <div class="grid md:grid-cols-2 gap-6">
-
-                            <div>
-                                <label asp-for="Appointment.DateDebut" class="font-semibold">Start</label>
-                                <input asp-for="Appointment.DateDebut" type="datetime-local" class="input" />
-                                <div class="validation">
-                                    <i class="fas fa-exclamation-circle mr-1"></i>
-                                    <span asp-validation-for="Appointment.DateDebut"></span>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label asp-for="Appointment.DateFin" class="font-semibold">End</label>
-                                <input asp-for="Appointment.DateFin" type="datetime-local" class="input" />
-                                <div class="validation">
-                                    <i class="fas fa-exclamation-circle mr-1"></i>
-                                    <span asp-validation-for="Appointment.DateFin"></span>
-                                </div>
-                            </div>
-
+                        <select
+                            asp-for="Appointment.MedecinId"
+                            asp-items="Model.Medecins"
+                            class="w-full pl-10 pr-4 py-3.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition appearance-none bg-white"
+                            required>
+                            <option value="">Select a provider...</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <i class="fas fa-chevron-down text-slate-400"></i>
                         </div>
-                    </section>
-
-                    <!-- Details -->
-                    <section>
-                        <h3 class="font-semibold mb-4 flex items-center">
-                            <i class="fas fa-clipboard-list mr-2 text-purple-600"></i> Details
-                        </h3>
-
-                        <div class="grid md:grid-cols-3 gap-6">
-
-                            <div>
-                                <label asp-for="Appointment.SalleId" class="font-semibold">Room</label>
-                                <input asp-for="Appointment.SalleId" type="number" min="1" class="input" />
-                            </div>
-
-                            <div>
-                                <label asp-for="Appointment.Statut" class="font-semibold">Status</label>
-                                <select asp-for="Appointment.Statut" class="input">
-                                    <option value="">Select status</option>
-                                    <option>Scheduled</option>
-                                    <option>Confirmed</option>
-                                    <option>Completed</option>
-                                    <option>Cancelled</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label asp-for="Appointment.Motif" class="font-semibold">Reason</label>
-                                <input asp-for="Appointment.Motif" class="input" />
-                            </div>
-
-                        </div>
-                    </section>
-
-                    <!-- Actions -->
-                    <div class="flex justify-between border-t pt-6">
-                        <a asp-action="Details" asp-route-id="@Model.Appointment.Id" class="btn-secondary">
-                            <i class="fas fa-eye mr-2"></i> View Details
-                        </a>
-                        <button type="submit" class="btn-primary">
-                            <i class="fas fa-save mr-2"></i> Save Changes
-                        </button>
                     </div>
-
-                </form>
+                    <span asp-validation-for="Appointment.MedecinId" class="text-red-600 text-sm mt-1 block"></span>
+                </div>
             </div>
-
-            <!-- SIDEBAR -->
-            <div class="space-y-6">
-
-                @if (!ViewData.ModelState.IsValid)
-                {
-                    <div class="bg-red-50 border border-red-200 rounded-2xl p-6">
-                        <h3 class="font-semibold text-red-800 mb-2">
-                            <i class="fas fa-exclamation-triangle mr-2"></i> Validation Errors
-                        </h3>
-                        <div asp-validation-summary="All" class="text-red-700 text-sm"></div>
-                    </div>
-                }
-
-            </div>
-
         </div>
-    </div>
+        <!-- Date & Time Card -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-7 shadow-sm">
+            <h2 class="text-lg font-semibold text-slate-900 mb-6 flex items-center">
+                <i class="fas fa-calendar-alt text-blue-600 mr-3"></i>
+                Date & Time
+            </h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Start Date/Time -->
+                <div class="space-y-2">
+                    <label asp-for="Appointment.DateDebut" class="block text-sm font-medium text-slate-900 flex items-center">
+                        <i class="fas fa-clock text-slate-500 mr-2"></i>
+                        Start Date & Time
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-play text-slate-400"></i>
+                        </div>
+                        <input asp-for="Appointment.DateDebut"
+                               type="datetime-local"
+                               class="w-full pl-10 pr-4 py-3.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                               required>
+                    </div>
+                    <span asp-validation-for="Appointment.DateDebut" class="text-red-600 text-sm mt-1 block"></span>
+                </div>
+                <!-- End Date/Time -->
+                <div class="space-y-2">
+                    <label asp-for="Appointment.DateFin" class="block text-sm font-medium text-slate-900 flex items-center">
+                        <i class="fas fa-clock text-slate-500 mr-2"></i>
+                        End Date & Time
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-stop text-slate-400"></i>
+                        </div>
+                        <input asp-for="Appointment.DateFin"
+                               type="datetime-local"
+                               class="w-full pl-10 pr-4 py-3.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                               required>
+                    </div>
+                    <span asp-validation-for="Appointment.DateFin" class="text-red-600 text-sm mt-1 block"></span>
+                </div>
+            </div>
+        </div>
+        <!-- Appointment Details Card -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-7 shadow-sm">
+            <h2 class="text-lg font-semibold text-slate-900 mb-6 flex items-center">
+                <i class="fas fa-clipboard-list text-blue-600 mr-3"></i>
+                Appointment Details
+            </h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Room -->
+                <div class="space-y-2">
+                    <label asp-for="Appointment.SalleId" class="block text-sm font-medium text-slate-900 flex items-center">
+                        <i class="fas fa-door-open text-slate-500 mr-2"></i>
+                        Room Number
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-hashtag text-slate-400"></i>
+                        </div>
+                        <input asp-for="Appointment.SalleId"
+                               type="number"
+                               min="1"
+                               class="w-full pl-10 pr-4 py-3.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                               placeholder="e.g., 101">
+                    </div>
+                    <span asp-validation-for="Appointment.SalleId" class="text-red-600 text-sm mt-1 block"></span>
+                </div>
+                <!-- Status -->
+                <div class="space-y-2">
+                    <label asp-for="Appointment.Statut" class="block text-sm font-medium text-slate-900 flex items-center">
+                        <i class="fas fa-circle text-slate-500 mr-2"></i>
+                        Status
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-flag text-slate-400"></i>
+                        </div>
+                        <select asp-for="Appointment.Statut" class="w-full pl-10 pr-4 py-3.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition appearance-none bg-white">
+                            <option value="">Select status...</option>
+                            <option value="Scheduled">Scheduled</option>
+                            <option value="Confirmed">Confirmed</option>
+                            <option value="Checked-in">Checked-in</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Pending Approval">Pending Approval</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <i class="fas fa-chevron-down text-slate-400"></i>
+                        </div>
+                    </div>
+                    <span asp-validation-for="Appointment.Statut" class="text-red-600 text-sm mt-1 block"></span>
+                </div>
+                <!-- Reason -->
+                <div class="space-y-2">
+                    <label asp-for="Appointment.Motif" class="block text-sm font-medium text-slate-900 flex items-center">
+                        <i class="fas fa-comment-medical text-slate-500 mr-2"></i>
+                        Reason for Visit
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-file-medical text-slate-400"></i>
+                        </div>
+                        <input asp-for="Appointment.Motif"
+                               class="w-full pl-10 pr-4 py-3.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                               placeholder="e.g., Annual check-up, Follow-up">
+                    </div>
+                    <span asp-validation-for="Appointment.Motif" class="text-red-600 text-sm mt-1 block"></span>
+                </div>
+            </div>
+        </div>
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pt-6 border-t border-slate-200">
+            <div>
+                <a asp-action="Index" class="inline-flex items-center px-5 py-3 border border-slate-300 rounded-xl font-medium text-slate-700 hover:bg-slate-50 transition">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Back to Schedule
+                </a>
+            </div>
+            <div class="flex space-x-3 mt-4 sm:mt-0">
+                <a asp-action="Details" asp-route-id="@Model.Appointment.Id" class="inline-flex items-center px-5 py-3 border border-slate-300 rounded-xl font-medium text-slate-700 hover:bg-slate-50 transition">
+                    <i class="fas fa-eye mr-2"></i>
+                    View Details
+                </a>
+                <button type="submit" class="inline-flex items-center px-7 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-700 transition shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    <i class="fas fa-save mr-2"></i>
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    </form>
 </div>
-
 @section Scripts {
-    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+@{
+    await Html.RenderPartialAsync("_ValidationScriptsPartial");
 }
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Room number validation
+        const roomInput = document.querySelector('input[name*="SalleId"]');
+        if (roomInput) {
+            roomInput.addEventListener('input', function() {
+                const value = parseInt(this.value);
+                if (value < 1) {
+                    this.value = 1;
+                }
+            });
+        }
 
-<style>
-    .input {
-        width: 100%;
-        padding: 0.75rem;
-        border: 1px solid #cbd5f5;
-        border-radius: 0.75rem;
-    }
-
-    .validation {
-        margin-top: .25rem;
-        display: flex;
-        align-items: center;
-        font-size: .875rem;
-        color: #dc2626;
-    }
-
-    .btn-primary {
-        background: linear-gradient(to right, #2563eb, #4f46e5);
-        color: white;
-        padding: .75rem 1.5rem;
-        border-radius: .75rem;
-        font-weight: bold;
-    }
-
-    .btn-secondary {
-        border: 1px solid #cbd5f5;
-        padding: .75rem 1.25rem;
-        border-radius: .75rem;
-    }
-</style>
+        // Real-time validation styling
+        const formInputs = document.querySelectorAll('input, select');
+        formInputs.forEach(input => {
+            input.addEventListener('blur', function() {
+                if (this.checkValidity() && this.value.trim() !== '') {
+                    this.classList.remove('border-red-300');
+                    this.classList.add('border-green-500');
+                } else if (!this.checkValidity() && this.hasAttribute('required')) {
+                    this.classList.remove('border-green-500');
+                    this.classList.add('border-red-300');
+                } else {
+                    this.classList.remove('border-red-300', 'border-green-500');
+                }
+            });
+        });
+    });
+</script>
+}

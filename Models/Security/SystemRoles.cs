@@ -14,5 +14,6 @@ namespace MedicalOfficeManagement.Models.Security
         public const string AdminOrSecretaire = Admin + "," + Secretaire;
         public const string AdminOrMedecin = Admin + "," + Medecin;
         public const string SchedulingTeam = Admin + "," + Secretaire + "," + Medecin;
+        public const string ClinicalTeam = Admin + "," + Secretaire + "," + Medecin;
     }
 }

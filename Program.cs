@@ -6,17 +6,30 @@ using MedicalOfficeManagement.Data.Seeders;
 using MedicalOfficeManagement.Models.Email;
 using MedicalOfficeManagement.Services.Email;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. Configuration de la base de données
-var connectionString = builder.Configuration.GetConnectionString("gestionCabinetContextConnection")
-    ?? throw new InvalidOperationException("Connection string not found.");
+var dataProvider = builder.Configuration["DataProvider"] ?? "SqlServer";
+var connectionString = dataProvider == "Sqlite"
+    ? builder.Configuration.GetConnectionString("MedicalOfficeDb")
+        ?? throw new InvalidOperationException("SQLite connection string not found.")
+    : builder.Configuration.GetConnectionString("gestionCabinetContextConnection")
+        ?? throw new InvalidOperationException("SQL Server connection string not found.");
 
 builder.Services.AddDbContext<MedicalOfficeContext>(options =>
-    options.UseSqlServer(connectionString));
+{
+    if (dataProvider == "Sqlite")
+    {
+        options.UseSqlite(connectionString);
+    }
+    else
+    {
+        options.UseSqlServer(connectionString);
+    }
+});
 
-builder.Services.Configure<SmtpOptions>(
-    builder.Configuration.GetSection("Smtp"));
+
 
 
 // 2. Configuration Identity
@@ -36,27 +49,48 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Account/Login";
-    options.LogoutPath = "/Account/Logout"; 
+    options.LogoutPath = "/Account/Logout";
     options.AccessDeniedPath = "/Account/Login";
 });
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddScoped<IDashboardMetricsService, DashboardMetricsService>();
+
+// Configure SMTP settings
+builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Smtp"));
 builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
+builder.Services.AddScoped<AppointmentEmailService>();
 
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+// Initialize database asynchronously
+await InitializeDatabaseAsync(app);
+
+static async Task InitializeDatabaseAsync(WebApplication app)
 {
+    using var scope = app.Services.CreateScope();
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<MedicalOfficeContext>();
     var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
 
     if (pendingMigrations.Any())
     {
-        await context.Database.MigrateAsync();
+        try
+        {
+            await context.Database.MigrateAsync();
+        }
+        catch (Exception ex) when (app.Environment.IsDevelopment() && (ex.Message.Contains("already exists") || ex.Message.Contains("table") && ex.Message.Contains("exists")))
+        {
+            // In development, drop and recreate database if there's a migration conflict
+            await context.Database.EnsureDeletedAsync();
+            await context.Database.MigrateAsync();
+        }
+        catch (Exception ex)
+        {
+            throw;
+        }
     }
 
     if (app.Environment.IsDevelopment())

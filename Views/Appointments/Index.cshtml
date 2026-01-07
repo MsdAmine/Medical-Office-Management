@@ -20,9 +20,6 @@
     }));
 }
 
-<!-- Load FullCalendar CSS FIRST -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" integrity="sha256-yjJ4RvV0mRcLDoU5f47a3Xd+MkMM7sN3Wq4lRjOD2fE=" crossorigin="anonymous">
-
 <style>
     /* FullCalendar Event Styling */
     .fc-event {
@@ -103,6 +100,7 @@
         font-weight: 600 !important;
         text-transform: capitalize !important;
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+        transition: all 0.2s ease !important;
     }
 
     .fc-button:hover {
@@ -114,6 +112,16 @@
         background-color: #4338ca !important;
         color: white !important;
         border-color: #4338ca !important;
+    }
+
+    .calendar-view-btn.active {
+        background-color: #2563eb !important;
+        color: white !important;
+        border-color: #2563eb !important;
+    }
+
+    .calendar-view-btn.active:hover {
+        background-color: #1d4ed8 !important;
     }
 
     .fc-button:disabled {
@@ -215,7 +223,7 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div class="glass-card p-4 rounded-xl">
             <p class="text-sm text-slate-500">Upcoming</p>
             <p class="text-3xl font-bold text-slate-900">@Model.UpcomingCount</p>
@@ -231,6 +239,70 @@
             <p class="text-3xl font-bold text-slate-900">@Model.CompletedThisWeek</p>
             <p class="text-xs text-slate-600 mt-1">Marked as completed</p>
         </div>
+        @if (User.IsInRole(SystemRoles.Admin) || User.IsInRole(SystemRoles.Secretaire))
+        {
+            <div class="glass-card p-4 rounded-xl">
+                <p class="text-sm text-slate-500">Pending approval</p>
+                <p class="text-3xl font-bold text-amber-600">@Model.PendingApprovalCount</p>
+                <a asp-action="PendingApproval" class="text-xs text-amber-600 hover:text-amber-700 mt-1 underline">Review requests</a>
+            </div>
+        }
+    </div>
+
+    <!-- Filters Section -->
+    <div class="glass-card rounded-xl p-6">
+        <form method="get" action="@Url.Action("Index")" class="space-y-4">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-slate-900">Filters</h3>
+                @if (!string.IsNullOrWhiteSpace(Model.StatusFilter) || Model.MedecinFilter.HasValue || Model.DateFromFilter.HasValue || Model.DateToFilter.HasValue || !string.IsNullOrWhiteSpace(Model.SearchTerm))
+                {
+                    <a asp-action="Index" class="text-sm text-slate-600 hover:text-slate-900">Clear all</a>
+                }
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Status</label>
+                    <select name="statusFilter" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        @foreach (var option in Model.StatusOptions)
+                        {
+                            <option value="@option.Value" selected="@option.Selected">@option.Text</option>
+                        }
+                    </select>
+                </div>
+                @if (User.IsInRole(SystemRoles.Admin) || User.IsInRole(SystemRoles.Secretaire))
+                {
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Provider</label>
+                        <select name="medecinFilter" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            @foreach (var option in Model.MedecinOptions)
+                            {
+                                <option value="@option.Value" selected="@option.Selected">@option.Text</option>
+                            }
+                        </select>
+                    </div>
+                }
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">From Date</label>
+                    <input type="date" name="dateFromFilter" value="@(Model.DateFromFilter?.ToString("yyyy-MM-dd"))" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">To Date</label>
+                    <input type="date" name="dateToFilter" value="@(Model.DateToFilter?.ToString("yyyy-MM-dd"))" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Search</label>
+                    <input type="text" name="searchTerm" value="@Model.SearchTerm" placeholder="Patient, provider, reason..." class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+                    <i class="fas fa-filter mr-2"></i>Apply Filters
+                </button>
+                <a asp-action="Index" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 font-medium">
+                    Reset
+                </a>
+            </div>
+        </form>
     </div>
 
     <div class="glass-card rounded-xl overflow-hidden">
@@ -248,18 +320,36 @@
 
         <div class="grid lg:grid-cols-3 gap-6 p-6">
             <div class="lg:col-span-2 space-y-4">
-                <div class="flex flex-wrap gap-2 items-center">
-                    <button id="calendarToday" class="px-3 py-2 rounded-lg border border-slate-200 text-sm hover:bg-slate-50">
-                        <i class="fas fa-calendar-day mr-2 text-slate-500"></i> Today
+                <div class="flex flex-wrap gap-2 items-center justify-between">
+                    <div class="flex flex-wrap gap-2 items-center">
+                        <button id="calendarToday" class="px-3 py-2 rounded-lg border border-slate-200 text-sm hover:bg-slate-50 transition-colors">
+                            <i class="fas fa-calendar-day mr-2 text-slate-500"></i> Today
+                        </button>
+                        <div class="inline-flex rounded-lg border border-slate-200 overflow-hidden">
+                            <button data-view="dayGridMonth" class="calendar-view-btn active px-4 py-2 text-sm hover:bg-slate-50 font-medium transition-colors">Month</button>
+                            <button data-view="timeGridWeek" class="calendar-view-btn px-4 py-2 text-sm hover:bg-slate-50 font-medium transition-colors">Week</button>
+                            <button data-view="timeGridDay" class="calendar-view-btn px-4 py-2 text-sm hover:bg-slate-50 font-medium transition-colors">Day</button>
+                            <button data-view="listWeek" class="calendar-view-btn px-4 py-2 text-sm hover:bg-slate-50 font-medium transition-colors">Agenda</button>
+                        </div>
+                    </div>
+                    <button id="calendarRefresh" class="px-3 py-2 rounded-lg border border-slate-200 text-sm hover:bg-slate-50 transition-colors" title="Refresh calendar">
+                        <i class="fas fa-sync-alt mr-2 text-slate-500"></i> Refresh
                     </button>
-                    <div class="inline-flex rounded-lg border border-slate-200 overflow-hidden">
-                        <button data-view="dayGridMonth" class="calendar-view-btn px-4 py-2 text-sm hover:bg-slate-50 font-medium">Month</button>
-                        <button data-view="timeGridWeek" class="calendar-view-btn px-4 py-2 text-sm hover:bg-slate-50 font-medium">Week</button>
-                        <button data-view="timeGridDay" class="calendar-view-btn px-4 py-2 text-sm hover:bg-slate-50 font-medium">Day</button>
-                        <button data-view="listWeek" class="calendar-view-btn px-4 py-2 text-sm hover:bg-slate-50 font-medium">Agenda</button>
+                </div>
+                <div id="calendarLoading" class="hidden bg-white border border-slate-200 rounded-xl shadow-inner p-8 text-center">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
+                    <p class="text-slate-600">Loading calendar...</p>
+                </div>
+                <div id="calendarError" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-4 text-amber-800">
+                    <div class="flex items-start gap-2">
+                        <i class="fas fa-exclamation-triangle mt-0.5"></i>
+                        <div>
+                            <p class="font-semibold">Calendar failed to load</p>
+                            <p class="text-sm mt-1">Please refresh the page or try again later.</p>
+                        </div>
                     </div>
                 </div>
-                <div id="calendar" class="bg-white border border-slate-200 rounded-xl shadow-inner p-4"></div>
+                <div id="calendar" class="bg-white border border-slate-200 rounded-xl shadow-inner p-4 min-h-[600px]"></div>
             </div>
 
             <div class="space-y-4">
@@ -440,102 +530,285 @@
     <input name="__RequestVerificationToken" type="hidden" value="@antiForgeryToken" />
 </form>
 
-@section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js" integrity="sha256-Vt0kHEocWyD+qUxLUIrbq3QhGDO6FJkZw1uW0CWcYgA=" crossorigin="anonymous"></script>
-    <script>
-        // Wait for DOM and FullCalendar to be ready
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, FullCalendar available:', typeof FullCalendar !== 'undefined');
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" integrity="sha256-yjJ4RvV0mRcLDoU5f47a3Xd+MkMM7sN3Wq4lRjOD2fE=" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js" crossorigin="anonymous" defer></script>
+<script>
+    // Function to load FullCalendar dynamically with fallback
+    function loadFullCalendar() {
+        return new Promise((resolve, reject) => {
+            // Check if already loaded (might be from static script tag)
+            function checkAndResolve() {
+                if (typeof FullCalendar !== 'undefined') {
+                    console.log('FullCalendar is already loaded');
+                    resolve();
+                    return true;
+                }
+                return false;
+            }
+
+            if (checkAndResolve()) {
+                return;
+            }
+
+            // Wait a bit in case the static script tag is still loading
+            let attempts = 0;
+            const maxAttempts = 50; // 5 seconds max wait
+            const checkInterval = setInterval(function() {
+                attempts++;
+                if (checkAndResolve()) {
+                    clearInterval(checkInterval);
+                    return;
+                }
+                if (attempts >= maxAttempts) {
+                    clearInterval(checkInterval);
+                    // Try loading dynamically
+                    tryDynamicLoad().then(resolve).catch(reject);
+                }
+            }, 100);
+        });
+    }
+
+    function tryDynamicLoad() {
+        return new Promise((resolve, reject) => {
+            // Check if script already exists
+            const existingScript = document.querySelector('script[src*="fullcalendar"]');
+            if (existingScript && typeof FullCalendar !== 'undefined') {
+                resolve();
+                return;
+            }
+
+            // Try primary CDN
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js';
+            script.crossOrigin = 'anonymous';
+            script.async = true;
             
-            const calendarEl = document.getElementById('calendar');
-            const antiForgeryToken = document.querySelector('input[name="__RequestVerificationToken"]').value;
-            const initialEvents = @Html.Raw(appointmentsJson);
-            
-            console.log('Initial events:', initialEvents);
-            console.log('Number of events:', initialEvents.length);
-            
-            const statusBadgeClasses = {
-                'Scheduled': 'bg-blue-100 text-blue-700 border-blue-100',
-                'Checked-in': 'bg-emerald-100 text-emerald-700 border-emerald-100',
-                'Confirmed': 'bg-teal-100 text-teal-700 border-teal-100',
-                'In Progress': 'bg-indigo-100 text-indigo-700 border-indigo-100',
-                'Completed': 'bg-slate-100 text-slate-700 border-slate-100',
-                'Pending Approval': 'bg-amber-100 text-amber-800 border-amber-100',
-                'Cancelled': 'bg-rose-100 text-rose-700 border-rose-100'
+            script.onload = function() {
+                setTimeout(function() {
+                    if (typeof FullCalendar !== 'undefined') {
+                        console.log('FullCalendar loaded dynamically from primary CDN');
+                        resolve();
+                    } else {
+                        console.warn('FullCalendar not available after dynamic load, trying fallback...');
+                        tryFallbackCDN().then(resolve).catch(reject);
+                    }
+                }, 100);
             };
+            
+            script.onerror = function() {
+                console.warn('Primary CDN failed, trying fallback...');
+                tryFallbackCDN().then(resolve).catch(reject);
+            };
+            
+            document.head.appendChild(script);
+        });
+    }
 
-            let selectedEventId = null;
+    function tryFallbackCDN() {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.11/index.global.min.js';
+            script.async = true;
+            
+            script.onload = function() {
+                setTimeout(function() {
+                    if (typeof FullCalendar !== 'undefined') {
+                        console.log('FullCalendar loaded from fallback CDN');
+                        resolve();
+                    } else {
+                        reject(new Error('FullCalendar failed to load from all CDNs'));
+                    }
+                }, 100);
+            };
+            
+            script.onerror = function() {
+                reject(new Error('Failed to load FullCalendar from all CDNs'));
+            };
+            
+            document.head.appendChild(script);
+        });
+    }
 
-            function formatDateRange(start, end) {
+    // Initialize calendar when ready
+    function initializeCalendarWhenReady() {
+        const calendarEl = document.getElementById('calendar');
+        const calendarLoading = document.getElementById('calendarLoading');
+        const calendarError = document.getElementById('calendarError');
+        
+        if (!calendarEl) {
+            console.error('Calendar element not found');
+            return;
+        }
+
+        // Show loading state
+        if (calendarLoading) calendarLoading.classList.remove('hidden');
+        if (calendarError) calendarError.classList.add('hidden');
+        if (calendarEl) calendarEl.style.display = 'none';
+
+        // Load FullCalendar and then initialize
+        loadFullCalendar()
+            .then(() => {
+                console.log('FullCalendar loaded successfully');
+                if (calendarLoading) calendarLoading.classList.add('hidden');
+                if (calendarError) calendarError.classList.add('hidden');
+                if (calendarEl) calendarEl.style.display = '';
+                initCalendarApp();
+            })
+            .catch((error) => {
+                console.error('Failed to load FullCalendar:', error);
+                if (calendarLoading) calendarLoading.classList.add('hidden');
+                if (calendarError) calendarError.classList.remove('hidden');
+                if (calendarEl) calendarEl.style.display = 'none';
+            });
+    }
+
+    // Wait for DOM to be ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeCalendarWhenReady);
+    } else {
+        // DOM is already ready
+        initializeCalendarWhenReady();
+    }
+
+    // Main calendar initialization function
+    function initCalendarApp() {
+        'use strict';
+
+        const calendarEl = document.getElementById('calendar');
+        const calendarLoading = document.getElementById('calendarLoading');
+        const calendarError = document.getElementById('calendarError');
+        
+        if (!calendarEl) {
+            console.error('Calendar element not found');
+            return;
+        }
+
+        const antiForgeryToken = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+        let initialEvents = [];
+        
+        try {
+            initialEvents = @Html.Raw(appointmentsJson) || [];
+        } catch (e) {
+            console.error('Error parsing appointments JSON:', e);
+            initialEvents = [];
+        }
+
+        const statusBadgeClasses = {
+            'Scheduled': 'bg-blue-100 text-blue-700 border-blue-100',
+            'Checked-in': 'bg-emerald-100 text-emerald-700 border-emerald-100',
+            'Confirmed': 'bg-teal-100 text-teal-700 border-teal-100',
+            'In Progress': 'bg-indigo-100 text-indigo-700 border-indigo-100',
+            'Completed': 'bg-slate-100 text-slate-700 border-slate-100',
+            'Pending Approval': 'bg-amber-100 text-amber-800 border-amber-100',
+            'Cancelled': 'bg-rose-100 text-rose-700 border-rose-100'
+        };
+
+        let selectedEventId = null;
+        let calendar = null;
+
+        function formatDateRange(start, end) {
+            try {
                 const startDate = new Date(start);
                 const endDate = new Date(end);
                 const optionsDate = { month: 'short', day: 'numeric', year: 'numeric' };
                 const optionsTime = { hour: 'numeric', minute: '2-digit' };
                 return `${startDate.toLocaleDateString(undefined, optionsDate)} · ${startDate.toLocaleTimeString(undefined, optionsTime)} - ${endDate.toLocaleTimeString(undefined, optionsTime)}`;
+            } catch (e) {
+                return 'Invalid date';
+            }
+        }
+
+        function setSelectedEvent(event) {
+            if (!event) return;
+            
+            selectedEventId = event.id;
+            
+            const titleEl = document.getElementById('selected-title');
+            const subtitleEl = document.getElementById('selected-subtitle');
+            const patientEl = document.getElementById('selected-patient');
+            const medecinEl = document.getElementById('selected-medecin');
+            const timeEl = document.getElementById('selected-time');
+            const locationEl = document.getElementById('selected-location');
+            const statusEl = document.getElementById('selected-status');
+            const icsDownloadEl = document.getElementById('icsDownload');
+            const detailsLinkEl = document.getElementById('detailsLink');
+            const editLinkEl = document.getElementById('editLink');
+
+            if (titleEl) titleEl.textContent = event.title || 'Untitled';
+            if (subtitleEl) subtitleEl.textContent = event.extendedProps?.reason || 'No reason provided';
+            if (patientEl) patientEl.textContent = event.extendedProps?.patient || '—';
+            if (medecinEl) medecinEl.textContent = event.extendedProps?.medecin || '—';
+            if (timeEl) timeEl.textContent = formatDateRange(event.start, event.end);
+            if (locationEl) locationEl.textContent = event.extendedProps?.location || 'Unassigned';
+
+            const status = event.extendedProps?.status || 'Scheduled';
+            if (statusEl) {
+                statusEl.textContent = status;
+                statusEl.className = `px-3 py-1 text-xs font-semibold rounded-full ${statusBadgeClasses[status] || 'bg-slate-100 text-slate-700'}`;
             }
 
-            function setSelectedEvent(event) {
-                selectedEventId = event.id;
-                document.getElementById('selected-title').textContent = event.title;
-                document.getElementById('selected-subtitle').textContent = event.extendedProps.reason || 'No reason provided';
-                document.getElementById('selected-patient').textContent = event.extendedProps.patient || '—';
-                document.getElementById('selected-medecin').textContent = event.extendedProps.medecin || '—';
-                document.getElementById('selected-time').textContent = formatDateRange(event.start, event.end);
-                document.getElementById('selected-location').textContent = event.extendedProps.location || 'Unassigned';
-
-                const status = event.extendedProps.status || 'Scheduled';
-                const badge = document.getElementById('selected-status');
-                badge.textContent = status;
-                badge.className = `px-3 py-1 text-xs font-semibold rounded-full ${statusBadgeClasses[status] || 'bg-slate-100 text-slate-700'}`;
-
-                document.getElementById('icsDownload').classList.remove('pointer-events-none', 'opacity-50');
-                document.getElementById('icsDownload').setAttribute('href', `@Url.Action("DownloadIcs", "Appointments")/${event.id}`);
-
-                document.getElementById('detailsLink').classList.remove('pointer-events-none', 'opacity-50');
-                document.getElementById('detailsLink').setAttribute('href', `@Url.Action("Details", "Appointments")/${event.id}`);
-
-                document.getElementById('editLink').classList.remove('pointer-events-none', 'opacity-50');
-                document.getElementById('editLink').setAttribute('href', `@Url.Action("Edit", "Appointments")/${event.id}`);
-
-                document.querySelectorAll('.status-chip').forEach(chip => {
-                    chip.classList.toggle('bg-slate-900', chip.dataset.status === status);
-                    chip.classList.toggle('text-white', chip.dataset.status === status);
-                    chip.classList.toggle('border-slate-900', chip.dataset.status === status);
-                });
+            if (icsDownloadEl) {
+                icsDownloadEl.classList.remove('pointer-events-none', 'opacity-50');
+                icsDownloadEl.setAttribute('href', `@Url.Action("DownloadIcs", "Appointments")/${event.id}`);
             }
 
-            async function postJson(url, payload) {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'RequestVerificationToken': antiForgeryToken
-                    },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) {
-                    const text = await response.text();
-                    throw new Error(text || 'Request failed');
-                }
-
-                return response.json().catch(() => ({}));
+            if (detailsLinkEl) {
+                detailsLinkEl.classList.remove('pointer-events-none', 'opacity-50');
+                detailsLinkEl.setAttribute('href', `@Url.Action("Details", "Appointments")/${event.id}`);
             }
 
-            async function updateStatus(eventId, status) {
+            if (editLinkEl) {
+                editLinkEl.classList.remove('pointer-events-none', 'opacity-50');
+                editLinkEl.setAttribute('href', `@Url.Action("Edit", "Appointments")/${event.id}`);
+            }
+
+            document.querySelectorAll('.status-chip').forEach(chip => {
+                chip.classList.toggle('bg-slate-900', chip.dataset.status === status);
+                chip.classList.toggle('text-white', chip.dataset.status === status);
+                chip.classList.toggle('border-slate-900', chip.dataset.status === status);
+            });
+        }
+
+        async function postJson(url, payload) {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': antiForgeryToken
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const text = await response.text();
+                throw new Error(text || 'Request failed');
+            }
+
+            return response.json().catch(() => ({}));
+        }
+
+        async function updateStatus(eventId, status) {
+            try {
                 await postJson('@Url.Action("UpdateStatus", "Appointments")', { id: eventId, status });
 
-                const event = calendar.getEventById(eventId);
-                if (event) {
-                    event.setExtendedProp('status', status);
-                    event.setProp('classNames', buildEventClasses(event));
-                    if (selectedEventId === eventId) {
-                        setSelectedEvent(event);
+                if (calendar) {
+                    const event = calendar.getEventById(String(eventId));
+                    if (event) {
+                        event.setExtendedProp('status', status);
+                        event.setProp('classNames', buildEventClasses(event));
+                        if (selectedEventId === eventId) {
+                            setSelectedEvent(event);
+                        }
                     }
                 }
+            } catch (error) {
+                console.error('Error updating status:', error);
+                alert('Unable to update status: ' + error.message);
             }
+        }
 
-            async function reschedule(event) {
+        async function reschedule(event) {
+            try {
                 await postJson('@Url.Action("Reschedule", "Appointments")', {
                     id: event.id,
                     start: event.start.toISOString(),
@@ -545,91 +818,164 @@
                 if (selectedEventId === event.id) {
                     setSelectedEvent(event);
                 }
+            } catch (error) {
+                console.error('Error rescheduling:', error);
+                throw error;
+            }
+        }
+
+        function buildEventClasses(event) {
+            const status = event.extendedProps?.status || 'Scheduled';
+            const statusClass = status === 'Checked-in' ? 'fc-event-checked' :
+                status === 'Completed' ? 'fc-event-completed' :
+                status === 'Confirmed' ? 'fc-event-confirmed' :
+                status === 'In Progress' ? 'fc-event-inprogress' :
+                status === 'Pending Approval' ? 'fc-event-pending' :
+                status === 'Cancelled' ? 'fc-event-cancelled' :
+                'fc-event-scheduled';
+            return [statusClass, 'cursor-pointer'];
+        }
+
+        async function loadCalendarEvents(start, end) {
+            try {
+                const url = `@Url.Action("CalendarEvents", "Appointments")?start=${encodeURIComponent(start.toISOString())}&end=${encodeURIComponent(end.toISOString())}`;
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error('Failed to load events');
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Error loading calendar events:', error);
+                return initialEvents;
+            }
+        }
+
+        function initCalendar() {
+            if (typeof FullCalendar === 'undefined') {
+                console.error('FullCalendar library not loaded');
+                if (calendarLoading) calendarLoading.classList.add('hidden');
+                if (calendarError) calendarError.classList.remove('hidden');
+                throw new Error('FullCalendar library not available');
             }
 
-            function buildEventClasses(event) {
-                const status = event.extendedProps.status || 'Scheduled';
-                const statusClass = status === 'Checked-in' ? 'fc-event-checked' :
-                    status === 'Completed' ? 'fc-event-completed' :
-                    status === 'Confirmed' ? 'fc-event-confirmed' :
-                    status === 'In Progress' ? 'fc-event-inprogress' :
-                    status === 'Pending Approval' ? 'fc-event-pending' :
-                    status === 'Cancelled' ? 'fc-event-cancelled' :
-                    'fc-event-scheduled';
-                return [statusClass, 'cursor-pointer'];
-            }
+            try {
+                calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth',
+                    editable: true,
+                    selectable: true,
+                    height: 'auto',
+                    headerToolbar: {
+                        left: 'prev,next',
+                        center: 'title',
+                        right: ''
+                    },
+                    slotMinTime: '08:00:00',
+                    slotMaxTime: '20:00:00',
+                    allDaySlot: false,
+                    nowIndicator: true,
+                    events: function(fetchInfo, successCallback, failureCallback) {
+                        loadCalendarEvents(fetchInfo.start, fetchInfo.end)
+                            .then(events => {
+                                successCallback(events);
+                            })
+                            .catch(error => {
+                                console.error('Error fetching events:', error);
+                                successCallback(initialEvents);
+                            });
+                    },
+                    eventClassNames: buildEventClasses,
+                    eventDrop: async function (info) {
+                        try {
+                            await reschedule(info.event);
+                        } catch (error) {
+                            info.revert();
+                            alert('Unable to reschedule: ' + error.message);
+                        }
+                    },
+                    eventResize: async function (info) {
+                        try {
+                            await reschedule(info.event);
+                        } catch (error) {
+                            info.revert();
+                            alert('Unable to reschedule: ' + error.message);
+                        }
+                    },
+                    eventClick: function (info) {
+                        setSelectedEvent(info.event);
+                    },
+                    eventDidMount: function(info) {
+                        info.el.setAttribute('title', info.event.title);
+                    }
+                });
 
-            const calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'timeGridWeek',
-                editable: true,
-                selectable: true,
-                height: 'auto',
-                headerToolbar: {
-                    left: 'prev,next',
-                    center: 'title',
-                    right: ''
-                },
-                slotMinTime: '08:00:00',
-                slotMaxTime: '20:00:00',
-                allDaySlot: false,
-                nowIndicator: true,
-                events: initialEvents,
-                eventClassNames: buildEventClasses,
-                eventDrop: async function (info) {
-                    try {
-                        await reschedule(info.event);
-                    } catch (error) {
-                        info.revert();
-                        alert('Unable to reschedule: ' + error.message);
-                    }
-                },
-                eventResize: async function (info) {
-                    try {
-                        await reschedule(info.event);
-                    } catch (error) {
-                        info.revert();
-                        alert('Unable to reschedule: ' + error.message);
-                    }
-                },
-                eventClick: function (info) {
-                    setSelectedEvent(info.event);
-                },
-                eventDidMount: function(info) {
-                    console.log('Event rendered:', info.event.title);
+                calendar.render();
+
+                console.log('Calendar initialized successfully');
+                console.log('Initial events loaded:', initialEvents.length);
+            } catch (error) {
+                console.error('Error initializing calendar:', error);
+                throw error;
+            }
+        }
+        
+        // Initialize the calendar (called after FullCalendar loads)
+        initCalendar();
+
+        // View button handlers
+        document.querySelectorAll('.calendar-view-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (!calendar) return;
+                const view = this.dataset.view;
+                calendar.changeView(view);
+                
+                // Update active state
+                document.querySelectorAll('.calendar-view-btn').forEach(b => b.classList.remove('active', 'bg-blue-600', 'text-white'));
+                this.classList.add('active', 'bg-blue-600', 'text-white');
+            });
+        });
+
+        // Today button handler
+        const todayBtn = document.getElementById('calendarToday');
+        if (todayBtn) {
+            todayBtn.addEventListener('click', () => {
+                if (calendar) {
+                    calendar.today();
                 }
             });
+        }
 
-            calendar.render();
-            console.log('Calendar rendered successfully');
-
-            document.querySelectorAll('.calendar-view-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    calendar.changeView(btn.dataset.view);
-                });
+        // Refresh button handler
+        const refreshBtn = document.getElementById('calendarRefresh');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => {
+                if (calendar) {
+                    calendar.refetchEvents();
+                    refreshBtn.querySelector('i').classList.add('fa-spin');
+                    setTimeout(() => {
+                        refreshBtn.querySelector('i').classList.remove('fa-spin');
+                    }, 1000);
+                }
             });
+        }
 
-            document.getElementById('calendarToday').addEventListener('click', () => {
-                calendar.today();
-            });
-
-            document.getElementById('appointmentSearch')?.addEventListener('input', function () {
+        // Search handler
+        const searchInput = document.getElementById('appointmentSearch');
+        if (searchInput) {
+            searchInput.addEventListener('input', function () {
                 const term = this.value.toLowerCase();
                 document.querySelectorAll('tbody tr').forEach(row => {
                     row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
                 });
             });
+        }
 
-            document.querySelectorAll('.status-chip').forEach(chip => {
-                chip.addEventListener('click', async () => {
-                    if (!selectedEventId) return;
-                    const status = chip.dataset.status;
-                    try {
-                        await updateStatus(selectedEventId, status);
-                    } catch (error) {
-                        alert('Unable to update status: ' + error.message);
-                    }
-                });
+        // Status chip handlers (set up after DOM is ready)
+        document.querySelectorAll('.status-chip').forEach(chip => {
+            chip.addEventListener('click', async () => {
+                if (!selectedEventId) return;
+                const status = chip.dataset.status;
+                await updateStatus(selectedEventId, status);
             });
         });
-    </script>
-}
+    }
+</script>

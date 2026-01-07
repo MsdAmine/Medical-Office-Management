@@ -28,7 +28,7 @@ namespace MedicalOfficeManagement.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? statusFilter, int? medecinFilter, DateTime? dateFromFilter, DateTime? dateToFilter, string? searchTerm)
         {
             var medecinId = await GetCurrentMedecinIdAsync();
             if (User.IsInRole(SystemRoles.Medecin) && !medecinId.HasValue)
@@ -36,7 +36,40 @@ namespace MedicalOfficeManagement.Controllers
                 return Forbid();
             }
 
-            var appointments = await GetScopedAppointmentsQueryable(medecinId)
+            var query = GetScopedAppointmentsQueryable(medecinId);
+
+            // Apply filters
+            if (!string.IsNullOrWhiteSpace(statusFilter))
+            {
+                query = query.Where(r => r.Statut == statusFilter);
+            }
+
+            if (medecinFilter.HasValue && (IsAdminOrSecretaire() || medecinFilter.Value == medecinId))
+            {
+                query = query.Where(r => r.MedecinId == medecinFilter.Value);
+            }
+
+            if (dateFromFilter.HasValue)
+            {
+                query = query.Where(r => r.DateDebut >= dateFromFilter.Value);
+            }
+
+            if (dateToFilter.HasValue)
+            {
+                query = query.Where(r => r.DateDebut <= dateToFilter.Value.AddDays(1).AddTicks(-1));
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var searchLower = searchTerm.ToLower();
+                query = query.Where(r =>
+                    (r.Patient.Nom != null && r.Patient.Nom.ToLower().Contains(searchLower)) ||
+                    (r.Patient.Prenom != null && r.Patient.Prenom.ToLower().Contains(searchLower)) ||
+                    (r.Medecin.NomPrenom != null && r.Medecin.NomPrenom.ToLower().Contains(searchLower)) ||
+                    (r.Motif != null && r.Motif.ToLower().Contains(searchLower)));
+            }
+
+            var appointments = await query
                 .OrderBy(r => r.DateDebut)
                 .ToListAsync();
 
@@ -47,15 +80,26 @@ namespace MedicalOfficeManagement.Controllers
             var startOfWeek = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek);
             var endOfWeek = startOfWeek.AddDays(7);
 
+            // Get all appointments for statistics (unfiltered)
+            var allAppointments = await GetScopedAppointmentsQueryable(medecinId).ToListAsync();
+
             var viewModel = new ScheduleIndexViewModel
             {
-                UpcomingCount = appointments.Count(a => a.DateDebut.Date >= DateTime.Today),
-                InClinicToday = appointments.Count(a => a.DateDebut.Date == DateTime.Today),
-                CompletedThisWeek = appointments.Count(a =>
+                UpcomingCount = allAppointments.Count(a => a.DateDebut.Date >= DateTime.Today),
+                InClinicToday = allAppointments.Count(a => a.DateDebut.Date == DateTime.Today),
+                CompletedThisWeek = allAppointments.Count(a =>
                     IsCompleted(a) &&
                     a.DateDebut >= startOfWeek &&
                     a.DateDebut < endOfWeek),
-                Appointments = appointmentViewModels
+                PendingApprovalCount = allAppointments.Count(a => a.Statut == "Pending Approval"),
+                Appointments = appointmentViewModels,
+                StatusFilter = statusFilter,
+                MedecinFilter = medecinFilter,
+                DateFromFilter = dateFromFilter,
+                DateToFilter = dateToFilter,
+                SearchTerm = searchTerm,
+                StatusOptions = GetAllowedStatusesSelectList(statusFilter),
+                MedecinOptions = await GetMedecinsSelectListAsync(medecinFilter, medecinId)
             };
 
             SetSchedulePageMetadata("Schedule");
@@ -83,7 +127,7 @@ namespace MedicalOfficeManagement.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Create()
+        public async Task<IActionResult> Create(int? patientId)
         {
             var medecinId = await GetCurrentMedecinIdAsync();
             if (User.IsInRole(SystemRoles.Medecin) && !medecinId.HasValue)
@@ -99,9 +143,14 @@ namespace MedicalOfficeManagement.Controllers
                     DateFin = DateTime.Today.AddHours(10),
                     Statut = "Scheduled"
                 },
-                Patients = await GetPatientsSelectListAsync(selectedId: null, medecinId),
+                Patients = await GetPatientsSelectListAsync(selectedId: patientId, medecinId),
                 Medecins = await GetMedecinsSelectListAsync(selectedId: medecinId, medecinId: medecinId)
             };
+
+            if (patientId.HasValue)
+            {
+                viewModel.Appointment.PatientId = patientId.Value;
+            }
 
             if (medecinId.HasValue && User.IsInRole(SystemRoles.Medecin))
             {
@@ -143,7 +192,11 @@ namespace MedicalOfficeManagement.Controllers
             if (id == null)
                 return NotFound();
 
-            var appointment = await _context.RendezVous.FindAsync(id);
+            var appointment = await _context.RendezVous
+            .Include(r => r.Patient)
+            .Include(r => r.Medecin)
+            .FirstOrDefaultAsync(r => r.Id == id);
+
             if (appointment == null)
                 return NotFound();
 
@@ -190,6 +243,7 @@ namespace MedicalOfficeManagement.Controllers
                 viewModel.Appointment.MedecinId = medecinId.Value;
             }
 
+            var previousStatus = appointment.Statut;
             appointment.PatientId = viewModel.Appointment.PatientId;
             appointment.MedecinId = viewModel.Appointment.MedecinId;
             appointment.DateDebut = viewModel.Appointment.DateDebut;
@@ -208,9 +262,34 @@ namespace MedicalOfficeManagement.Controllers
                 return View(viewModel);
             }
 
+            // Load Patient and Medecin for email sending
+            await _context.Entry(appointment).Reference(r => r.Patient).LoadAsync();
+            await _context.Entry(appointment).Reference(r => r.Medecin).LoadAsync();
+
             try
             {
                 await _context.SaveChangesAsync();
+
+                // Send email if appointment was approved (status changed to "Scheduled")
+                if (previousStatus != "Scheduled" && appointment.Statut.Equals("Scheduled", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!string.IsNullOrWhiteSpace(appointment.Patient?.Email))
+                    {
+                        try
+                        {
+                            await _emailSender.SendAsync(
+                                appointment.Patient.Email,
+                                "Appointment Confirmation",
+                                AppointmentEmailTemplates.AppointmentApproved(appointment)
+                            );
+                        }
+                        catch (Exception ex)
+                        {
+                            // Log error but don't fail the request
+                            System.Diagnostics.Debug.WriteLine($"Failed to send approval email: {ex.Message}");
+                        }
+                    }
+                }
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -342,7 +421,10 @@ namespace MedicalOfficeManagement.Controllers
                 return BadRequest("Missing status payload.");
             }
 
-            var appointment = await _context.RendezVous.FindAsync(request.Id);
+            var appointment = await _context.RendezVous
+                .Include(r => r.Patient)
+                .Include(r => r.Medecin)
+                .FirstOrDefaultAsync(r => r.Id == request.Id);
 
             if (appointment == null)
                 return NotFound();
@@ -355,27 +437,90 @@ namespace MedicalOfficeManagement.Controllers
                 return BadRequest("Unsupported status value.");
             }
 
+            var previousStatus = appointment.Statut;
             appointment.Statut = request.Status;
             await _context.SaveChangesAsync();
+
+            // Send email if appointment was approved (status changed to "Scheduled")
+            if (previousStatus != "Scheduled" && request.Status.Equals("Scheduled", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(appointment.Patient?.Email))
+                {
+                    try
+                    {
+                        await _emailSender.SendAsync(
+                            appointment.Patient.Email,
+                            "Appointment Confirmation",
+                            AppointmentEmailTemplates.AppointmentApproved(appointment)
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log error but don't fail the request
+                        // You might want to add proper logging here
+                        System.Diagnostics.Debug.WriteLine($"Failed to send approval email: {ex.Message}");
+                    }
+                }
+            }
+
             return Json(new { success = true });
         }
 
         [HttpGet]
-        public async Task<IActionResult> PendingApproval()
+        public async Task<IActionResult> PendingApproval(int? medecinFilter, DateTime? dateFromFilter, DateTime? dateToFilter, string? searchTerm)
         {
             if (!IsAdminOrSecretaire())
             {
                 return Forbid();
             }
 
-            var pending = await BuildAppointmentQuery()
-                .Where(r => r.Statut == "Pending Approval")
+            var query = BuildAppointmentQuery()
+                .Where(r => r.Statut == "Pending Approval");
+
+            // Apply filters
+            if (medecinFilter.HasValue)
+            {
+                query = query.Where(r => r.MedecinId == medecinFilter.Value);
+            }
+
+            if (dateFromFilter.HasValue)
+            {
+                query = query.Where(r => r.DateDebut >= dateFromFilter.Value);
+            }
+
+            if (dateToFilter.HasValue)
+            {
+                query = query.Where(r => r.DateDebut <= dateToFilter.Value.AddDays(1).AddTicks(-1));
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var searchLower = searchTerm.ToLower();
+                query = query.Where(r =>
+                    (r.Patient.Nom != null && r.Patient.Nom.ToLower().Contains(searchLower)) ||
+                    (r.Patient.Prenom != null && r.Patient.Prenom.ToLower().Contains(searchLower)) ||
+                    (r.Medecin.NomPrenom != null && r.Medecin.NomPrenom.ToLower().Contains(searchLower)) ||
+                    (r.Motif != null && r.Motif.ToLower().Contains(searchLower)));
+            }
+
+            var pending = await query
                 .OrderBy(r => r.DateDebut)
                 .ToListAsync();
 
+            var today = DateTime.Today;
+            var tomorrow = today.AddDays(1);
+            var urgentCount = pending.Count(a => a.DateDebut.Date == today || a.DateDebut.Date == tomorrow);
+
             var viewModel = new PendingApprovalViewModel
             {
-                PendingAppointments = pending.Select(MapToViewModel).ToList()
+                PendingAppointments = pending.Select(MapToViewModel).ToList(),
+                TotalPending = pending.Count,
+                UrgentCount = urgentCount,
+                MedecinFilter = medecinFilter,
+                DateFromFilter = dateFromFilter,
+                DateToFilter = dateToFilter,
+                SearchTerm = searchTerm,
+                MedecinOptions = await GetMedecinsSelectListAsync(medecinFilter, null)
             };
 
             SetSchedulePageMetadata("Pending Approvals");
@@ -391,7 +536,11 @@ namespace MedicalOfficeManagement.Controllers
                 return Forbid();
             }
 
-            var appointment = await _context.RendezVous.FindAsync(id);
+            var appointment = await _context.RendezVous
+                .Include(r => r.Patient)
+                .Include(r => r.Medecin)
+                .FirstOrDefaultAsync(r => r.Id == id);
+
             if (appointment == null)
             {
                 return NotFound();
@@ -400,16 +549,19 @@ namespace MedicalOfficeManagement.Controllers
             appointment.Statut = "Scheduled";
             await _context.SaveChangesAsync();
 
-            TempData["StatusMessage"] = "Appointment approved and scheduled.";
-            if (appointment.Patient?.Email != null)
+            if (!string.IsNullOrWhiteSpace(appointment.Patient?.Email))
             {
                 await _emailSender.SendAsync(
-                appointment.Patient.Email,
-                "Appointment Approved",
-                EmailTemplates.AppointmentApproved(appointment));
+                    appointment.Patient.Email,
+                    "Appointment Confirmation",
+                    AppointmentEmailTemplates.AppointmentApproved(appointment)
+                );
             }
+
+            TempData["StatusMessage"] = "Appointment approved and confirmation email sent.";
             return RedirectToAction(nameof(PendingApproval));
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -430,6 +582,103 @@ namespace MedicalOfficeManagement.Controllers
             await _context.SaveChangesAsync();
 
             TempData["StatusMessage"] = "Appointment marked as cancelled.";
+            return RedirectToAction(nameof(PendingApproval));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BulkApprove([FromForm] string appointmentIds)
+        {
+            if (!IsAdminOrSecretaire())
+            {
+                return Forbid();
+            }
+
+            if (string.IsNullOrWhiteSpace(appointmentIds))
+            {
+                TempData["StatusMessage"] = "No appointments selected.";
+                return RedirectToAction(nameof(PendingApproval));
+            }
+
+            var ids = appointmentIds.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(id => int.TryParse(id, out var parsedId) ? parsedId : (int?)null)
+                .Where(id => id.HasValue)
+                .Select(id => id!.Value)
+                .ToArray();
+
+            if (ids.Length == 0)
+            {
+                TempData["StatusMessage"] = "No valid appointments selected.";
+                return RedirectToAction(nameof(PendingApproval));
+            }
+
+            var appointments = await _context.RendezVous
+                .Include(r => r.Patient)
+                .Include(r => r.Medecin)
+                .Where(r => ids.Contains(r.Id) && r.Statut == "Pending Approval")
+                .ToListAsync();
+
+            var approvedCount = 0;
+            foreach (var appointment in appointments)
+            {
+                appointment.Statut = "Scheduled";
+                approvedCount++;
+
+                if (!string.IsNullOrWhiteSpace(appointment.Patient?.Email))
+                {
+                    await _emailSender.SendAsync(
+                        appointment.Patient.Email,
+                        "Appointment Confirmation",
+                        AppointmentEmailTemplates.AppointmentApproved(appointment)
+                    );
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["StatusMessage"] = $"{approvedCount} appointment(s) approved and confirmation emails sent.";
+            return RedirectToAction(nameof(PendingApproval));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BulkDecline([FromForm] string appointmentIds)
+        {
+            if (!IsAdminOrSecretaire())
+            {
+                return Forbid();
+            }
+
+            if (string.IsNullOrWhiteSpace(appointmentIds))
+            {
+                TempData["StatusMessage"] = "No appointments selected.";
+                return RedirectToAction(nameof(PendingApproval));
+            }
+
+            var ids = appointmentIds.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(id => int.TryParse(id, out var parsedId) ? parsedId : (int?)null)
+                .Where(id => id.HasValue)
+                .Select(id => id!.Value)
+                .ToArray();
+
+            if (ids.Length == 0)
+            {
+                TempData["StatusMessage"] = "No valid appointments selected.";
+                return RedirectToAction(nameof(PendingApproval));
+            }
+
+            var appointments = await _context.RendezVous
+                .Where(r => ids.Contains(r.Id) && r.Statut == "Pending Approval")
+                .ToListAsync();
+
+            foreach (var appointment in appointments)
+            {
+                appointment.Statut = "Cancelled";
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["StatusMessage"] = $"{appointments.Count} appointment(s) marked as cancelled.";
             return RedirectToAction(nameof(PendingApproval));
         }
 
@@ -640,6 +889,17 @@ namespace MedicalOfficeManagement.Controllers
         {
             viewModel.Patients = await GetPatientsSelectListAsync(viewModel.Appointment.PatientId, medecinId);
             viewModel.Medecins = await GetMedecinsSelectListAsync(viewModel.Appointment.MedecinId, medecinId);
+        }
+
+        private static IEnumerable<SelectListItem> GetAllowedStatusesSelectList(string? selectedStatus = null)
+        {
+            var statuses = new[] { "Scheduled", "Confirmed", "Checked-in", "In Progress", "Completed", "Pending Approval", "Cancelled" };
+            return statuses.Select(s => new SelectListItem
+            {
+                Value = s,
+                Text = s,
+                Selected = !string.IsNullOrWhiteSpace(selectedStatus) && s.Equals(selectedStatus, StringComparison.OrdinalIgnoreCase)
+            }).Prepend(new SelectListItem { Value = "", Text = "All Statuses", Selected = string.IsNullOrWhiteSpace(selectedStatus) });
         }
 
         private static readonly string[] AllowedStatuses = new[] { "Scheduled", "Confirmed", "Checked-in", "In Progress", "Completed", "Pending Approval", "Cancelled" };

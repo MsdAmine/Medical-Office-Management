@@ -1,10 +1,12 @@
+@model MedicalOfficeManagement.ViewModels.DashboardViewModel
+@using MedicalOfficeManagement.Models.Security
 @{
     ViewData["Title"] = "Dashboard";
 }
 
 <div class="space-y-8">
     <!-- Welcome Header -->
-    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-8">
+    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-8 shadow-sm">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
                 <h1 class="text-3xl md:text-4xl font-bold text-slate-900 mb-2">
@@ -54,10 +56,31 @@
                             <i class="fas fa-user-plus mr-2"></i>
                             New Patient
                         </a>
-                        <a asp-controller="Patients" asp-action="Index" 
+                        <a asp-controller="Appointments" asp-action="Create" 
+                           class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition">
+                            <i class="fas fa-calendar-plus mr-2"></i>
+                            New Appointment
+                        </a>
+                    }
+                    @if (User.IsInRole(SystemRoles.Medecin))
+                    {
+                        <a asp-controller="Appointments" asp-action="Index" 
+                           class="inline-flex items-center px-4 py-2 bg-cyan-600 text-white rounded-lg font-medium hover:bg-cyan-700 transition">
+                            <i class="fas fa-calendar-alt mr-2"></i>
+                            My Appointments
+                        </a>
+                    }
+                    @if (User.IsInRole(SystemRoles.Patient))
+                    {
+                        <a asp-controller="PatientPortal" asp-action="RequestAppointment" 
+                           class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition">
+                            <i class="fas fa-calendar-plus mr-2"></i>
+                            Request Appointment
+                        </a>
+                        <a asp-controller="PatientPortal" asp-action="Index" 
                            class="inline-flex items-center px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition">
-                            <i class="fas fa-users mr-2"></i>
-                            View Patients
+                            <i class="fas fa-user-circle mr-2"></i>
+                            My Portal
                         </a>
                     }
                 </div>
@@ -65,193 +88,415 @@
         </div>
     </div>
 
-    <!-- Role-Specific Dashboard -->
+    <!-- Metrics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        @if (User.IsInRole(SystemRoles.Admin) || User.IsInRole(SystemRoles.Secretaire))
+        {
+            <!-- Total Patients -->
+            <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-slate-600">Total Patients</p>
+                        <p class="text-3xl font-bold text-slate-900 mt-2">@Model.TotalPatients</p>
+                    </div>
+                    <div class="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
+                        <i class="fas fa-users text-blue-600 text-xl"></i>
+                    </div>
+                </div>
+                <a asp-controller="Patients" asp-action="Index" class="text-sm text-blue-600 hover:text-blue-800 mt-4 inline-flex items-center">
+                    View all <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                </a>
+            </div>
+
+            <!-- Today's Appointments -->
+            <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-slate-600">Today's Appointments</p>
+                        <p class="text-3xl font-bold text-slate-900 mt-2">@Model.TodayAppointments</p>
+                    </div>
+                    <div class="h-12 w-12 rounded-lg bg-emerald-100 flex items-center justify-center">
+                        <i class="fas fa-calendar-day text-emerald-600 text-xl"></i>
+                    </div>
+                </div>
+                <a asp-controller="Appointments" asp-action="Index" class="text-sm text-emerald-600 hover:text-emerald-800 mt-4 inline-flex items-center">
+                    View schedule <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                </a>
+            </div>
+
+            <!-- Pending Approvals -->
+            <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-slate-600">Pending Approvals</p>
+                        <p class="text-3xl font-bold text-slate-900 mt-2">@Model.PendingAppointmentApprovals</p>
+                    </div>
+                    <div class="h-12 w-12 rounded-lg bg-amber-100 flex items-center justify-center">
+                        <i class="fas fa-clock text-amber-600 text-xl"></i>
+                    </div>
+                </div>
+                @if (Model.PendingAppointmentApprovals > 0)
+                {
+                    <a asp-controller="Appointments" asp-action="PendingApproval" class="text-sm text-amber-600 hover:text-amber-800 mt-4 inline-flex items-center">
+                        Review <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                    </a>
+                }
+            </div>
+
+            <!-- Open Invoices -->
+            <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-slate-600">Open Invoices</p>
+                        <p class="text-3xl font-bold text-slate-900 mt-2">@Model.OpenInvoices</p>
+                    </div>
+                    <div class="h-12 w-12 rounded-lg bg-purple-100 flex items-center justify-center">
+                        <i class="fas fa-file-invoice-dollar text-purple-600 text-xl"></i>
+                    </div>
+                </div>
+                <a asp-controller="Billing" asp-action="Index" class="text-sm text-purple-600 hover:text-purple-800 mt-4 inline-flex items-center">
+                    View billing <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                </a>
+            </div>
+        }
+        else if (User.IsInRole(SystemRoles.Medecin))
+        {
+            <!-- Today's Appointments -->
+            <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-slate-600">Today's Appointments</p>
+                        <p class="text-3xl font-bold text-slate-900 mt-2">@Model.MyTodayAppointments</p>
+                    </div>
+                    <div class="h-12 w-12 rounded-lg bg-cyan-100 flex items-center justify-center">
+                        <i class="fas fa-calendar-day text-cyan-600 text-xl"></i>
+                    </div>
+                </div>
+                <a asp-controller="Appointments" asp-action="Index" class="text-sm text-cyan-600 hover:text-cyan-800 mt-4 inline-flex items-center">
+                    View schedule <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                </a>
+            </div>
+
+            <!-- Upcoming Appointments -->
+            <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-slate-600">Upcoming</p>
+                        <p class="text-3xl font-bold text-slate-900 mt-2">@Model.MyUpcomingAppointments</p>
+                    </div>
+                    <div class="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
+                        <i class="fas fa-calendar-alt text-blue-600 text-xl"></i>
+                    </div>
+                </div>
+                <a asp-controller="Appointments" asp-action="Index" class="text-sm text-blue-600 hover:text-blue-800 mt-4 inline-flex items-center">
+                    View all <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                </a>
+            </div>
+
+            <!-- My Patients -->
+            <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-slate-600">My Patients</p>
+                        <p class="text-3xl font-bold text-slate-900 mt-2">@Model.MyPatients</p>
+                    </div>
+                    <div class="h-12 w-12 rounded-lg bg-emerald-100 flex items-center justify-center">
+                        <i class="fas fa-user-friends text-emerald-600 text-xl"></i>
+                    </div>
+                </div>
+                <a asp-controller="Patients" asp-action="Index" class="text-sm text-emerald-600 hover:text-emerald-800 mt-4 inline-flex items-center">
+                    View patients <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                </a>
+            </div>
+
+            <!-- Pending Consultations -->
+            <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-slate-600">Pending Consultations</p>
+                        <p class="text-3xl font-bold text-slate-900 mt-2">@Model.MyPendingConsultations</p>
+                    </div>
+                    <div class="h-12 w-12 rounded-lg bg-amber-100 flex items-center justify-center">
+                        <i class="fas fa-clipboard-list text-amber-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        }
+        else if (User.IsInRole(SystemRoles.Patient))
+        {
+            <!-- Upcoming Appointments -->
+            <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-slate-600">Upcoming Appointments</p>
+                        <p class="text-3xl font-bold text-slate-900 mt-2">@Model.MyUpcomingAppointmentsCount</p>
+                    </div>
+                    <div class="h-12 w-12 rounded-lg bg-purple-100 flex items-center justify-center">
+                        <i class="fas fa-calendar-alt text-purple-600 text-xl"></i>
+                    </div>
+                </div>
+                <a asp-controller="PatientPortal" asp-action="Upcoming" class="text-sm text-purple-600 hover:text-purple-800 mt-4 inline-flex items-center">
+                    View appointments <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                </a>
+            </div>
+
+            <!-- Lab Results -->
+            <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-slate-600">Lab Results</p>
+                        <p class="text-3xl font-bold text-slate-900 mt-2">@Model.MyLabResultsCount</p>
+                    </div>
+                    <div class="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
+                        <i class="fas fa-vial text-blue-600 text-xl"></i>
+                    </div>
+                </div>
+                <a asp-controller="PatientPortal" asp-action="Results" class="text-sm text-blue-600 hover:text-blue-800 mt-4 inline-flex items-center">
+                    View results <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                </a>
+            </div>
+
+            <!-- Prescriptions -->
+            <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-slate-600">Prescriptions</p>
+                        <p class="text-3xl font-bold text-slate-900 mt-2">@Model.MyPrescriptionsCount</p>
+                    </div>
+                    <div class="h-12 w-12 rounded-lg bg-emerald-100 flex items-center justify-center">
+                        <i class="fas fa-prescription text-emerald-600 text-xl"></i>
+                    </div>
+                </div>
+                <a asp-controller="PatientPortal" asp-action="Treatments" class="text-sm text-emerald-600 hover:text-emerald-800 mt-4 inline-flex items-center">
+                    View treatments <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                </a>
+            </div>
+
+            <!-- Patient Info -->
+            @if (Model.PatientProfile != null)
+            {
+                <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-slate-600">Patient ID</p>
+                            <p class="text-2xl font-bold text-slate-900 mt-2">#@Model.PatientProfile.Id</p>
+                        </div>
+                        <div class="h-12 w-12 rounded-lg bg-cyan-100 flex items-center justify-center">
+                            <i class="fas fa-id-card text-cyan-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">@Model.PatientProfile.Nom @Model.PatientProfile.Prenom</p>
+                </div>
+            }
+        }
+    </div>
+
+    <!-- Main Content Area -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Main Content Area (2/3 width) -->
+        <!-- Main Content (2/3 width) -->
         <div class="lg:col-span-2 space-y-8">
-            <!-- Quick Access Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                <!-- Recent Activity -->
+            @if (User.IsInRole(SystemRoles.Admin) || User.IsInRole(SystemRoles.Secretaire))
+            {
+                <!-- Upcoming Appointments -->
                 <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-xl font-bold text-slate-900">Recent Activity</h2>
-                        <i class="fas fa-history text-slate-400"></i>
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-bold text-slate-900">Upcoming Appointments</h2>
+                        <a asp-controller="Appointments" asp-action="Index" class="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                            View all <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
                     </div>
-                    <div class="space-y-4">
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0 h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center mr-3">
-                                <i class="fas fa-sign-in-alt text-blue-600"></i>
-                            </div>
-                            <div>
-                                <p class="text-sm text-slate-700">You logged in successfully</p>
-                                <p class="text-xs text-slate-500">@DateTime.Now.ToString("h:mm tt")</p>
-                            </div>
+                    @if (Model.UpcomingAppointmentsList.Any())
+                    {
+                        <div class="space-y-4">
+                            @foreach (var appointment in Model.UpcomingAppointmentsList)
+                            {
+                                <div class="flex items-start p-4 rounded-lg border border-slate-200 hover:border-blue-300 hover:bg-blue-50 transition">
+                                    <div class="flex-shrink-0 h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center mr-4">
+                                        <i class="fas fa-calendar text-blue-600"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center justify-between">
+                                            <p class="font-semibold text-slate-900">@appointment.PatientName</p>
+                                            <span class="px-2 py-1 text-xs font-medium rounded-full 
+                                                @(appointment.Status == "Confirmed" ? "bg-green-100 text-green-800" : 
+                                                  appointment.Status == "Pending Approval" ? "bg-amber-100 text-amber-800" : 
+                                                  "bg-slate-100 text-slate-800")">
+                                                @appointment.Status
+                                            </span>
+                                        </div>
+                                        <p class="text-sm text-slate-600 mt-1">
+                                            <i class="fas fa-user-md mr-1"></i>@appointment.MedecinName
+                                        </p>
+                                        <p class="text-sm text-slate-600">
+                                            <i class="fas fa-clock mr-1"></i>@appointment.DateDebut.ToString("MMM d, yyyy 'at' h:mm tt")
+                                        </p>
+                                        @if (!string.IsNullOrWhiteSpace(appointment.Motif))
+                                        {
+                                            <p class="text-sm text-slate-500 mt-1">
+                                                <i class="fas fa-comment mr-1"></i>@appointment.Motif
+                                            </p>
+                                        }
+                                    </div>
+                                </div>
+                            }
                         </div>
-                        @if (User.IsInRole("admin"))
-                        {
-                            <div class="flex items-start">
-                                <div class="flex-shrink-0 h-10 w-10 rounded-lg bg-emerald-100 flex items-center justify-center mr-3">
-                                    <i class="fas fa-cog text-emerald-600"></i>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-slate-700">System settings updated</p>
-                                    <p class="text-xs text-slate-500">Yesterday</p>
-                                </div>
-                            </div>
-                        }
-                    </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-8 text-slate-500">
+                            <i class="fas fa-calendar-times text-4xl mb-3 text-slate-300"></i>
+                            <p>No upcoming appointments</p>
+                        </div>
+                    }
                 </div>
 
-                <!-- Role-Specific Information -->
-                @if (User.IsInRole("admin"))
-                {
-                    <div class="md:col-span-2 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-6">
-                        <div class="flex items-center mb-4">
-                            <div class="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center mr-4">
-                                <i class="fas fa-user-shield text-blue-600 text-xl"></i>
-                            </div>
-                            <div>
-                                <h2 class="text-xl font-bold text-slate-900">Administrator Console</h2>
-                                <p class="text-slate-600">Manage users, settings, and system configuration</p>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                            <a href="#" class="bg-white rounded-lg p-4 border border-slate-200 hover:border-blue-300 hover:shadow-sm transition">
-                                <div class="text-blue-600 mb-2">
-                                    <i class="fas fa-users-cog text-lg"></i>
-                                </div>
-                                <div class="font-medium text-slate-900">User Management</div>
-                                <p class="text-sm text-slate-600 mt-1">Manage user accounts and permissions</p>
-                            </a>
-                            <a href="#" class="bg-white rounded-lg p-4 border border-slate-200 hover:border-blue-300 hover:shadow-sm transition">
-                                <div class="text-blue-600 mb-2">
-                                    <i class="fas fa-chart-bar text-lg"></i>
-                                </div>
-                                <div class="font-medium text-slate-900">System Reports</div>
-                                <p class="text-sm text-slate-600 mt-1">View system usage and activity reports</p>
-                            </a>
-                            <a href="#" class="bg-white rounded-lg p-4 border border-slate-200 hover:border-blue-300 hover:shadow-sm transition">
-                                <div class="text-blue-600 mb-2">
-                                    <i class="fas fa-sliders-h text-lg"></i>
-                                </div>
-                                <div class="font-medium text-slate-900">Settings</div>
-                                <p class="text-sm text-slate-600 mt-1">Configure system preferences</p>
-                            </a>
-                        </div>
+                <!-- Recent Patients -->
+                <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-bold text-slate-900">Recent Patients</h2>
+                        <a asp-controller="Patients" asp-action="Index" class="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                            View all <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
                     </div>
-                }
-                else if (User.IsInRole(SystemRoles.Secretaire))
-                {
-                    <div class="md:col-span-2 bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl border border-emerald-200 p-6">
-                        <div class="flex items-center mb-4">
-                            <div class="h-12 w-12 rounded-lg bg-emerald-100 flex items-center justify-center mr-4">
-                                <i class="fas fa-user-tie text-emerald-600 text-xl"></i>
-                            </div>
-                            <div>
-                                <h2 class="text-xl font-bold text-slate-900">Secretary Dashboard</h2>
-                                <p class="text-slate-600">Manage patient records and appointments</p>
-                            </div>
+                    @if (Model.RecentPatients.Any())
+                    {
+                        <div class="space-y-3">
+                            @foreach (var patient in Model.RecentPatients)
+                            {
+                                <a asp-controller="Patients" asp-action="Details" asp-route-id="@patient.Id" 
+                                   class="flex items-center p-3 rounded-lg border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 transition group">
+                                    <div class="flex-shrink-0 h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center mr-3">
+                                        <i class="fas fa-user text-emerald-600"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="font-medium text-slate-900 group-hover:text-emerald-900">@patient.FullName</p>
+                                        <p class="text-sm text-slate-600">@patient.Email</p>
+                                    </div>
+                                    <div class="text-xs text-slate-500">
+                                        @patient.CreatedAt.ToString("MMM d, yyyy")
+                                    </div>
+                                </a>
+                            }
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                            <a asp-controller="Patients" asp-action="Create" 
-                               class="bg-white rounded-lg p-4 border border-slate-200 hover:border-emerald-300 hover:shadow-sm transition">
-                                <div class="text-emerald-600 mb-2">
-                                    <i class="fas fa-user-plus text-lg"></i>
-                                </div>
-                                <div class="font-medium text-slate-900">Register Patient</div>
-                                <p class="text-sm text-slate-600 mt-1">Create new patient record</p>
-                            </a>
-                            <a asp-controller="Patients" asp-action="Index"
-                               class="bg-white rounded-lg p-4 border border-slate-200 hover:border-emerald-300 hover:shadow-sm transition">
-                                <div class="text-emerald-600 mb-2">
-                                    <i class="fas fa-search text-lg"></i>
-                                </div>
-                                <div class="font-medium text-slate-900">Find Patient</div>
-                                <p class="text-sm text-slate-600 mt-1">Search and view patient records</p>
-                            </a>
-                            <a asp-controller="Appointments" asp-action="Index"
-                               class="bg-white rounded-lg p-4 border border-slate-200 hover:border-emerald-300 hover:shadow-sm transition">
-                                <div class="text-emerald-600 mb-2">
-                                    <i class="fas fa-calendar-alt text-lg"></i>
-                                </div>
-                                <div class="font-medium text-slate-900">Schedule</div>
-                                <p class="text-sm text-slate-600 mt-1">View and manage appointments</p>
-                            </a>
+                    }
+                    else
+                    {
+                        <div class="text-center py-8 text-slate-500">
+                            <i class="fas fa-users text-4xl mb-3 text-slate-300"></i>
+                            <p>No recent patients</p>
                         </div>
-                    </div>
-                }
-                else if (User.IsInRole("patient"))
-                {
-                    <div class="md:col-span-2 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200 p-6">
-                        <div class="flex items-center mb-4">
-                            <div class="h-12 w-12 rounded-lg bg-purple-100 flex items-center justify-center mr-4">
-                                <i class="fas fa-user-injured text-purple-600 text-xl"></i>
-                            </div>
-                            <div>
-                                <h2 class="text-xl font-bold text-slate-900">Patient Portal</h2>
-                                <p class="text-slate-600">Access your medical information and records</p>
-                            </div>
-                        </div>
-                        <div class="bg-white rounded-lg p-4 border border-slate-200">
-                            <div class="text-purple-600 mb-2">
-                                <i class="fas fa-info-circle text-lg"></i>
-                            </div>
-                            <div class="font-medium text-slate-900">Contact support</div>
-                            <p class="text-sm text-slate-600 mt-1">
-                                Please contact your secrétaire or médecin to review or update your records.
-                            </p>
-                        </div>
-                    </div>
-                }
-            </div>
-
-            <!-- Help Section -->
-            <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-                <h2 class="text-xl font-bold text-slate-900 mb-4">Getting Started</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <h3 class="font-semibold text-slate-900 mb-3 flex items-center">
-                            <i class="fas fa-question-circle text-blue-600 mr-2"></i>
-                            Need Help?
-                        </h3>
-                        <ul class="space-y-2 text-slate-600">
-                            <li class="flex items-start">
-                                <i class="fas fa-circle text-xs text-blue-500 mt-2 mr-2"></i>
-                                <span>Check the user manual for detailed instructions</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-circle text-xs text-blue-500 mt-2 mr-2"></i>
-                                <span>Contact support for technical issues</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-circle text-xs text-blue-500 mt-2 mr-2"></i>
-                                <span>Attend training sessions for new features</span>
-                            </li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3 class="font-semibold text-slate-900 mb-3 flex items-center">
-                            <i class="fas fa-lightbulb text-amber-600 mr-2"></i>
-                            Tips & Tricks
-                        </h3>
-                        <ul class="space-y-2 text-slate-600">
-                            <li class="flex items-start">
-                                <i class="fas fa-star text-xs text-amber-500 mt-2 mr-2"></i>
-                                <span>Use keyboard shortcuts for faster navigation</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-star text-xs text-amber-500 mt-2 mr-2"></i>
-                                <span>Bookmark frequently used pages</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-star text-xs text-amber-500 mt-2 mr-2"></i>
-                                <span>Enable notifications for important updates</span>
-                            </li>
-                        </ul>
-                    </div>
+                    }
                 </div>
-            </div>
+            }
+            else if (User.IsInRole(SystemRoles.Medecin))
+            {
+                <!-- My Upcoming Appointments -->
+                <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-bold text-slate-900">My Upcoming Appointments</h2>
+                        <a asp-controller="Appointments" asp-action="Index" class="text-sm text-cyan-600 hover:text-cyan-800 font-medium">
+                            View all <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                    @if (Model.UpcomingAppointmentsList.Any())
+                    {
+                        <div class="space-y-4">
+                            @foreach (var appointment in Model.UpcomingAppointmentsList)
+                            {
+                                <div class="flex items-start p-4 rounded-lg border border-slate-200 hover:border-cyan-300 hover:bg-cyan-50 transition">
+                                    <div class="flex-shrink-0 h-12 w-12 rounded-lg bg-cyan-100 flex items-center justify-center mr-4">
+                                        <i class="fas fa-calendar text-cyan-600"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center justify-between">
+                                            <p class="font-semibold text-slate-900">@appointment.PatientName</p>
+                                            <span class="px-2 py-1 text-xs font-medium rounded-full 
+                                                @(appointment.Status == "Confirmed" ? "bg-green-100 text-green-800" : 
+                                                  appointment.Status == "Pending Approval" ? "bg-amber-100 text-amber-800" : 
+                                                  "bg-slate-100 text-slate-800")">
+                                                @appointment.Status
+                                            </span>
+                                        </div>
+                                        <p class="text-sm text-slate-600 mt-1">
+                                            <i class="fas fa-clock mr-1"></i>@appointment.DateDebut.ToString("MMM d, yyyy 'at' h:mm tt")
+                                        </p>
+                                        @if (!string.IsNullOrWhiteSpace(appointment.Motif))
+                                        {
+                                            <p class="text-sm text-slate-500 mt-1">
+                                                <i class="fas fa-comment mr-1"></i>@appointment.Motif
+                                            </p>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-8 text-slate-500">
+                            <i class="fas fa-calendar-times text-4xl mb-3 text-slate-300"></i>
+                            <p>No upcoming appointments</p>
+                        </div>
+                    }
+                </div>
+            }
+            else if (User.IsInRole(SystemRoles.Patient))
+            {
+                <!-- My Upcoming Appointments -->
+                <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-bold text-slate-900">My Upcoming Appointments</h2>
+                        <a asp-controller="PatientPortal" asp-action="Upcoming" class="text-sm text-purple-600 hover:text-purple-800 font-medium">
+                            View all <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                    @if (Model.UpcomingAppointmentsList.Any())
+                    {
+                        <div class="space-y-4">
+                            @foreach (var appointment in Model.UpcomingAppointmentsList)
+                            {
+                                <div class="flex items-start p-4 rounded-lg border border-slate-200 hover:border-purple-300 hover:bg-purple-50 transition">
+                                    <div class="flex-shrink-0 h-12 w-12 rounded-lg bg-purple-100 flex items-center justify-center mr-4">
+                                        <i class="fas fa-calendar text-purple-600"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center justify-between">
+                                            <p class="font-semibold text-slate-900">Dr. @appointment.MedecinName</p>
+                                            <span class="px-2 py-1 text-xs font-medium rounded-full 
+                                                @(appointment.Status == "Confirmed" ? "bg-green-100 text-green-800" : 
+                                                  appointment.Status == "Pending Approval" ? "bg-amber-100 text-amber-800" : 
+                                                  "bg-slate-100 text-slate-800")">
+                                                @appointment.Status
+                                            </span>
+                                        </div>
+                                        <p class="text-sm text-slate-600 mt-1">
+                                            <i class="fas fa-clock mr-1"></i>@appointment.DateDebut.ToString("MMM d, yyyy 'at' h:mm tt")
+                                        </p>
+                                        @if (!string.IsNullOrWhiteSpace(appointment.Motif))
+                                        {
+                                            <p class="text-sm text-slate-500 mt-1">
+                                                <i class="fas fa-comment mr-1"></i>@appointment.Motif
+                                            </p>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-8 text-slate-500">
+                            <i class="fas fa-calendar-times text-4xl mb-3 text-slate-300"></i>
+                            <p>No upcoming appointments</p>
+                            <a asp-controller="PatientPortal" asp-action="RequestAppointment" 
+                               class="mt-4 inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition">
+                                <i class="fas fa-plus mr-2"></i>
+                                Request an Appointment
+                            </a>
+                        </div>
+                    }
+                </div>
+            }
         </div>
 
         <!-- Sidebar (1/3 width) -->
@@ -259,100 +504,134 @@
             <!-- Quick Links -->
             <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
                 <h2 class="text-xl font-bold text-slate-900 mb-4">Quick Links</h2>
-                <div class="space-y-3">
-                    <a asp-controller="Home" asp-action="Index" 
-                       class="flex items-center p-3 rounded-lg hover:bg-slate-50 transition group">
-                        <div class="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center mr-3">
-                            <i class="fas fa-home text-blue-600"></i>
-                        </div>
-                        <div class="flex-1">
-                            <div class="font-medium text-slate-900">Dashboard</div>
-                            <p class="text-sm text-slate-600">Return to this overview</p>
-                        </div>
-                    </a>
-                    
-                    <a asp-controller="Patients" asp-action="Index"
-                       class="flex items-center p-3 rounded-lg hover:bg-slate-50 transition group">
-                        <div class="h-10 w-10 rounded-lg bg-emerald-100 flex items-center justify-center mr-3">
-                            <i class="fas fa-users text-emerald-600"></i>
-                        </div>
-                        <div class="flex-1">
-                            <div class="font-medium text-slate-900">Patients</div>
-                            <p class="text-sm text-slate-600">Manage patient records</p>
-                        </div>
-                    </a>
-                    
-                    @if (User.IsInRole("admin"))
+                <div class="space-y-2">
+                    @if (User.IsInRole(SystemRoles.Admin) || User.IsInRole(SystemRoles.Secretaire))
                     {
-                        <a href="#"
+                        <a asp-controller="Patients" asp-action="Index"
                            class="flex items-center p-3 rounded-lg hover:bg-slate-50 transition group">
-                            <div class="h-10 w-10 rounded-lg bg-amber-100 flex items-center justify-center mr-3">
-                                <i class="fas fa-cog text-amber-600"></i>
+                            <div class="h-10 w-10 rounded-lg bg-emerald-100 flex items-center justify-center mr-3">
+                                <i class="fas fa-users text-emerald-600"></i>
                             </div>
                             <div class="flex-1">
-                                <div class="font-medium text-slate-900">System Settings</div>
-                                <p class="text-sm text-slate-600">Configure application settings</p>
+                                <div class="font-medium text-slate-900">Patients</div>
+                                <p class="text-sm text-slate-600">Manage patient records</p>
+                            </div>
+                        </a>
+                        
+                        <a asp-controller="Appointments" asp-action="Index"
+                           class="flex items-center p-3 rounded-lg hover:bg-slate-50 transition group">
+                            <div class="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center mr-3">
+                                <i class="fas fa-calendar-alt text-blue-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-medium text-slate-900">Appointments</div>
+                                <p class="text-sm text-slate-600">View and manage appointments</p>
+                            </div>
+                        </a>
+
+                        <a asp-controller="Billing" asp-action="Index"
+                           class="flex items-center p-3 rounded-lg hover:bg-slate-50 transition group">
+                            <div class="h-10 w-10 rounded-lg bg-purple-100 flex items-center justify-center mr-3">
+                                <i class="fas fa-file-invoice-dollar text-purple-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-medium text-slate-900">Billing</div>
+                                <p class="text-sm text-slate-600">Manage invoices and payments</p>
+                            </div>
+                        </a>
+
+                        <a asp-controller="Labs" asp-action="Index"
+                           class="flex items-center p-3 rounded-lg hover:bg-slate-50 transition group">
+                            <div class="h-10 w-10 rounded-lg bg-cyan-100 flex items-center justify-center mr-3">
+                                <i class="fas fa-vial text-cyan-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-medium text-slate-900">Lab Results</div>
+                                <p class="text-sm text-slate-600">View lab results</p>
                             </div>
                         </a>
                     }
-                    
-                    <a href="#"
-                       class="flex items-center p-3 rounded-lg hover:bg-slate-50 transition group">
-                        <div class="h-10 w-10 rounded-lg bg-purple-100 flex items-center justify-center mr-3">
-                            <i class="fas fa-question-circle text-purple-600"></i>
-                        </div>
-                        <div class="flex-1">
-                            <div class="font-medium text-slate-900">Help & Support</div>
-                            <p class="text-sm text-slate-600">Get assistance and documentation</p>
-                        </div>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Upcoming Events -->
-            <div class="bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl border border-slate-200 p-6">
-                <h2 class="text-xl font-bold text-slate-900 mb-4">Today</h2>
-                <div class="space-y-4">
-                    <div class="flex items-start">
-                        <div class="flex-shrink-0">
-                            <div class="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                                <i class="fas fa-calendar-day text-blue-600"></i>
+                    else if (User.IsInRole(SystemRoles.Medecin))
+                    {
+                        <a asp-controller="Appointments" asp-action="Index"
+                           class="flex items-center p-3 rounded-lg hover:bg-slate-50 transition group">
+                            <div class="h-10 w-10 rounded-lg bg-cyan-100 flex items-center justify-center mr-3">
+                                <i class="fas fa-calendar-alt text-cyan-600"></i>
                             </div>
-                        </div>
-                        <div class="ml-4">
-                            <p class="font-medium text-slate-900">@DateTime.Now.ToString("dddd")</p>
-                            <p class="text-sm text-slate-600">@DateTime.Now.ToString("MMMM d, yyyy")</p>
-                        </div>
-                    </div>
-                    <div class="pt-4 border-t border-slate-200">
-                        <p class="text-sm text-slate-600 mb-2">No scheduled events for today.</p>
-                        @if (User.IsInRole(SystemRoles.Secretaire) || User.IsInRole(SystemRoles.Patient))
-                        {
-                            <a href="#" class="text-sm text-blue-600 hover:text-blue-800 font-medium">
-                                <i class="fas fa-plus mr-1"></i>
-                                Schedule an appointment
-                            </a>
-                        }
-                    </div>
-                </div>
-            </div>
+                            <div class="flex-1">
+                                <div class="font-medium text-slate-900">My Appointments</div>
+                                <p class="text-sm text-slate-600">View my schedule</p>
+                            </div>
+                        </a>
 
-            <!-- System Information -->
-            <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-                <h2 class="text-xl font-bold text-slate-900 mb-4">System Information</h2>
-                <div class="space-y-3">
-                    <div class="flex justify-between items-center py-2 border-b border-slate-100">
-                        <span class="text-slate-700">Version</span>
-                        <span class="font-medium text-slate-900">2.1.0</span>
-                    </div>
-                    <div class="flex justify-between items-center py-2 border-b border-slate-100">
-                        <span class="text-slate-700">Last Updated</span>
-                        <span class="font-medium text-slate-900">@DateTime.Now.AddDays(-7).ToString("MMM d")</span>
-                    </div>
-                    <div class="flex justify-between items-center py-2">
-                        <span class="text-slate-700">Support Contact</span>
-                        <span class="font-medium text-slate-900">support@medoffice.com</span>
-                    </div>
+                        <a asp-controller="Patients" asp-action="Index"
+                           class="flex items-center p-3 rounded-lg hover:bg-slate-50 transition group">
+                            <div class="h-10 w-10 rounded-lg bg-emerald-100 flex items-center justify-center mr-3">
+                                <i class="fas fa-user-friends text-emerald-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-medium text-slate-900">My Patients</div>
+                                <p class="text-sm text-slate-600">View patient records</p>
+                            </div>
+                        </a>
+
+                        <a asp-controller="Prescriptions" asp-action="Index"
+                           class="flex items-center p-3 rounded-lg hover:bg-slate-50 transition group">
+                            <div class="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center mr-3">
+                                <i class="fas fa-prescription text-blue-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-medium text-slate-900">Prescriptions</div>
+                                <p class="text-sm text-slate-600">Manage prescriptions</p>
+                            </div>
+                        </a>
+                    }
+                    else if (User.IsInRole(SystemRoles.Patient))
+                    {
+                        <a asp-controller="PatientPortal" asp-action="Upcoming"
+                           class="flex items-center p-3 rounded-lg hover:bg-slate-50 transition group">
+                            <div class="h-10 w-10 rounded-lg bg-purple-100 flex items-center justify-center mr-3">
+                                <i class="fas fa-calendar-alt text-purple-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-medium text-slate-900">My Appointments</div>
+                                <p class="text-sm text-slate-600">View upcoming appointments</p>
+                            </div>
+                        </a>
+
+                        <a asp-controller="PatientPortal" asp-action="Results"
+                           class="flex items-center p-3 rounded-lg hover:bg-slate-50 transition group">
+                            <div class="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center mr-3">
+                                <i class="fas fa-vial text-blue-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-medium text-slate-900">Lab Results</div>
+                                <p class="text-sm text-slate-600">View test results</p>
+                            </div>
+                        </a>
+
+                        <a asp-controller="PatientPortal" asp-action="Treatments"
+                           class="flex items-center p-3 rounded-lg hover:bg-slate-50 transition group">
+                            <div class="h-10 w-10 rounded-lg bg-emerald-100 flex items-center justify-center mr-3">
+                                <i class="fas fa-prescription text-emerald-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-medium text-slate-900">Treatments</div>
+                                <p class="text-sm text-slate-600">View treatments and prescriptions</p>
+                            </div>
+                        </a>
+
+                        <a asp-controller="PatientPortal" asp-action="History"
+                           class="flex items-center p-3 rounded-lg hover:bg-slate-50 transition group">
+                            <div class="h-10 w-10 rounded-lg bg-amber-100 flex items-center justify-center mr-3">
+                                <i class="fas fa-history text-amber-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-medium text-slate-900">History</div>
+                                <p class="text-sm text-slate-600">View medical history</p>
+                            </div>
+                        </a>
+                    }
                 </div>
             </div>
         </div>

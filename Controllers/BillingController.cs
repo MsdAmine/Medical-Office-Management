@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MedicalOfficeManagement.Controllers
 {
-    [Authorize(Roles = SystemRoles.Admin)]
+    [Authorize(Roles = SystemRoles.AdminOrSecretaire)]
     public class BillingController : Controller
     {
         private readonly MedicalOfficeContext _context;

@@ -23,16 +23,96 @@
             </div>
         }
 
+        <!-- Statistics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="glass-card p-4 rounded-xl">
+                <p class="text-sm text-slate-500">Total pending</p>
+                <p class="text-3xl font-bold text-slate-900">@Model.TotalPending</p>
+                <p class="text-xs text-slate-600 mt-1">Awaiting review</p>
+            </div>
+            <div class="glass-card p-4 rounded-xl border-2 border-amber-200">
+                <p class="text-sm text-slate-500">Urgent</p>
+                <p class="text-3xl font-bold text-amber-600">@Model.UrgentCount</p>
+                <p class="text-xs text-amber-600 mt-1">Today or tomorrow</p>
+            </div>
+            <div class="glass-card p-4 rounded-xl">
+                <p class="text-sm text-slate-500">Actions</p>
+                <p class="text-lg font-semibold text-slate-900 mt-2">Bulk operations available</p>
+                <p class="text-xs text-slate-600 mt-1">Select multiple to approve/decline</p>
+            </div>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="glass-card rounded-xl p-6">
+            <form method="get" action="@Url.Action("PendingApproval")" class="space-y-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-slate-900">Filters</h3>
+                    @if (Model.MedecinFilter.HasValue || Model.DateFromFilter.HasValue || Model.DateToFilter.HasValue || !string.IsNullOrWhiteSpace(Model.SearchTerm))
+                    {
+                        <a asp-action="PendingApproval" class="text-sm text-slate-600 hover:text-slate-900">Clear all</a>
+                    }
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Provider</label>
+                        <select name="medecinFilter" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            @foreach (var option in Model.MedecinOptions)
+                            {
+                                <option value="@option.Value" selected="@option.Selected">@option.Text</option>
+                            }
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">From Date</label>
+                        <input type="date" name="dateFromFilter" value="@(Model.DateFromFilter?.ToString("yyyy-MM-dd"))" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">To Date</label>
+                        <input type="date" name="dateToFilter" value="@(Model.DateToFilter?.ToString("yyyy-MM-dd"))" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Search</label>
+                        <input type="text" name="searchTerm" value="@Model.SearchTerm" placeholder="Patient, provider, reason..." class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+                        <i class="fas fa-filter mr-2"></i>Apply Filters
+                    </button>
+                    <a asp-action="PendingApproval" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 font-medium">
+                        Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+
         <div class="glass-card rounded-xl overflow-hidden">
             <div class="p-6 border-b border-slate-200 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <div>
                     <h2 class="text-lg font-semibold text-slate-900">Awaiting approval</h2>
                     <p class="text-sm text-slate-600">Showing @Model.PendingAppointments.Count() request(s)</p>
                 </div>
-                <div class="flex items-center gap-2 text-sm text-slate-600">
-                    <span class="flex items-center gap-1"><span class="badge-dot bg-amber-500"></span> Pending approval</span>
-                    <span class="flex items-center gap-1"><span class="badge-dot bg-blue-500"></span> Scheduled</span>
-                    <span class="flex items-center gap-1"><span class="badge-dot bg-rose-500"></span> Cancelled</span>
+                <div class="flex items-center gap-3">
+                    @if (hasPending)
+                    {
+                        <form id="bulkApproveForm" asp-action="BulkApprove" method="post" class="inline">
+                            <input type="hidden" name="appointmentIds" id="bulkApproveIds" />
+                            <button type="submit" id="bulkApproveBtn" class="px-3 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition opacity-50 pointer-events-none" disabled>
+                                <i class="fas fa-check-double mr-1"></i> Approve Selected
+                            </button>
+                        </form>
+                        <form id="bulkDeclineForm" asp-action="BulkDecline" method="post" class="inline">
+                            <input type="hidden" name="appointmentIds" id="bulkDeclineIds" />
+                            <button type="submit" id="bulkDeclineBtn" class="px-3 py-2 rounded-lg bg-rose-50 text-rose-700 text-sm font-semibold border border-rose-200 hover:bg-rose-100 transition opacity-50 pointer-events-none" disabled>
+                                <i class="fas fa-times-circle mr-1"></i> Decline Selected
+                            </button>
+                        </form>
+                    }
+                    <div class="flex items-center gap-2 text-sm text-slate-600">
+                        <span class="flex items-center gap-1"><span class="badge-dot bg-amber-500"></span> Pending approval</span>
+                        <span class="flex items-center gap-1"><span class="badge-dot bg-blue-500"></span> Scheduled</span>
+                        <span class="flex items-center gap-1"><span class="badge-dot bg-rose-500"></span> Cancelled</span>
+                    </div>
                 </div>
             </div>
 
@@ -56,6 +136,9 @@
                     <table class="w-full">
                         <thead>
                             <tr class="bg-slate-50 border-b border-slate-200">
+                                <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">
+                                    <input type="checkbox" id="selectAll" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                                </th>
                                 <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">Patient</th>
                                 <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">Requested Provider</th>
                                 <th class="text-left py-4 px-6 text-sm font-semibold text-slate-900">Requested Time</th>
@@ -74,11 +157,22 @@
                                     "Scheduled" => "bg-blue-100 text-blue-700",
                                     _ => "bg-slate-100 text-slate-700"
                                 };
+                                var isUrgent = appointment.StartTime.Date <= DateTime.Today.AddDays(1);
+                                var urgentClass = isUrgent ? "border-l-4 border-amber-500" : "";
 
-                                <tr class="hover:bg-slate-50 transition-colors">
+                                <tr class="hover:bg-slate-50 transition-colors @urgentClass">
+                                    <td class="py-4 px-6">
+                                        <input type="checkbox" class="appointment-checkbox rounded border-slate-300 text-blue-600 focus:ring-blue-500" value="@appointment.Id" />
+                                    </td>
                                     <td class="py-4 px-6">
                                         <div class="font-semibold text-slate-900">@appointment.PatientName</div>
                                         <div class="text-xs text-slate-500">Room: @appointment.Location</div>
+                                        @if (isUrgent)
+                                        {
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 mt-1">
+                                                <i class="fas fa-exclamation-triangle mr-1"></i> Urgent
+                                            </span>
+                                        }
                                     </td>
                                     <td class="py-4 px-6 text-slate-700">@appointment.MedecinName</td>
                                     <td class="py-4 px-6">
@@ -119,4 +213,69 @@
 
     @section Scripts {
         @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const selectAllCheckbox = document.getElementById('selectAll');
+                const appointmentCheckboxes = document.querySelectorAll('.appointment-checkbox');
+                const bulkApproveBtn = document.getElementById('bulkApproveBtn');
+                const bulkDeclineBtn = document.getElementById('bulkDeclineBtn');
+                const bulkApproveForm = document.getElementById('bulkApproveForm');
+                const bulkDeclineForm = document.getElementById('bulkDeclineForm');
+
+                function updateBulkButtons() {
+                    const checked = Array.from(appointmentCheckboxes).filter(cb => cb.checked);
+                    const hasSelection = checked.length > 0;
+                    
+                    bulkApproveBtn.disabled = !hasSelection;
+                    bulkDeclineBtn.disabled = !hasSelection;
+                    
+                    if (hasSelection) {
+                        bulkApproveBtn.classList.remove('opacity-50', 'pointer-events-none');
+                        bulkDeclineBtn.classList.remove('opacity-50', 'pointer-events-none');
+                    } else {
+                        bulkApproveBtn.classList.add('opacity-50', 'pointer-events-none');
+                        bulkDeclineBtn.classList.add('opacity-50', 'pointer-events-none');
+                    }
+                }
+
+                selectAllCheckbox?.addEventListener('change', function() {
+                    appointmentCheckboxes.forEach(cb => {
+                        cb.checked = this.checked;
+                    });
+                    updateBulkButtons();
+                });
+
+                appointmentCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', function() {
+                        const allChecked = Array.from(appointmentCheckboxes).every(c => c.checked);
+                        const someChecked = Array.from(appointmentCheckboxes).some(c => c.checked);
+                        selectAllCheckbox.checked = allChecked;
+                        selectAllCheckbox.indeterminate = someChecked && !allChecked;
+                        updateBulkButtons();
+                    });
+                });
+
+                bulkApproveForm?.addEventListener('submit', function(e) {
+                    const checked = Array.from(appointmentCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+                    document.getElementById('bulkApproveIds').value = checked.join(',');
+                    if (checked.length === 0) {
+                        e.preventDefault();
+                        alert('Please select at least one appointment.');
+                    }
+                });
+
+                bulkDeclineForm?.addEventListener('submit', function(e) {
+                    const checked = Array.from(appointmentCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+                    document.getElementById('bulkDeclineIds').value = checked.join(',');
+                    if (checked.length === 0) {
+                        e.preventDefault();
+                        alert('Please select at least one appointment.');
+                    } else if (!confirm(`Are you sure you want to decline ${checked.length} appointment(s)?`)) {
+                        e.preventDefault();
+                    }
+                });
+
+                updateBulkButtons();
+            });
+        </script>
     }

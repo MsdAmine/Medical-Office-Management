@@ -339,7 +339,7 @@
                         </span>
                     </a>
                 }
-                @if (User.IsInRole(SystemRoles.Admin))
+                @if (User.IsInRole(SystemRoles.Admin) || User.IsInRole(SystemRoles.Secretaire))
                 {
                     <a href="/Billing" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
                         <i class="fas fa-file-invoice-dollar text-slate-500 w-5 text-center"></i>
@@ -361,6 +361,9 @@
                         <i class="fas fa-prescription-bottle-alt text-slate-500 w-5 text-center"></i>
                         <span class="font-medium">Prescriptions</span>
                     </a>
+                }
+                @if (User.IsInRole(SystemRoles.Admin) || User.IsInRole(SystemRoles.Secretaire) || User.IsInRole(SystemRoles.Medecin))
+                {
                     <a href="/Labs" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
                         <i class="fas fa-flask text-slate-500 w-5 text-center"></i>
                         <span class="font-medium">Lab Results</span>
@@ -627,13 +630,16 @@
             
             // Set active sidebar link based on current page
             function setActiveSidebarLink() {
-                const currentPath = window.location.pathname;
+                const currentPath = window.location.pathname.toLowerCase();
                 const sidebarLinks = document.querySelectorAll('.sidebar-link');
                 
                 sidebarLinks.forEach(link => {
                     link.classList.remove('active');
-                    const href = link.getAttribute('href');
-                    if (href === currentPath || (currentPath === '/' && href === '/')) {
+                    const href = link.getAttribute('href')?.toLowerCase() || '';
+                    // Check for exact match or if current path starts with the link href
+                    if (href === currentPath || 
+                        (currentPath === '/' && href === '/') ||
+                        (href !== '/' && currentPath.startsWith(href))) {
                         link.classList.add('active');
                     }
                 });

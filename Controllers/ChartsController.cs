@@ -98,6 +98,22 @@ namespace MedicalOfficeManagement.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Consultation consultation)
         {
+            // Validate foreign keys exist
+            if (consultation.PatientId > 0 && !await _context.Patients.AnyAsync(p => p.Id == consultation.PatientId))
+            {
+                ModelState.AddModelError(nameof(Consultation.PatientId), "Selected patient does not exist.");
+            }
+
+            if (consultation.MedecinId > 0 && !await _context.Medecins.AnyAsync(m => m.Id == consultation.MedecinId))
+            {
+                ModelState.AddModelError(nameof(Consultation.MedecinId), "Selected provider does not exist.");
+            }
+
+            if (consultation.RendezVousId.HasValue && !await _context.RendezVous.AnyAsync(r => r.Id == consultation.RendezVousId.Value))
+            {
+                ModelState.AddModelError(nameof(Consultation.RendezVousId), "Selected appointment does not exist.");
+            }
+
             if (!ModelState.IsValid)
             {
                 await PopulateLookupsAsync();
@@ -134,6 +150,22 @@ namespace MedicalOfficeManagement.Controllers
             if (id != consultation.Id)
             {
                 return NotFound();
+            }
+
+            // Validate foreign keys exist
+            if (consultation.PatientId > 0 && !await _context.Patients.AnyAsync(p => p.Id == consultation.PatientId))
+            {
+                ModelState.AddModelError(nameof(Consultation.PatientId), "Selected patient does not exist.");
+            }
+
+            if (consultation.MedecinId > 0 && !await _context.Medecins.AnyAsync(m => m.Id == consultation.MedecinId))
+            {
+                ModelState.AddModelError(nameof(Consultation.MedecinId), "Selected provider does not exist.");
+            }
+
+            if (consultation.RendezVousId.HasValue && !await _context.RendezVous.AnyAsync(r => r.Id == consultation.RendezVousId.Value))
+            {
+                ModelState.AddModelError(nameof(Consultation.RendezVousId), "Selected appointment does not exist.");
             }
 
             if (!ModelState.IsValid)

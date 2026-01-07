@@ -1,0 +1,126 @@
+@model MedicalOfficeManagement.Models.Patient
+
+@{
+    ViewData["Title"] = ViewData["Title"] ?? "Patient Details";
+    ViewData["Breadcrumb"] = "Patients";
+    bool canEdit = User.IsInRole(SystemRoles.Secretaire) || User.IsInRole(SystemRoles.Admin);
+}
+
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900">Patient Details</h1>
+            <p class="text-slate-600">View patient information and medical history.</p>
+        </div>
+        <a asp-action="Index" class="text-blue-600 hover:text-blue-700">Back to patients</a>
+    </div>
+
+    <!-- Patient Information -->
+    <div class="glass-card rounded-xl p-6 space-y-4">
+        <h2 class="text-lg font-semibold text-slate-900 mb-4">Patient Information</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <p class="text-sm text-slate-500">Full Name</p>
+                <p class="text-lg font-semibold text-slate-900">@Model.Prenom @Model.Nom</p>
+            </div>
+            <div>
+                <p class="text-sm text-slate-500">Date of Birth</p>
+                <p class="text-slate-900 font-medium">@(Model.DateNaissance?.ToString("yyyy-MM-dd") ?? "Not specified")</p>
+            </div>
+            <div>
+                <p class="text-sm text-slate-500">Gender</p>
+                <p class="text-slate-900">@(!string.IsNullOrWhiteSpace(Model.Sexe) ? Model.Sexe : "Not specified")</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Information -->
+    <div class="glass-card rounded-xl p-6 space-y-4">
+        <h2 class="text-lg font-semibold text-slate-900 mb-4">Contact Information</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <p class="text-sm text-slate-500">Email</p>
+                @if (!string.IsNullOrWhiteSpace(Model.Email))
+                {
+                    <a href="mailto:@Model.Email" class="text-blue-600 hover:text-blue-700 font-medium">
+                        <i class="fas fa-envelope mr-2"></i>@Model.Email
+                    </a>
+                }
+                else
+                {
+                    <p class="text-slate-900">Not specified</p>
+                }
+            </div>
+            <div>
+                <p class="text-sm text-slate-500">Phone</p>
+                @if (!string.IsNullOrWhiteSpace(Model.Telephone))
+                {
+                    <a href="tel:@Model.Telephone" class="text-slate-900 hover:text-blue-700 font-medium">
+                        <i class="fas fa-phone mr-2"></i>@Model.Telephone
+                    </a>
+                }
+                else
+                {
+                    <p class="text-slate-900">Not specified</p>
+                }
+            </div>
+            <div class="md:col-span-2">
+                <p class="text-sm text-slate-500">Address</p>
+                <p class="text-slate-900">@(!string.IsNullOrWhiteSpace(Model.Adresse) ? Model.Adresse : "Not specified")</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Medical Information -->
+    @if (!string.IsNullOrWhiteSpace(Model.Antecedents))
+    {
+        <div class="glass-card rounded-xl p-6 space-y-4">
+            <h2 class="text-lg font-semibold text-slate-900 mb-4">Medical History</h2>
+            <div class="bg-slate-50 rounded-lg p-4">
+                <p class="text-slate-900 whitespace-pre-wrap">@Model.Antecedents</p>
+            </div>
+        </div>
+    }
+
+    <!-- Audit Information -->
+    <div class="glass-card rounded-xl p-6 space-y-4">
+        <h2 class="text-lg font-semibold text-slate-900 mb-4">Record Information</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <p class="text-sm text-slate-500">Created</p>
+                <p class="text-slate-900 font-medium">
+                    @(Model.CreatedAt == default ? "-" : Model.CreatedAt.ToLocalTime().ToString("f"))
+                </p>
+                <p class="text-sm text-slate-600">
+                    By @(!string.IsNullOrWhiteSpace(Model.CreatedBy) ? Model.CreatedBy : "Unknown")
+                </p>
+            </div>
+            <div>
+                <p class="text-sm text-slate-500">Last Updated</p>
+                <p class="text-slate-900 font-medium">
+                    @(Model.UpdatedAt?.ToLocalTime().ToString("f") ?? "-")
+                </p>
+                <p class="text-sm text-slate-600">
+                    By @(!string.IsNullOrWhiteSpace(Model.UpdatedBy) ? Model.UpdatedBy : "Unknown")
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex items-center gap-3 pt-4">
+        @if (canEdit)
+        {
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="gradient-primary text-white px-5 py-2 rounded-lg font-medium hover:shadow-lg transition-shadow">
+                <i class="fas fa-edit mr-2"></i>Edit Patient
+            </a>
+            <a asp-controller="Appointments" asp-action="Create" asp-route-patientId="@Model.Id" 
+               class="px-5 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition">
+                <i class="fas fa-calendar-plus mr-2"></i>Create Appointment
+            </a>
+        }
+        <a asp-action="Index" class="px-5 py-2 border border-slate-300 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition">
+            Back to List
+        </a>
+    </div>
+</div>

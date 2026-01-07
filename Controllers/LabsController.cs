@@ -9,7 +9,7 @@ using MedicalOfficeManagement.Models;
 
 namespace MedicalOfficeManagement.Controllers
 {
-    [Authorize(Roles = SystemRoles.AdminOrMedecin)]
+    [Authorize(Roles = SystemRoles.ClinicalTeam)]
     public class LabsController : Controller
     {
         private readonly MedicalOfficeContext _context;
@@ -85,6 +85,17 @@ namespace MedicalOfficeManagement.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(LabResult labResult)
         {
+            // Validate foreign keys exist
+            if (labResult.PatientId > 0 && !await _context.Patients.AnyAsync(p => p.Id == labResult.PatientId))
+            {
+                ModelState.AddModelError(nameof(LabResult.PatientId), "Selected patient does not exist.");
+            }
+
+            if (labResult.MedecinId.HasValue && labResult.MedecinId.Value > 0 && !await _context.Medecins.AnyAsync(m => m.Id == labResult.MedecinId.Value))
+            {
+                ModelState.AddModelError(nameof(LabResult.MedecinId), "Selected provider does not exist.");
+            }
+
             if (!ModelState.IsValid)
             {
                 await PopulateLookupsAsync();
@@ -121,6 +132,17 @@ namespace MedicalOfficeManagement.Controllers
             if (id != labResult.Id)
             {
                 return NotFound();
+            }
+
+            // Validate foreign keys exist
+            if (labResult.PatientId > 0 && !await _context.Patients.AnyAsync(p => p.Id == labResult.PatientId))
+            {
+                ModelState.AddModelError(nameof(LabResult.PatientId), "Selected patient does not exist.");
+            }
+
+            if (labResult.MedecinId.HasValue && labResult.MedecinId.Value > 0 && !await _context.Medecins.AnyAsync(m => m.Id == labResult.MedecinId.Value))
+            {
+                ModelState.AddModelError(nameof(LabResult.MedecinId), "Selected provider does not exist.");
             }
 
             if (!ModelState.IsValid)

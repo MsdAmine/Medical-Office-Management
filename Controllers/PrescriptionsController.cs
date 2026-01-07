@@ -90,6 +90,17 @@ namespace MedicalOfficeManagement.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Prescription prescription)
         {
+            // Validate foreign keys exist
+            if (prescription.PatientId > 0 && !await _context.Patients.AnyAsync(p => p.Id == prescription.PatientId))
+            {
+                ModelState.AddModelError(nameof(Prescription.PatientId), "Selected patient does not exist.");
+            }
+
+            if (prescription.MedecinId.HasValue && prescription.MedecinId.Value > 0 && !await _context.Medecins.AnyAsync(m => m.Id == prescription.MedecinId.Value))
+            {
+                ModelState.AddModelError(nameof(Prescription.MedecinId), "Selected provider does not exist.");
+            }
+
             if (!ModelState.IsValid)
             {
                 await PopulateLookupsAsync();
@@ -126,6 +137,17 @@ namespace MedicalOfficeManagement.Controllers
             if (id != prescription.Id)
             {
                 return NotFound();
+            }
+
+            // Validate foreign keys exist
+            if (prescription.PatientId > 0 && !await _context.Patients.AnyAsync(p => p.Id == prescription.PatientId))
+            {
+                ModelState.AddModelError(nameof(Prescription.PatientId), "Selected patient does not exist.");
+            }
+
+            if (prescription.MedecinId.HasValue && prescription.MedecinId.Value > 0 && !await _context.Medecins.AnyAsync(m => m.Id == prescription.MedecinId.Value))
+            {
+                ModelState.AddModelError(nameof(Prescription.MedecinId), "Selected provider does not exist.");
             }
 
             if (!ModelState.IsValid)
