@@ -142,14 +142,9 @@
 
                             <!-- Password -->
                             <div class="space-y-2">
-                                <div class="flex justify-between items-center">
-                                    <label asp-for="Password" class="block text-sm font-semibold text-slate-700">
-                                        Password
-                                    </label>
-                                    <a href="#" class="text-sm text-indigo-600 hover:text-indigo-700 font-semibold transition-colors">
-                                        Forgot password?
-                                    </a>
-                                </div>
+                                <label asp-for="Password" class="block text-sm font-semibold text-slate-700">
+                                    Password
+                                </label>
                                 <div class="relative">
                                     <input asp-for="Password"
                                            type="password"
@@ -207,22 +202,12 @@
                                 <span>Sign in with Google</span>
                             </button>
 
-                            <!-- Sign Up Link -->
-                            <p class="text-center text-sm text-slate-600 pt-4">
-                                Don't have an account? 
-                                <a href="#" class="text-indigo-600 hover:text-indigo-700 font-semibold transition-colors">Create an account</a>
-                            </p>
                         </form>
                     </div>
 
-                    <!-- Footer Links -->
+                    <!-- Footer -->
                     <div class="absolute bottom-8 left-0 right-0 px-16">
-                        <div class="flex items-center justify-between text-xs text-slate-500 pt-6 border-t border-slate-100">
-                            <div class="flex space-x-6">
-                                <a href="#" class="hover:text-slate-700 transition-colors font-medium">Privacy Policy</a>
-                                <a href="#" class="hover:text-slate-700 transition-colors font-medium">Terms of Service</a>
-                                <a href="#" class="hover:text-slate-700 transition-colors font-medium">Support</a>
-                            </div>
+                        <div class="flex items-center justify-end text-xs text-slate-500 pt-6 border-t border-slate-100">
                             <div class="text-slate-400">
                                 © 2024 MedOffice
                             </div>
